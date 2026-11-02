@@ -1,0 +1,50 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Notifications - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Notifications Center{% endblock %}
+
+{% block content %}
+<div class="card-scb">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-bell-fill text-primary me-2"></i> In-App Alerts</span>
+        <a href="{% url 'notifications:mark_all_read' %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-check2-all me-1"></i> Mark All as Read
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for n in notifications %}
+            <div class="list-group-item p-3 d-flex justify-content-between align-items-center {% if not n.is_read %}bg-light border-start border-4 border-primary{% endif %}">
+                <div class="d-flex align-items-start gap-3">
+                    <span class="rounded-circle p-2 d-flex align-items-center justify-content-center {% if n.notification_type == 'SUCCESS' %}bg-success bg-opacity-10 text-success{% elif n.notification_type == 'DANGER' %}bg-danger bg-opacity-10 text-danger{% else %}bg-primary bg-opacity-10 text-primary{% endif %}" style="width: 40px; height: 40px;">
+                        {% if n.notification_type == 'SUCCESS' %}<i class="bi bi-check-circle-fill"></i>
+                        {% elif n.notification_type == 'DANGER' %}<i class="bi bi-exclamation-circle-fill"></i>
+                        {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+                    </span>
+                    <div>
+                        <div class="fw-bold text-dark">{{ n.title }}</div>
+                        <div class="text-secondary small mb-1">{{ n.message }}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">{{ n.created_at|date:"d M Y, h:i A" }} ({{ n.created_at|timesince }} ago)</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    {% if n.link %}
+                    <a href="{{ n.link }}" class="btn btn-sm btn-outline-secondary">View</a>
+                    {% endif %}
+                    {% if not n.is_read %}
+                    <a href="{% url 'notifications:mark_as_read' n.id %}" class="btn btn-sm btn-light border" title="Mark as read">
+                        <i class="bi bi-check2"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-bell-slash display-5 d-block mb-2 opacity-50"></i>
+                You have no notifications.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

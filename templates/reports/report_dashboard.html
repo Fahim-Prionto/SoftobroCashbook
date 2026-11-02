@@ -1,0 +1,121 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}Financial Reports & Statements - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Financial Reports & Statements{% endblock %}
+
+{% block content %}
+<!-- High-Level Financial Snapshot -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card border-primary">
+            <div class="stat-label text-primary">All-Time Net Balance</div>
+            <div class="stat-value text-primary" style="font-size: 1.5rem;">{{ net_balance|bdt }}</div>
+            <div class="small text-muted mt-2">Combined across all entities</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card border-success">
+            <div class="stat-label text-success">This Month Cash-In</div>
+            <div class="stat-value text-success" style="font-size: 1.5rem;">{{ monthly_in|bdt }}</div>
+            <div class="small text-muted mt-2">Since {{ today|date:"01 M Y" }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card border-danger">
+            <div class="stat-label text-danger">This Month Cash-Out</div>
+            <div class="stat-value text-danger" style="font-size: 1.5rem;">{{ monthly_out|bdt }}</div>
+            <div class="small text-muted mt-2">Since {{ today|date:"01 M Y" }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-label">This Month Net Flow</div>
+            <div class="stat-value {% if monthly_net >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1.5rem;">
+                {{ monthly_net|bdt }}
+            </div>
+            <div class="small text-muted mt-2">Net operational margin</div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Generator Hub -->
+<div class="row g-4">
+    <!-- Individual Cashbook Statement -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card-scb h-100 p-4 d-flex flex-column justify-content-between">
+            <div>
+                <div class="rounded-3 bg-primary bg-opacity-10 text-primary p-3 d-inline-flex mb-3 fs-3">
+                    <i class="bi bi-journal-check"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Individual Cashbook Report</h5>
+                <p class="text-secondary small mb-4">
+                    Generate an official transaction statement for an individual cashbook with date filters, category breakdown, and A4 print layout.
+                </p>
+            </div>
+            <div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Select Cashbook to Report
+                    </button>
+                    <ul class="dropdown-menu w-100 shadow border-0">
+                        {% for cb in cashbooks %}
+                        <li><a class="dropdown-item py-2" href="{% url 'reports:cashbook_report' cb.id %}">{{ cb.business.name }} - {{ cb.name }}</a></li>
+                        {% empty %}
+                        <li class="p-2 text-muted small text-center">No cashbooks available</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Business Financial Summary -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card-scb h-100 p-4 d-flex flex-column justify-content-between">
+            <div>
+                <div class="rounded-3 bg-success bg-opacity-10 text-success p-3 d-inline-flex mb-3 fs-3">
+                    <i class="bi bi-buildings"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Business Financial Summary</h5>
+                <p class="text-secondary small mb-4">
+                    Comprehensive overview for a specific business showing all associated cashbooks, opening balances, inflows, outflows, and closing balance.
+                </p>
+            </div>
+            <div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-success w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Select Business Entity
+                    </button>
+                    <ul class="dropdown-menu w-100 shadow border-0">
+                        {% for b in businesses %}
+                        <li><a class="dropdown-item py-2" href="{% url 'reports:business_summary' b.id %}">{{ b.name }}</a></li>
+                        {% empty %}
+                        <li class="p-2 text-muted small text-center">No businesses available</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Range Ledger Report -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card-scb h-100 p-4 d-flex flex-column justify-content-between">
+            <div>
+                <div class="rounded-3 bg-purple bg-opacity-10 text-purple p-3 d-inline-flex mb-3 fs-3" style="color: #9333ea; background: #faf5ff;">
+                    <i class="bi bi-calendar3-range"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Custom Date-Range Report</h5>
+                <p class="text-secondary small mb-4">
+                    Filter transactions across any specific date window, isolate cash-in or cash-out, and print tax-ready statements.
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'reports:date_range_report' %}" class="btn btn-outline-dark w-100">
+                    Open Custom Filter Report <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

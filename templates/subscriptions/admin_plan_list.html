@@ -1,0 +1,74 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}Manage Subscription Plans - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Subscription Plan Catalog{% endblock %}
+
+{% block content %}
+<div class="card-scb">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-card-checklist text-primary me-2"></i> Configured Plans</span>
+        <a href="{% url 'subscriptions:admin_plan_create' %}" class="btn btn-sm btn-primary fw-semibold">
+            <i class="bi bi-plus-lg me-1"></i> Add New Plan
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-scb">
+                <thead>
+                    <tr>
+                        <th>Plan Name</th>
+                        <th>Billing Cycle</th>
+                        <th>Duration</th>
+                        <th>Price (BDT)</th>
+                        <th>Businesses</th>
+                        <th>Cashbooks</th>
+                        <th>Transactions</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in plans %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">{{ p.name }}</div>
+                            <div class="small text-muted font-monospace">{{ p.slug }}</div>
+                        </td>
+                        <td><span class="badge bg-light text-secondary border">{{ p.get_billing_cycle_display }}</span></td>
+                        <td>{{ p.duration_days }} Days</td>
+                        <td class="fw-bold text-success">{{ p.price_bdt|bdt }}</td>
+                        <td>{{ p.max_businesses }}</td>
+                        <td>{{ p.max_cashbooks_per_business }}</td>
+                        <td>{% if p.max_transactions == 0 %}Unlimited{% else %}{{ p.max_transactions }}{% endif %}</td>
+                        <td>
+                            {% if p.is_active %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'subscriptions:admin_plan_edit' p.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'subscriptions:admin_plan_toggle' p.id %}" class="btn btn-sm {% if p.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}" title="Toggle Active">
+                                    <i class="bi {% if p.is_active %}bi-pause{% else %}bi-play{% endif %}"></i>
+                                </a>
+                                <a href="{% url 'subscriptions:admin_plan_delete' p.id %}" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Delete plan {{ p.name }}?');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">No plans configured yet. Click "Add New Plan" to create one.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

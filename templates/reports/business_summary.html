@@ -1,0 +1,95 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}{{ business.name }} - Financial Summary - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ business.name }} - Financial Summary{% endblock %}
+
+{% block content %}
+<div class="card-scb mb-4 no-print">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <span class="fw-bold"><i class="bi bi-printer me-1"></i> Actions</span>
+        <button class="btn btn-sm btn-primary" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i> Print A4 Business Summary
+        </button>
+    </div>
+</div>
+
+<div class="card-scb p-4 p-md-5 bg-white">
+    <!-- Header -->
+    <div class="print-header d-flex justify-content-between align-items-start border-bottom pb-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">{{ business.name }}</h2>
+            <h5 class="text-secondary mb-0">Consolidated Business Cashflow Statement</h5>
+            {% if business.address %}<div class="small text-muted">{{ business.address }}</div>{% endif %}
+        </div>
+        <div class="text-end">
+            <div class="small text-muted">Generated: {% now "d M Y, h:i A" %}</div>
+            <div class="small text-dark fw-bold">Period: All Recorded History</div>
+        </div>
+    </div>
+
+    <!-- Per-Cashbook Table -->
+    <div class="table-responsive mb-4">
+        <table class="table print-table table-bordered mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Cashbook Name</th>
+                    <th class="text-end">Opening Balance</th>
+                    <th class="text-end">Total Cash-In (+)</th>
+                    <th class="text-end">Total Cash-Out (-)</th>
+                    <th class="text-end">Net Flow</th>
+                    <th class="text-end">Current Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cb in cb_summaries %}
+                <tr>
+                    <td class="fw-bold">{{ cb.cashbook.name }}</td>
+                    <td class="text-end">{{ cb.opening_balance|bdt }}</td>
+                    <td class="text-end text-success fw-bold">+{{ cb.total_in|bdt }}</td>
+                    <td class="text-end text-danger fw-bold">-{{ cb.total_out|bdt }}</td>
+                    <td class="text-end fw-semibold">{{ cb.net_flow|bdt }}</td>
+                    <td class="text-end fw-bold text-primary">{{ cb.balance|bdt }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No cashbooks attached to this business.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="print-summary-box ms-auto" style="width: 340px; border: 2px solid #000; padding: 15px; border-radius: 4px;">
+        <div class="d-flex justify-content-between mb-1 small">
+            <span>Combined Opening Capital:</span>
+            <span class="fw-bold">{{ total_opening|bdt }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-1 small text-success">
+            <span>Total Inflows (+):</span>
+            <span class="fw-bold">+{{ total_in|bdt }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 small text-danger">
+            <span>Total Outflows (-):</span>
+            <span class="fw-bold">-{{ total_out|bdt }}</span>
+        </div>
+        <div class="d-flex justify-content-between border-top pt-2 fw-bold fs-5 text-dark">
+            <span>Net Financial Position:</span>
+            <span>{{ net_financial_position|bdt }}</span>
+        </div>
+    </div>
+
+    <!-- Signatures -->
+    <div class="print-signatures d-flex justify-content-between pt-5 mt-5">
+        <div class="print-signature-box text-center" style="width: 180px; border-top: 1px solid #000; padding-top: 5px;">
+            <div class="small fw-bold">Prepared By</div>
+        </div>
+        <div class="print-signature-box text-center" style="width: 180px; border-top: 1px solid #000; padding-top: 5px;">
+            <div class="small fw-bold">Verified Accountant</div>
+        </div>
+        <div class="print-signature-box text-center" style="width: 180px; border-top: 1px solid #000; padding-top: 5px;">
+            <div class="small fw-bold">Business Owner</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

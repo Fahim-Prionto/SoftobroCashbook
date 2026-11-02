@@ -1,0 +1,79 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Isolated Tenant Databases - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Isolated Tenant Databases{% endblock %}
+
+{% block content %}
+<div class="card-scb">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold"><i class="bi bi-database-fill-gear text-primary me-2"></i> Provisioned Tenant Databases</span>
+            {% if status_filter %}
+            <span class="badge bg-secondary">{{ status_filter }}</span>
+            <a href="{% url 'tenants:admin_tenant_list' %}" class="small text-decoration-none ms-1">Clear</a>
+            {% endif %}
+        </div>
+
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="Search Tenant ID, DB name, User..." style="width: 250px;">
+            <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-scb">
+                <thead>
+                    <tr>
+                        <th>Tenant ID</th>
+                        <th>Database Name</th>
+                        <th>Owner (Service Admin)</th>
+                        <th>Host / Port</th>
+                        <th>Status</th>
+                        <th>Provisioned At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tenants %}
+                    <tr>
+                        <td class="font-monospace fw-bold text-primary">{{ t.tenant_id }}</td>
+                        <td><span class="badge bg-light text-dark border font-monospace">{{ t.db_name }}</span></td>
+                        <td>
+                            <div class="fw-bold">{{ t.service_admin.username }}</div>
+                            <div class="small text-muted">{{ t.service_admin.business_name|default:t.service_admin.email }}</div>
+                        </td>
+                        <td class="small">{{ t.db_host }}:{{ t.db_port }}</td>
+                        <td>
+                            {% if t.status == 'PROVISIONED' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-check-circle me-1"></i> Active</span>
+                            {% elif t.status == 'PENDING' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1"><i class="bi bi-clock me-1"></i> Pending</span>
+                            {% elif t.status == 'ERROR' %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1"><i class="bi bi-exclamation-triangle me-1"></i> Error</span>
+                            {% else %}
+                            <span class="badge bg-secondary px-2 py-1">{{ t.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ t.provisioned_at|date:"d M Y, h:i A"|default:"-" }}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'tenants:admin_tenant_detail' t.id %}" class="btn btn-sm btn-outline-primary" title="Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'tenants:admin_tenant_delete' t.id %}" class="btn btn-sm btn-outline-danger" title="Drop Database">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No tenant databases found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}Renew Subscription - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Subscription Renewal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+        <div>
+            <div class="text-muted small">Current Subscription:</div>
+            <div class="fw-bold text-dark fs-5">{{ subscription.plan.name }} (Expires: {{ subscription.end_date|date:"d M Y"|default:"Expired" }})</div>
+        </div>
+        <a href="{% url 'payments:submit_payment' %}?plan={{ subscription.plan.id }}&renewal=1" class="btn btn-primary px-4 fw-bold">
+            <i class="bi bi-arrow-repeat me-1"></i> Quick Renew Current Plan
+        </a>
+    </div>
+</div>
+
+<div class="card-scb">
+    <div class="card-header">
+        <i class="bi bi-arrow-up-circle text-primary me-2"></i> Or Select an Alternative / Upgrade Package
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            {% for plan in plans %}
+            <div class="col-md-4">
+                <div class="pricing-card h-100 {% if plan.id == subscription.plan.id %}border-primary{% endif %}">
+                    {% if plan.id == subscription.plan.id %}
+                    <span class="badge bg-primary text-white position-absolute top-0 end-0 m-3">Current</span>
+                    {% endif %}
+                    <div>
+                        <h5 class="fw-bold text-dark">{{ plan.name }}</h5>
+                        <div class="fs-4 fw-bold text-dark mb-2">{{ plan.price_bdt|bdt }} <span class="small text-muted fw-normal">/ {{ plan.duration_days }} days</span></div>
+                        <p class="small text-muted mb-3">{{ plan.description }}</p>
+
+                        <ul class="list-unstyled small d-flex flex-column gap-1">
+                            <li><i class="bi bi-check text-primary"></i> <strong>{{ plan.max_businesses }}</strong> Business{{ plan.max_businesses|pluralize:"es" }}</li>
+                            <li><i class="bi bi-check text-primary"></i> <strong>{{ plan.max_cashbooks_per_business }}</strong> Cashbooks per Business</li>
+                            <li><i class="bi bi-check text-primary"></i> {% if plan.max_transactions == 0 %}Unlimited{% else %}{{ plan.max_transactions }}{% endif %} Transactions</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'payments:submit_payment' %}?plan={{ plan.id }}&renewal=1" class="btn btn-outline-primary w-100 btn-sm fw-semibold">
+                            Select & Pay with bKash
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

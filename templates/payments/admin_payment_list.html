@@ -1,0 +1,119 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}bKash Payment Approvals - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}bKash Payment Verification Queue{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <a href="?status=PENDING" class="text-decoration-none">
+            <div class="stat-card border-warning">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label text-warning">Pending Review</div>
+                        <div class="stat-value text-warning">{{ pending_count }}</div>
+                    </div>
+                    <div class="stat-icon amber"><i class="bi bi-clock-history"></i></div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="?status=APPROVED" class="text-decoration-none">
+            <div class="stat-card border-success">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label text-success">Approved</div>
+                        <div class="stat-value text-success">{{ approved_count }}</div>
+                    </div>
+                    <div class="stat-icon green"><i class="bi bi-check2-circle"></i></div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="?status=REJECTED" class="text-decoration-none">
+            <div class="stat-card border-danger">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label text-danger">Rejected</div>
+                        <div class="stat-value text-danger">{{ rejected_count }}</div>
+                    </div>
+                    <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="card-scb">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold">Payment Submissions</span>
+            {% if status_filter %}
+            <span class="badge bg-secondary">{{ status_filter }}</span>
+            <a href="{% url 'payments:admin_payment_list' %}" class="small text-decoration-none ms-1">Clear filter</a>
+            {% endif %}
+        </div>
+
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm" placeholder="Search TrxID, User, Phone..." style="width: 220px;">
+            <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-scb">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User / Business</th>
+                        <th>Plan</th>
+                        <th>Amount</th>
+                        <th>bKash TrxID</th>
+                        <th>Sender Number</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr>
+                        <td>#{{ p.id }}</td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ p.service_admin.username }}</div>
+                            <div class="small text-muted">{{ p.service_admin.business_name|default:p.service_admin.email }}</div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ p.plan.name }}</span></td>
+                        <td class="fw-bold text-success">{{ p.amount_bdt|bdt }}</td>
+                        <td><span class="badge bg-danger-subtle text-danger font-monospace px-2 py-1">{{ p.bkash_transaction_id }}</span></td>
+                        <td>{{ p.sender_bkash_number }}</td>
+                        <td class="small text-muted">{{ p.payment_date|date:"d M Y, h:i A" }}</td>
+                        <td>
+                            {% if p.status == 'APPROVED' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Approved</span>
+                            {% elif p.status == 'PENDING' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'payments:admin_payment_detail' p.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i> Review
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">No payments found matching criteria.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

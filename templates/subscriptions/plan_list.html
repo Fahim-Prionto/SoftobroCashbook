@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+{% block title %}Subscription Plans - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary-subtle text-primary mb-2">Flexible Packages</span>
+        <h2 class="fw-bold">Choose the Perfect Plan for Your Business</h2>
+        <p class="text-secondary">Scale your cashbook as your enterprise expands with native bKash payment support.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        {% for plan in plans %}
+        <div class="col-md-6 col-lg-4">
+            <div class="pricing-card h-100 {% if plan.is_popular %}popular{% endif %}">
+                {% if plan.is_popular %}
+                <span class="popular-badge">Recommended</span>
+                {% endif %}
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h4 class="fw-bold text-dark mb-0">{{ plan.name }}</h4>
+                        <span class="badge bg-light text-secondary border">{{ plan.get_billing_cycle_display }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="price-currency">৳</span>
+                        <span class="price-amount">{{ plan.price_bdt|floatformat:0 }}</span>
+                        <span class="price-cycle">/ {{ plan.duration_days }} days</span>
+                    </div>
+                    <p class="text-muted small mb-4">{{ plan.description }}</p>
+
+                    <div class="small fw-bold text-uppercase text-secondary mb-3">Plan Entitlements:</div>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li class="d-flex align-items-center gap-2">
+                            <i class="bi bi-check2 text-primary fw-bold"></i>
+                            <span>Up to <strong>{{ plan.max_businesses }}</strong> Business Entity</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <i class="bi bi-check2 text-primary fw-bold"></i>
+                            <span>Up to <strong>{{ plan.max_cashbooks_per_business }}</strong> Cashbooks per Business</span>
+                        </li>
+                        <li class="d-flex align-items-center gap-2">
+                            <i class="bi bi-check2 text-primary fw-bold"></i>
+                            <span>{% if plan.max_transactions == 0 %}Unlimited{% else %}{{ plan.max_transactions }}{% endif %} Monthly Transactions</span>
+                        </li>
+                        {% for feat in plan.get_features_list %}
+                        <li class="d-flex align-items-center gap-2">
+                            <i class="bi bi-check2 text-success fw-bold"></i>
+                            <span>{{ feat }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="mt-4 pt-3 border-top">
+                    <a href="{% url 'accounts:register' %}?plan={{ plan.id }}" class="btn {% if plan.is_popular %}btn-scb-primary{% else %}btn-outline-primary{% endif %} w-100 fw-semibold">
+                        Select Plan <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

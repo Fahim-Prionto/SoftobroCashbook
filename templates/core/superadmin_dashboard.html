@@ -1,0 +1,175 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}Super Admin Dashboard - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Platform Administration Overview{% endblock %}
+
+{% block content %}
+<!-- KPI Stat Grid -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label">Service Admins</div>
+                    <div class="stat-value">{{ total_service_admins }}</div>
+                </div>
+                <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+            </div>
+            <div class="mt-2 text-muted small"><span class="text-warning fw-bold">{{ pending_approvals }}</span> pending verification</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value text-success" style="font-size: 1.45rem;">{{ total_revenue|bdt }}</div>
+                </div>
+                <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
+            </div>
+            <div class="mt-2 text-muted small"><span class="text-danger fw-bold">{{ pending_payments }}</span> payments awaiting review</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label">Active Subscriptions</div>
+                    <div class="stat-value text-primary">{{ active_subscriptions }}</div>
+                </div>
+                <div class="stat-icon purple"><i class="bi bi-award-fill"></i></div>
+            </div>
+            <div class="mt-2 text-muted small"><span class="text-danger fw-bold">{{ expired_subscriptions }}</span> expired plans</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label">Isolated Tenants</div>
+                    <div class="stat-value text-teal" style="color: #0d9488;">{{ total_tenants }}</div>
+                </div>
+                <div class="stat-icon teal"><i class="bi bi-database-check"></i></div>
+            </div>
+            <div class="mt-2 text-muted small">PostgreSQL dedicated DBs</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent bKash Payments Queue -->
+    <div class="col-lg-6">
+        <div class="card-scb h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-credit-card-2-front text-danger me-2"></i> Recent bKash Payments</span>
+                <a href="{% url 'payments:admin_payment_list' %}" class="small text-decoration-none fw-semibold">View All Queue</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-scb mb-0">
+                        <thead>
+                            <tr>
+                                <th>Admin</th>
+                                <th>Amount</th>
+                                <th>TrxID</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in recent_payments %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold small">{{ p.service_admin.username }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{ p.plan.name }}</div>
+                                </td>
+                                <td class="fw-bold small text-success">{{ p.amount_bdt|bdt }}</td>
+                                <td><span class="badge bg-light text-danger font-monospace border">{{ p.bkash_transaction_id }}</span></td>
+                                <td>
+                                    {% if p.status == 'APPROVED' %}
+                                    <span class="badge bg-success-subtle text-success">Approved</span>
+                                    {% elif p.status == 'PENDING' %}
+                                    <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                    {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'payments:admin_payment_detail' p.id %}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;">
+                                        Review
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center py-3 text-muted small">No payment submissions yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Service Admins -->
+    <div class="col-lg-6">
+        <div class="card-scb h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-people text-primary me-2"></i> Recent Business Admins</span>
+                <a href="{% url 'core:admin_service_admin_list' %}" class="small text-decoration-none fw-semibold">All Admins</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-scb mb-0">
+                        <thead>
+                            <tr>
+                                <th>Business & Owner</th>
+                                <th>Plan</th>
+                                <th>Tenant DB</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in recent_users %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold small">{{ a.business_name|default:a.username }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{ a.email }}</div>
+                                </td>
+                                <td class="small">{{ a.subscription.plan.name|default:"No plan" }}</td>
+                                <td>
+                                    {% if a.tenant and a.tenant.status == 'PROVISIONED' %}
+                                    <span class="badge bg-success-subtle text-success font-monospace" style="font-size: 0.7rem;">{{ a.tenant.db_name }}</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">None</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if a.status == 'ACTIVE' %}
+                                    <span class="badge bg-success-subtle text-success">Active</span>
+                                    {% elif a.status == 'PENDING_APPROVAL' %}
+                                    <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                    {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">{{ a.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'core:admin_service_admin_detail' a.id %}" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;">
+                                        Manage
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center py-3 text-muted small">No registered service admins.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

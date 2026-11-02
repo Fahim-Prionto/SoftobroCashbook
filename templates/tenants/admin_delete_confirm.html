@@ -1,0 +1,53 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Confirm Delete Tenant Database - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Drop Tenant Database{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-danger border-2 rounded-4 shadow-sm bg-white overflow-hidden">
+            <div class="bg-danger text-white p-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+                    <div>
+                        <h4 class="fw-bold mb-0">High-Risk Deletion Warning</h4>
+                        <div class="small opacity-75">Irreversible Tenant Database Dropping</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4">
+                <p class="text-secondary">
+                    You are preparing to delete the isolated PostgreSQL database <strong>{{ tenant.db_name }}</strong> belonging to Service Admin <strong>{{ service_admin.username }}</strong> ({{ service_admin.email }}).
+                </p>
+                <div class="alert alert-warning small">
+                    <ul class="mb-0 ps-3">
+                        <li>All businesses, cashbooks, and transactions stored in this tenant database will be permanently purged.</li>
+                        <li>Existing database connections will be terminated prior to running <code>DROP DATABASE</code>.</li>
+                        <li>This action will be logged in the central immutable audit log.</li>
+                    </ul>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-dark">
+                            Type the exact database name to confirm: <span class="text-danger font-monospace">{{ tenant.db_name }}</span>
+                        </label>
+                        <input type="text" name="confirm_db_name" class="form-control font-monospace" placeholder="{{ tenant.db_name }}" required autocomplete="off">
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'tenants:admin_tenant_list' %}" class="btn btn-light">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger px-4 fw-bold">
+                            Permanently Drop Database <i class="bi bi-trash ms-1"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}{{ cashbook.name }} - Ledger - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ cashbook.name }} ({{ cashbook.business.name }}){% endblock %}
+
+{% block content %}
+<!-- Top Balance Cards -->
+<div class="row g-3 mb-4">
+    <!-- Current Balance Card -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card border-primary border-2">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label text-primary">Current Cash Balance</div>
+                    <div class="stat-value text-primary" style="font-size: 1.5rem;">{{ overall_balance|bdt }}</div>
+                </div>
+                <div class="stat-icon blue"><i class="bi bi-wallet2"></i></div>
+            </div>
+            <div class="mt-2 text-muted small">Opening: {{ cashbook.opening_balance|bdt }}</div>
+        </div>
+    </div>
+
+    <!-- Total In -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card border-success">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label text-success">Total Cash-In</div>
+                    <div class="stat-value text-success" style="font-size: 1.5rem;">{{ overall_in|bdt }}</div>
+                </div>
+                <div class="stat-icon green"><i class="bi bi-arrow-down-left-circle-fill"></i></div>
+            </div>
+            <div class="mt-2 text-muted small">Filtered sum: {{ filter_in|bdt }}</div>
+        </div>
+    </div>
+
+    <!-- Total Out -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card border-danger">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-label text-danger">Total Cash-Out</div>
+                    <div class="stat-value text-danger" style="font-size: 1.5rem;">{{ overall_out|bdt }}</div>
+                </div>
+                <div class="stat-icon red"><i class="bi bi-arrow-up-right-circle-fill"></i></div>
+            </div>
+            <div class="mt-2 text-muted small">Filtered sum: {{ filter_out|bdt }}</div>
+        </div>
+    </div>
+
+    <!-- Actions & Print -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card d-flex flex-column justify-content-center gap-2">
+            <div class="d-flex gap-2">
+                <a href="{% url 'transactions:transaction_create' cashbook.id %}?type=CASH_IN" class="btn btn-success flex-fill fw-bold shadow-sm">
+                    <i class="bi bi-plus-circle me-1"></i> Cash In
+                </a>
+                <a href="{% url 'transactions:transaction_create' cashbook.id %}?type=CASH_OUT" class="btn btn-danger flex-fill fw-bold shadow-sm">
+                    <i class="bi bi-dash-circle me-1"></i> Cash Out
+                </a>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'cashbooks:cashbook_print' cashbook.id %}{% if params.start_date or params.end_date %}?start_date={{ params.start_date }}&end_date={{ params.end_date }}{% endif %}" target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">
+                    <i class="bi bi-printer me-1"></i> Print A4 Statement
+                </a>
+                <a href="{% url 'cashbooks:cashbook_edit' cashbook.id %}" class="btn btn-light btn-sm border" title="Settings">
+                    <i class="bi bi-gear"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ledger Card -->
+<div class="card-scb">
+    <!-- Filter Toolbar -->
+    <div class="card-header bg-light border-bottom p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-2 col-6">
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">All Types</option>
+                    <option value="CASH_IN" {% if params.type == 'CASH_IN' %}selected{% endif %}>Cash In (+)</option>
+                    <option value="CASH_OUT" {% if params.type == 'CASH_OUT' %}selected{% endif %}>Cash Out (-)</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 col-6">
+                <select name="category" class="form-select form-select-sm">
+                    <option value="">All Categories</option>
+                    {% for cat in available_categories %}
+                    <option value="{{ cat }}" {% if params.category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2 col-6">
+                <input type="date" name="start_date" value="{{ params.start_date }}" class="form-control form-control-sm" title="From Date">
+            </div>
+
+            <div class="col-md-2 col-6">
+                <input type="date" name="end_date" value="{{ params.end_date }}" class="form-control form-control-sm" title="To Date">
+            </div>
+
+            <div class="col-md-3 col-9">
+                <input type="text" name="q" value="{{ params.q }}" class="form-control form-control-sm" placeholder="Search description, voucher...">
+            </div>
+
+            <div class="col-md-1 col-3 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-primary flex-fill" title="Filter"><i class="bi bi-funnel"></i></button>
+                {% if params.type or params.category or params.start_date or params.end_date or params.q %}
+                <a href="{% url 'cashbooks:cashbook_detail' cashbook.id %}" class="btn btn-sm btn-outline-secondary" title="Reset"><i class="bi bi-x-lg"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Ledger Table -->
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-scb mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 110px;">Date</th>
+                        <th style="width: 120px;">Type</th>
+                        <th style="width: 160px;">Category</th>
+                        <th>Description & Details</th>
+                        <th style="width: 80px;">Receipt</th>
+                        <th class="text-end" style="width: 160px;">Amount (BDT)</th>
+                        <th class="text-end" style="width: 90px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td class="small">{{ t.date|date:"d M Y" }}</td>
+                        <td>
+                            {% if t.transaction_type == 'CASH_IN' %}
+                            <span class="badge cash-in-badge px-2 py-1"><i class="bi bi-arrow-down-left me-1"></i> Cash In</span>
+                            {% else %}
+                            <span class="badge cash-out-badge px-2 py-1"><i class="bi bi-arrow-up-right me-1"></i> Cash Out</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ t.category }}</span></td>
+                        <td>
+                            <div class="text-dark">{{ t.description|default:"-" }}</div>
+                            {% if t.reference_number %}
+                            <div class="small text-muted font-monospace"><i class="bi bi-tag me-1"></i>Ref: {{ t.reference_number }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if t.attachment %}
+                            <a href="{{ t.attachment.url }}" target="_blank" class="btn btn-sm btn-light border py-0 px-2" title="View Attachment">
+                                <i class="bi bi-paperclip text-primary"></i>
+                            </a>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold fs-6 {% if t.transaction_type == 'CASH_IN' %}text-success{% else %}text-danger{% endif %}">
+                            {% if t.transaction_type == 'CASH_IN' %}+{% else %}-{% endif %}{{ t.amount|bdt }}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'transactions:transaction_edit' t.id %}" class="btn btn-sm btn-light border py-0 px-2" title="Edit">
+                                    <i class="bi bi-pencil small text-muted"></i>
+                                </a>
+                                <a href="{% url 'transactions:transaction_delete' t.id %}" class="btn btn-sm btn-light border py-0 px-2 text-danger" title="Delete">
+                                    <i class="bi bi-trash small"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-journal-x display-6 d-block mb-2 text-secondary opacity-50"></i>
+                            No transactions found matching your filter criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}About Us - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-white border-bottom">
+    <div class="container py-4">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="badge bg-primary-subtle text-primary mb-2">Our Mission</span>
+                <h1 class="fw-bold mb-4">Empowering Bangladesh's Entrepreneurs with Next-Gen Cash Accounting</h1>
+                <p class="text-secondary leading-relaxed">
+                    SoftobroCashBook was conceived to address a critical gap in the Bangladesh SME market: reliable, real-time daily cashbook management with enterprise-grade data isolation. 
+                </p>
+                <p class="text-secondary leading-relaxed">
+                    Small and medium business owners often deal with manual paper khata books, risky shared spreadsheets, or accounting tools too convoluted for quick cash-in and cash-out recording. SoftobroCashBook pairs the speed and simplicity of CashBook with genuine multi-tenant database isolation.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="p-4 bg-light rounded-4 border">
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-shield-lock text-primary me-2"></i> Our Architectural Pillars</h5>
+                    <ul class="list-unstyled d-flex flex-column gap-3 mb-0">
+                        <li class="d-flex gap-3">
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            <div>
+                                <strong class="text-dark">Dedicated Tenant Database:</strong>
+                                <p class="text-secondary small mb-0">Every verified business owner gets an independent PostgreSQL database. Your records are never stored in a shared table.</p>
+                            </div>
+                        </li>
+                        <li class="d-flex gap-3">
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            <div>
+                                <strong class="text-dark">Bangladeshi Financial Flow:</strong>
+                                <p class="text-secondary small mb-0">Complete native support for BDT (৳) currency, bKash payments, and print layouts structured for Bangladeshi business conventions.</p>
+                            </div>
+                        </li>
+                        <li class="d-flex gap-3">
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            <div>
+                                <strong class="text-dark">Reliable Hosting & APIs:</strong>
+                                <p class="text-secondary small mb-0">Engineered for seamless deployment on cPanel hosting with Python Passenger, backed by Django REST Framework APIs for upcoming mobile apps.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

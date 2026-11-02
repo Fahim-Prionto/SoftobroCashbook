@@ -1,0 +1,85 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}{{ title }} - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-scb">
+            <div class="card-header">
+                <i class="bi bi-pencil-square text-primary me-2"></i> {{ title }}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold small">Plan Name <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Slug</label>
+                            {{ form.slug }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Description</label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Billing Cycle <span class="text-danger">*</span></label>
+                            {{ form.billing_cycle }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Duration (Days) <span class="text-danger">*</span></label>
+                            {{ form.duration_days }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Price in BDT (৳) <span class="text-danger">*</span></label>
+                            {{ form.price_bdt }}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Max Businesses <span class="text-danger">*</span></label>
+                            {{ form.max_businesses }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Max Cashbooks / Biz <span class="text-danger">*</span></label>
+                            {{ form.max_cashbooks_per_business }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Max Transactions (0 = Unlimited)</label>
+                            {{ form.max_transactions }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Features List</label>
+                            {{ form.features_list }}
+                            <div class="form-text small">Enter bullet points, one line per feature.</div>
+                        </div>
+
+                        <div class="col-md-6 form-check ms-3 mt-3">
+                            {{ form.is_active }}
+                            <label class="form-check-label fw-semibold small" for="{{ form.is_active.id_for_label }}">
+                                Plan is Active & Available for Registration
+                            </label>
+                        </div>
+                        <div class="col-md-5 form-check ms-3 mt-3">
+                            {{ form.is_popular }}
+                            <label class="form-check-label fw-semibold small" for="{{ form.is_popular.id_for_label }}">
+                                Highlight as "Popular / Recommended"
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <a href="{% url 'subscriptions:admin_plan_list' %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Save Subscription Plan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

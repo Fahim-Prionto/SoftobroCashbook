@@ -1,0 +1,129 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}{{ cashbook.name }} Report - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Cashbook Statement: {{ cashbook.name }}{% endblock %}
+
+{% block content %}
+<div class="card-scb mb-4 no-print">
+    <div class="card-header bg-light d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span class="fw-bold"><i class="bi bi-funnel me-1"></i> Filter Criteria</span>
+        <button class="btn btn-sm btn-primary btn-print-trigger" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i> Print A4 Statement
+        </button>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">From Date</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">To Date</label>
+                <input type="date" name="end_date" value="{{ end_date }}" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Type</label>
+                <select name="type" class="form-select form-select-sm">
+                    <option value="">All Types</option>
+                    <option value="CASH_IN" {% if selected_type == 'CASH_IN' %}selected{% endif %}>Cash In</option>
+                    <option value="CASH_OUT" {% if selected_type == 'CASH_OUT' %}selected{% endif %}>Cash Out</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-sm btn-primary flex-fill">Apply Filters</button>
+                <a href="{% url 'reports:cashbook_report' cashbook.id %}" class="btn btn-sm btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Print Document Container -->
+<div class="card-scb p-4 p-md-5 bg-white">
+    <!-- Header -->
+    <div class="print-header d-flex justify-content-between align-items-start border-bottom pb-3 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">{{ business.name }}</h3>
+            <h5 class="text-secondary mb-0">{{ cashbook.name }} &bull; Statement of Account</h5>
+            {% if business.phone %}<div class="small text-muted">Phone: {{ business.phone }}</div>{% endif %}
+        </div>
+        <div class="text-end">
+            <div class="small text-muted">Generated: {% now "d M Y, h:i A" %}</div>
+            <div class="small text-dark fw-bold">Period: {{ start_date|default:"Beginning" }} to {{ end_date|default:"Present" }}</div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive mb-4">
+        <table class="table print-table table-bordered mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 14%;">Date</th>
+                    <th style="width: 14%;">Type</th>
+                    <th style="width: 18%;">Category</th>
+                    <th>Description / Voucher</th>
+                    <th class="text-end" style="width: 18%;">Amount (BDT)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.date|date:"d M Y" }}</td>
+                    <td>
+                        {% if t.transaction_type == 'CASH_IN' %}
+                        <strong class="text-success">CASH IN (+)</strong>
+                        {% else %}
+                        <strong class="text-danger">CASH OUT (-)</strong>
+                        {% endif %}
+                    </td>
+                    <td>{{ t.category }}</td>
+                    <td>
+                        {{ t.description|default:"-" }}
+                        {% if t.reference_number %}<span class="text-muted small"> (Ref: {{ t.reference_number }})</span>{% endif %}
+                    </td>
+                    <td class="text-end fw-bold">
+                        {% if t.transaction_type == 'CASH_IN' %}+{% else %}-{% endif %}{{ t.amount|bdt }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No transactions in selected period.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="print-summary-box ms-auto" style="width: 320px; border: 2px solid #000; padding: 15px; border-radius: 4px;">
+        <div class="d-flex justify-content-between mb-1 small">
+            <span>Opening Balance:</span>
+            <span class="fw-bold">{{ cashbook.opening_balance|bdt }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-1 small text-success">
+            <span>Total Cash-In (+):</span>
+            <span class="fw-bold">+{{ total_in|bdt }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 small text-danger">
+            <span>Total Cash-Out (-):</span>
+            <span class="fw-bold">-{{ total_out|bdt }}</span>
+        </div>
+        <div class="d-flex justify-content-between border-top pt-2 fw-bold fs-6">
+            <span>Closing Balance:</span>
+            <span>{{ closing_balance|bdt }}</span>
+        </div>
+    </div>
+
+    <!-- Signatures -->
+    <div class="print-signatures d-flex justify-content-between pt-5 mt-5">
+        <div class="print-signature-box text-center" style="width: 180px; border-top: 1px solid #000; padding-top: 5px;">
+            <div class="small fw-bold">Prepared By</div>
+        </div>
+        <div class="print-signature-box text-center" style="width: 180px; border-top: 1px solid #000; padding-top: 5px;">
+            <div class="small fw-bold">Auditor / Accountant</div>
+        </div>
+        <div class="print-signature-box text-center" style="width: 180px; border-top: 1px solid #000; padding-top: 5px;">
+            <div class="small fw-bold">Owner Signature</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

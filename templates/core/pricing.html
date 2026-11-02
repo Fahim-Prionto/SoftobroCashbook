@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+{% block title %}Pricing Plans - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-white border-bottom">
+    <div class="container py-4 text-center">
+        <span class="badge bg-primary-subtle text-primary mb-2">Subscription Plans</span>
+        <h1 class="fw-bold mb-3">Straightforward Pricing for Bangladesh Businesses</h1>
+        <p class="text-secondary max-w-700 mx-auto">Choose a plan that fits your business scale. All subscriptions can be paid easily via bKash.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container py-4">
+        <div class="row g-4 justify-content-center align-items-stretch">
+            {% for plan in plans %}
+            <div class="col-md-6 col-lg-4">
+                <div class="pricing-card h-100 {% if plan.is_popular %}popular{% endif %}">
+                    {% if plan.is_popular %}
+                    <span class="popular-badge">Most Popular</span>
+                    {% endif %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="fw-bold mb-0 text-dark">{{ plan.name }}</h4>
+                            <span class="badge bg-light text-secondary border">{{ plan.get_billing_cycle_display }}</span>
+                        </div>
+                        <p class="text-muted small mb-4">{{ plan.description|default:"Designed for growing retail and wholesale businesses." }}</p>
+
+                        <div class="mb-4">
+                            <span class="price-currency">৳</span>
+                            <span class="price-amount">{{ plan.price_bdt|floatformat:0 }}</span>
+                            <span class="price-cycle">/ {{ plan.duration_days }} days</span>
+                        </div>
+
+                        <hr class="my-4 border-secondary border-opacity-10">
+
+                        <div class="mb-4">
+                            <div class="small fw-bold text-uppercase text-secondary mb-3">Plan Limits:</div>
+                            <ul class="list-unstyled d-flex flex-column gap-2 small">
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-check2 text-primary fw-bold"></i>
+                                    <span><strong>{{ plan.max_businesses }}</strong> Business{{ plan.max_businesses|pluralize:"es" }}</span>
+                                </li>
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-check2 text-primary fw-bold"></i>
+                                    <span><strong>{{ plan.max_cashbooks_per_business }}</strong> Cashbooks / Business</span>
+                                </li>
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-check2 text-primary fw-bold"></i>
+                                    <span>{% if plan.max_transactions == 0 %}Unlimited{% else %}{{ plan.max_transactions }}{% endif %} Transactions</span>
+                                </li>
+                                {% for feat in plan.get_features_list %}
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-check2 text-success fw-bold"></i>
+                                    <span>{{ feat }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'accounts:register' %}?plan={{ plan.id }}" class="btn {% if plan.is_popular %}btn-scb-primary{% else %}btn-outline-primary{% endif %} w-100 py-2 fw-semibold">
+                            Get Started With {{ plan.name }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-4">
+                <p class="text-muted">No plans currently active.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

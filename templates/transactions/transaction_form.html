@@ -1,0 +1,81 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}{{ title }} - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card-scb">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-cash-stack text-primary me-2"></i> {{ title }}</span>
+                <span class="badge bg-light text-dark border">{{ business.name }} &bull; {{ cashbook.name }}</span>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <!-- Transaction Type -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-dark">Transaction Type <span class="text-danger">*</span></label>
+                            {{ form.transaction_type }}
+                            {% if form.transaction_type.errors %}<div class="text-danger small mt-1">{{ form.transaction_type.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="col-md-7">
+                            <label class="form-label fw-bold small text-dark">Amount in BDT (৳) <span class="text-danger">*</span></label>
+                            {{ form.amount }}
+                            {% if form.amount.errors %}<div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <!-- Date -->
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold small text-dark">Transaction Date <span class="text-danger">*</span></label>
+                            {{ form.date }}
+                            {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <!-- Category -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-dark">Category <span class="text-danger">*</span></label>
+                            {{ form.category }}
+                            <div class="mt-2 d-flex flex-wrap gap-1">
+                                <span class="badge bg-light text-secondary border cursor-pointer" onclick="document.getElementById('{{ form.category.id_for_label }}').value='Sales Revenue';">Sales</span>
+                                <span class="badge bg-light text-secondary border cursor-pointer" onclick="document.getElementById('{{ form.category.id_for_label }}').value='Customer Payment';">Customer Payment</span>
+                                <span class="badge bg-light text-secondary border cursor-pointer" onclick="document.getElementById('{{ form.category.id_for_label }}').value='Salary & Wages';">Salary</span>
+                                <span class="badge bg-light text-secondary border cursor-pointer" onclick="document.getElementById('{{ form.category.id_for_label }}').value='Office / Shop Rent';">Rent</span>
+                                <span class="badge bg-light text-secondary border cursor-pointer" onclick="document.getElementById('{{ form.category.id_for_label }}').value='Utilities & Bills';">Utilities</span>
+                                <span class="badge bg-light text-secondary border cursor-pointer" onclick="document.getElementById('{{ form.category.id_for_label }}').value='Inventory Purchase';">Inventory</span>
+                                <span class="badge bg-light text-secondary border cursor-pointer" onclick="document.getElementById('{{ form.category.id_for_label }}').value='Owner Drawings';">Drawings</span>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Description / Memo Notes</label>
+                            {{ form.description }}
+                        </div>
+
+                        <!-- Reference Number -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Voucher / Memo / Invoice #</label>
+                            {{ form.reference_number }}
+                        </div>
+
+                        <!-- Attachment -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Attach Receipt or Bill</label>
+                            {{ form.attachment }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <a href="{% url 'cashbooks:cashbook_detail' cashbook.id %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Save Transaction</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

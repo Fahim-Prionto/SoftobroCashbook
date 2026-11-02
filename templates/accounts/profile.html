@@ -1,0 +1,81 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}My Profile - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Account Profile{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card-scb">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-person-circle text-primary fs-5"></i>
+                <span>Profile Information</span>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Business / Organization Name</label>
+                            {{ form.business_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Phone Number</label>
+                            {{ form.phone_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Email Address</label>
+                            <input type="text" class="form-control" value="{{ user.email }}" disabled readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Avatar / Profile Picture</label>
+                            {{ form.avatar }}
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card-scb">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-key-fill text-warning fs-5"></i>
+                <span>Change Password</span>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'accounts:change_password' %}">
+                    {% csrf_token %}
+                    {% for field in password_form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-outline-warning w-100 fw-semibold text-dark">
+                            Update Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

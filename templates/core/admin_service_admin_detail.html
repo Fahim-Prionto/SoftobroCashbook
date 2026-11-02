@@ -1,0 +1,176 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}{{ admin_user.username }} - Service Admin Details - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Service Admin: {{ admin_user.business_name|default:admin_user.username }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <!-- Account Overview Card -->
+        <div class="card-scb mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-person-badge text-primary me-2"></i> Account Overview</span>
+                <span class="badge {% if admin_user.status == 'ACTIVE' %}bg-success{% elif admin_user.status == 'PENDING_APPROVAL' %}bg-warning text-dark{% else %}bg-danger{% endif %} px-3 py-1">
+                    {{ admin_user.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="text-muted small">Registered Business Name</div>
+                        <div class="fw-bold fs-5 text-dark">{{ admin_user.business_name|default:"Not specified" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Owner Name</div>
+                        <div class="fw-bold fs-5 text-dark">{{ admin_user.get_full_name|default:admin_user.username }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Email Address</div>
+                        <div class="text-dark">{{ admin_user.email }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Phone Number</div>
+                        <div class="text-dark">{{ admin_user.phone_number|default:"-" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Registered Date</div>
+                        <div class="text-dark">{{ admin_user.date_joined|date:"d M Y, h:i A" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Last Login</div>
+                        <div class="text-dark">{{ admin_user.last_login|date:"d M Y, h:i A"|default:"Never logged in" }}</div>
+                    </div>
+                </div>
+
+                <!-- Status Management Form -->
+                <form method="post" action="{% url 'core:admin_service_admin_status' admin_user.id %}" class="d-flex align-items-center gap-2 pt-3 border-top">
+                    {% csrf_token %}
+                    <label class="form-label small fw-bold mb-0 text-dark">Change Account Status:</label>
+                    <select name="status" class="form-select form-select-sm" style="width: 180px;">
+                        <option value="ACTIVE" {% if admin_user.status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                        <option value="PENDING_APPROVAL" {% if admin_user.status == 'PENDING_APPROVAL' %}selected{% endif %}>Pending Approval</option>
+                        <option value="SUSPENDED" {% if admin_user.status == 'SUSPENDED' %}selected{% endif %}>Suspended</option>
+                        <option value="DEACTIVATED" {% if admin_user.status == 'DEACTIVATED' %}selected{% endif %}>Deactivated</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Update Status</button>
+
+                    <a href="{% url 'core:admin_service_admin_delete' admin_user.id %}" class="btn btn-sm btn-outline-danger ms-auto">
+                        <i class="bi bi-trash me-1"></i> Delete Admin & Tenant DB
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Payments History for this Service Admin -->
+        <div class="card-scb">
+            <div class="card-header">
+                <i class="bi bi-clock-history text-primary me-2"></i> Payment Submissions
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-scb mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Plan</th>
+                                <th>Amount</th>
+                                <th>TrxID</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in payments %}
+                            <tr>
+                                <td class="small">{{ p.payment_date|date:"d M Y" }}</td>
+                                <td>{{ p.plan.name }}</td>
+                                <td class="fw-bold text-success">{{ p.amount_bdt|bdt }}</td>
+                                <td><span class="badge bg-light text-danger font-monospace border">{{ p.bkash_transaction_id }}</span></td>
+                                <td>
+                                    <span class="badge {% if p.status == 'APPROVED' %}bg-success-subtle text-success{% elif p.status == 'PENDING' %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">
+                                        {{ p.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'payments:admin_payment_detail' p.id %}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;">
+                                        Review
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center py-3 text-muted small">No payment records found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tenant & Subscription Info -->
+    <div class="col-lg-4">
+        <!-- Tenant Database Card -->
+        <div class="card-scb mb-4">
+            <div class="card-header">
+                <i class="bi bi-database text-teal me-2"></i> Isolated Tenant Database
+            </div>
+            <div class="card-body">
+                {% if tenant %}
+                <div class="mb-2">
+                    <span class="text-muted small">Database Name:</span>
+                    <div class="font-monospace fw-bold text-primary">{{ tenant.db_name }}</div>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted small">Tenant ID:</span>
+                    <div class="font-monospace">{{ tenant.tenant_id }}</div>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted small">Status:</span>
+                    <div>
+                        <span class="badge {% if tenant.status == 'PROVISIONED' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ tenant.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <a href="{% url 'tenants:admin_tenant_detail' tenant.id %}" class="btn btn-sm btn-outline-secondary w-100">
+                    View Tenant Connection Details
+                </a>
+                {% else %}
+                <p class="text-muted small mb-0">No tenant database provisioned yet. It will be created when a bKash payment is approved.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Subscription Card -->
+        <div class="card-scb">
+            <div class="card-header">
+                <i class="bi bi-award text-primary me-2"></i> Subscription Details
+            </div>
+            <div class="card-body">
+                {% if subscription %}
+                <div class="mb-2">
+                    <span class="text-muted small">Plan:</span>
+                    <div class="fw-bold text-dark">{{ subscription.plan.name }}</div>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted small">Validity Period:</span>
+                    <div class="small">{{ subscription.start_date|date:"d M Y"|default:"-" }} to {{ subscription.end_date|date:"d M Y"|default:"-" }}</div>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted small">Remaining:</span>
+                    <div class="fw-bold {% if subscription.remaining_days < 5 %}text-danger{% else %}text-success{% endif %}">
+                        {{ subscription.remaining_days }} Days
+                    </div>
+                </div>
+                <div>
+                    <span class="text-muted small">Limits:</span>
+                    <div class="small">{{ subscription.plan.max_businesses }} Biz, {{ subscription.plan.max_cashbooks_per_business }} CB/Biz</div>
+                </div>
+                {% else %}
+                <p class="text-muted small mb-0">No subscription record assigned.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

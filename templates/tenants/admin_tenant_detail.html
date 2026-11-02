@@ -1,0 +1,82 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Tenant Details: {{ tenant.tenant_id }} - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Tenant: {{ tenant.tenant_id }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card-scb mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-database me-2 text-primary"></i> Tenant Provisioning Profile</span>
+                <span class="badge {% if tenant.status == 'PROVISIONED' %}bg-success{% elif tenant.status == 'ERROR' %}bg-danger{% else %}bg-warning text-dark{% endif %} px-3 py-1">
+                    {{ tenant.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="text-muted small">Tenant Identifier</div>
+                        <div class="font-monospace fw-bold fs-5 text-primary">{{ tenant.tenant_id }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">PostgreSQL Database Name</div>
+                        <div class="font-monospace fw-bold fs-5 text-dark">{{ tenant.db_name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Assigned Service Admin</div>
+                        <div class="fw-bold fs-6 text-dark">{{ tenant.service_admin.username }} ({{ tenant.service_admin.email }})</div>
+                        <div class="small text-muted">{{ tenant.service_admin.business_name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Host / Port</div>
+                        <div class="fw-bold text-dark">{{ tenant.db_host }}:{{ tenant.db_port }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Provisioned Timestamp</div>
+                        <div class="small text-dark">{{ tenant.provisioned_at|date:"d M Y, h:i A"|default:"Pending" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Last Activity</div>
+                        <div class="small text-dark">{{ tenant.last_accessed_at|date:"d M Y, h:i A"|default:"None" }}</div>
+                    </div>
+                </div>
+
+                {% if tenant.error_message %}
+                <div class="alert alert-danger">
+                    <strong>Error Message:</strong> {{ tenant.error_message }}
+                </div>
+                {% endif %}
+
+                <div class="d-flex gap-2">
+                    <a href="{% url 'tenants:admin_tenant_reprovision' tenant.id %}" class="btn btn-outline-warning" onclick="return confirm('Do you want to re-run tenant migrations on this database?');">
+                        <i class="bi bi-arrow-repeat me-1"></i> Re-Run Migrations
+                    </a>
+                    <a href="{% url 'tenants:admin_tenant_delete' tenant.id %}" class="btn btn-outline-danger ms-auto">
+                        <i class="bi bi-trash me-1"></i> Safe Drop Database
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card-scb">
+            <div class="card-header">
+                <i class="bi bi-shield-lock me-2 text-primary"></i> Isolation Metadata
+            </div>
+            <div class="card-body small text-secondary">
+                <p>
+                    <strong>Database Credentials Security:</strong> Tenant passwords are encrypted using symmetric Fernet encryption and stored securely in the central metadata store.
+                </p>
+                <p>
+                    <strong>Dynamic Routing:</strong> When the authenticated Service Admin logs in, <code>TenantMiddleware</code> securely resolves this tenant and attaches the connection alias.
+                </p>
+                <hr>
+                <a href="{% url 'tenants:admin_tenant_list' %}" class="btn btn-sm btn-light w-100">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Tenants
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

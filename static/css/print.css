@@ -1,0 +1,136 @@
+/* ========================================================
+   SoftobroCashBook - A4 Print Stylesheet
+   ======================================================== */
+
+@media print {
+    /* Hide everything that should not appear on print */
+    .app-sidebar,
+    .app-topbar,
+    .no-print,
+    .btn,
+    .pagination,
+    .card-header .btn,
+    nav,
+    footer,
+    .dropdown,
+    .alert {
+        display: none !important;
+    }
+
+    body, .app-main, .app-content {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: #000000 !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-size: 11pt !important;
+    }
+
+    .app-wrapper {
+        display: block !important;
+    }
+
+    @page {
+        size: A4 portrait;
+        margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+    }
+
+    .print-container {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .print-header {
+        border-bottom: 2px solid #000;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+        display: block !important;
+    }
+
+    .print-title {
+        font-size: 18pt !important;
+        font-weight: bold !important;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+
+    .print-subtitle {
+        font-size: 12pt !important;
+        color: #444 !important;
+    }
+
+    .print-meta-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        margin-bottom: 20px !important;
+        font-size: 10pt !important;
+    }
+
+    .print-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 25px !important;
+    }
+
+    .print-table th, 
+    .print-table td {
+        border: 1px solid #333 !important;
+        padding: 6px 10px !important;
+        font-size: 10pt !important;
+    }
+
+    .print-table th {
+        background-color: #f0f0f0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        font-weight: bold !important;
+        text-align: left;
+    }
+
+    .print-table td.text-end,
+    .print-table th.text-end {
+        text-align: right !important;
+    }
+
+    .print-summary-box {
+        border: 2px solid #000 !important;
+        padding: 12px 16px !important;
+        margin-top: 20px !important;
+        width: 60% !important;
+        margin-left: auto !important;
+        page-break-inside: avoid;
+    }
+
+    .print-summary-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        padding: 4px 0 !important;
+        font-size: 10.5pt !important;
+    }
+
+    .print-summary-row.total {
+        border-top: 1.5px solid #000 !important;
+        margin-top: 5px !important;
+        padding-top: 6px !important;
+        font-weight: bold !important;
+        font-size: 12pt !important;
+    }
+
+    .print-signatures {
+        margin-top: 60px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        page-break-inside: avoid;
+    }
+
+    .print-signature-box {
+        width: 200px !important;
+        border-top: 1px solid #000 !important;
+        text-align: center !important;
+        padding-top: 5px !important;
+        font-size: 9.5pt !important;
+    }
+}
+

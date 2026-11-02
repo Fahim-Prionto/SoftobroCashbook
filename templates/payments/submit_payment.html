@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+{% block title %}Submit bKash Payment - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white">
+                    <!-- Header with bKash Brand Color -->
+                    <div class="p-4 p-md-5 text-white" style="background: linear-gradient(135deg, #e2136e 0%, #b30f57 100%);">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-white text-danger fw-bold px-3 py-1 rounded-pill">
+                                {% if is_renewal %}Subscription Renewal{% else %}Step 2 of 2: Payment Verification{% endif %}
+                            </span>
+                            <span class="fs-4 fw-bold">bKash Payment</span>
+                        </div>
+                        <h2 class="fw-bold mb-1">Plan: {{ plan.name }}</h2>
+                        <div class="fs-4">
+                            Payable Amount: <strong class="text-warning">{{ plan.price_bdt|bdt }}</strong>
+                            <span class="fs-6 opacity-75">({{ plan.duration_days }} Days Duration)</span>
+                        </div>
+                    </div>
+
+                    <div class="p-4 p-md-5">
+                        <!-- Step-by-Step Instructions -->
+                        <div class="p-3 rounded-3 bg-light border mb-4">
+                            <h6 class="fw-bold text-dark d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-info-circle-fill text-danger"></i> How to complete your payment:
+                            </h6>
+                            <ol class="small text-secondary mb-0 ps-3">
+                                <li class="mb-1">Open your <strong>bKash app</strong> or dial <strong>*247#</strong>.</li>
+                                <li class="mb-1">
+                                    Select <strong>Send Money</strong> or <strong>Payment</strong> to the company number:
+                                    <span class="badge bg-dark text-warning font-monospace fs-6 px-2 py-1 ms-1" id="bkashNum">
+                                        {{ BKASH_COMPANY_NUMBER }}
+                                    </span>
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2 py-0 px-2" id="copyBtn" onclick="copyToClipboard('{{ BKASH_COMPANY_NUMBER }}', 'copyBtn')">
+                                        <i class="bi bi-clipboard"></i> Copy Number
+                                    </button>
+                                </li>
+                                <li class="mb-1">Enter exact amount: <strong>{{ plan.price_bdt|bdt }}</strong>.</li>
+                                <li>After payment is successful, copy the <strong>TrxID</strong> from the bKash SMS and enter it below.</li>
+                            </ol>
+                        </div>
+
+                        <!-- Payment Form -->
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger py-2 small">
+                                {% for error in form.non_field_errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-dark">
+                                    bKash Transaction ID (TrxID) <span class="text-danger">*</span>
+                                </label>
+                                {{ form.bkash_transaction_id }}
+                                {% if form.bkash_transaction_id.errors %}
+                                <div class="text-danger small mt-1">{{ form.bkash_transaction_id.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small">e.g. 9J4K2L8A10 (Found in bKash confirmation SMS)</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-dark">
+                                    Sender bKash Mobile Number <span class="text-danger">*</span>
+                                </label>
+                                {{ form.sender_bkash_number }}
+                                {% if form.sender_bkash_number.errors %}
+                                <div class="text-danger small mt-1">{{ form.sender_bkash_number.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small">The 11-digit mobile number you sent money from</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-dark">
+                                    Payment Screenshot <span class="text-muted fw-normal">(Optional)</span>
+                                </label>
+                                {{ form.payment_screenshot }}
+                                {% if form.payment_screenshot.errors %}
+                                <div class="text-danger small mt-1">{{ form.payment_screenshot.errors.0 }}</div>
+                                {% endif %}
+                                <div class="form-text small">Upload receipt or screenshot to speed up verification</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold py-3 shadow" style="background-color: #e2136e; border-color: #e2136e;">
+                                Submit for Verification <i class="bi bi-shield-check ms-2"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

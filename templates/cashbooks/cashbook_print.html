@@ -1,0 +1,125 @@
+{% load static currency_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ business.name }} - {{ cashbook.name }} Statement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/print.css' %}">
+    <style>
+        body { background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        .print-sheet {
+            background: #fff;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+        @media print {
+            body { background: #fff !important; }
+            .print-sheet { box-shadow: none !important; margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print text-center py-3 bg-dark text-white sticky-top d-flex justify-content-center align-items-center gap-3">
+        <span><i class="bi bi-printer"></i> A4 Cashbook Statement Preview</span>
+        <button class="btn btn-sm btn-primary px-3 fw-bold btn-print-trigger" onclick="window.print()">
+            Print Document / Save PDF
+        </button>
+        <button class="btn btn-sm btn-outline-light" onclick="window.close()">Close Window</button>
+    </div>
+
+    <div class="print-sheet">
+        <!-- Print Header -->
+        <div class="print-header d-flex justify-content-between align-items-start border-bottom pb-3 mb-4">
+            <div>
+                <h2 class="print-title fw-bold text-dark mb-1">{{ business.name }}</h2>
+                <div class="print-subtitle text-secondary">{{ cashbook.name }} &bull; Transaction Statement</div>
+                {% if business.address %}<div class="small text-muted">{{ business.address }}</div>{% endif %}
+                {% if business.phone %}<div class="small text-muted">Phone: {{ business.phone }}</div>{% endif %}
+            </div>
+            <div class="text-end">
+                <div class="badge bg-light text-dark border px-3 py-1 mb-2 font-monospace">SoftobroCashBook</div>
+                <div class="small text-muted">Generated: {% now "d M Y, h:i A" %}</div>
+                <div class="small text-dark fw-bold">
+                    Period: {% if start_date %}{{ start_date }}{% else %}Start{% endif %} to {% if end_date %}{{ end_date }}{% else %}Present{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Ledger Table -->
+        <table class="print-table table table-bordered mb-4">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Date</th>
+                    <th style="width: 15%;">Type</th>
+                    <th style="width: 20%;">Category</th>
+                    <th style="width: 30%;">Description / Reference</th>
+                    <th class="text-end" style="width: 20%;">Amount (BDT)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.date|date:"d M Y" }}</td>
+                    <td>
+                        {% if t.transaction_type == 'CASH_IN' %}
+                        <strong class="text-success">CASH IN (+)</strong>
+                        {% else %}
+                        <strong class="text-danger">CASH OUT (-)</strong>
+                        {% endif %}
+                    </td>
+                    <td>{{ t.category }}</td>
+                    <td>
+                        {{ t.description|default:"-" }}
+                        {% if t.reference_number %}<span class="text-muted small"> (Ref: {{ t.reference_number }})</span>{% endif %}
+                    </td>
+                    <td class="text-end fw-bold">
+                        {% if t.transaction_type == 'CASH_IN' %}+{% else %}-{% endif %}{{ t.amount|bdt }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-3 text-muted">No transactions in this period.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Summary Calculation Box -->
+        <div class="print-summary-box ms-auto" style="width: 320px; border: 2px solid #000; padding: 15px; border-radius: 4px;">
+            <div class="d-flex justify-content-between mb-1 small">
+                <span>Opening Balance:</span>
+                <span class="fw-bold">{{ cashbook.opening_balance|bdt }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1 small text-success">
+                <span>Total Cash-In (+):</span>
+                <span class="fw-bold">+{{ total_in|bdt }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2 small text-danger">
+                <span>Total Cash-Out (-):</span>
+                <span class="fw-bold">-{{ total_out|bdt }}</span>
+            </div>
+            <div class="d-flex justify-content-between border-top pt-2 fw-bold fs-6">
+                <span>Closing Balance:</span>
+                <span>{{ closing_balance|bdt }}</span>
+            </div>
+        </div>
+
+        <!-- Signature Lines -->
+        <div class="print-signatures d-flex justify-content-between pt-5 mt-5">
+            <div class="print-signature-box text-center" style="width: 200px; border-top: 1px solid #000; padding-top: 5px;">
+                <div class="small fw-bold">Prepared By</div>
+            </div>
+            <div class="print-signature-box text-center" style="width: 200px; border-top: 1px solid #000; padding-top: 5px;">
+                <div class="small fw-bold">Verified / Accountant</div>
+            </div>
+            <div class="print-signature-box text-center" style="width: 200px; border-top: 1px solid #000; padding-top: 5px;">
+                <div class="small fw-bold">Proprietor / Authorized</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

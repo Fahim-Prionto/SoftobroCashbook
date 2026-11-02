@@ -1,0 +1,52 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}{{ title }} - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card-scb">
+            <div class="card-header">
+                <i class="bi bi-journal-plus text-primary me-2"></i> {{ title }}
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info py-2 small mb-3">
+                    <strong>Associated Business:</strong> {{ business.name }}
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Cashbook Name <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                            <div class="form-text small">e.g. Daily Shop Cash Drawer, Petty Cash, City Bank Account</div>
+                            {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Opening Starting Balance in BDT (৳)</label>
+                            {{ form.opening_balance }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Status</label>
+                            {{ form.status }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Description / Purpose</label>
+                            {{ form.description }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <a href="{% url 'businesses:business_detail' business.id %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Save Cashbook</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

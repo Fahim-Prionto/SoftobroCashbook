@@ -1,0 +1,58 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}{{ title }} - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card-scb">
+            <div class="card-header">
+                <i class="bi bi-buildings text-primary me-2"></i> {{ title }}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Business / Outlet Name <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Contact Phone Number</label>
+                            {{ form.phone }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Email Address</label>
+                            {{ form.email }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Office / Physical Address</label>
+                            {{ form.address }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Initial Opening Balance in BDT (৳)</label>
+                            {{ form.opening_balance }}
+                            <div class="form-text small">Starting capital or cash at hand for this business.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Description / Notes</label>
+                            {{ form.description }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <a href="{% url 'businesses:business_list' %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Save Business</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}Verify Payment #{{ payment.id }} - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Verify Payment #{{ payment.id }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Payment & User Info -->
+    <div class="col-lg-7">
+        <div class="card-scb mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-receipt me-2 text-primary"></i> Payment Details</span>
+                <span class="badge {% if payment.status == 'APPROVED' %}bg-success{% elif payment.status == 'PENDING' %}bg-warning text-dark{% else %}bg-danger{% endif %} px-3 py-1">
+                    {{ payment.get_status_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="text-muted small">Subscription Plan</div>
+                        <div class="fw-bold fs-5 text-dark">{{ payment.plan.name }}</div>
+                        <div class="small text-muted">{{ payment.plan.duration_days }} days duration</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Payable Amount</div>
+                        <div class="fw-bold fs-4 text-success">{{ payment.amount_bdt|bdt }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">bKash TrxID</div>
+                        <div class="fw-bold font-monospace fs-5 text-danger">{{ payment.bkash_transaction_id }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Sender bKash Number</div>
+                        <div class="fw-bold fs-5 text-dark">{{ payment.sender_bkash_number }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Submitted Timestamp</div>
+                        <div class="small text-dark">{{ payment.payment_date|date:"d M Y, h:i A" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Renewal Payment?</div>
+                        <div class="small fw-bold">{% if payment.is_renewal %}<span class="text-primary">Yes, Renewal</span>{% else %}New Subscription{% endif %}</div>
+                    </div>
+                </div>
+
+                {% if payment.payment_screenshot %}
+                <div class="border rounded p-3 bg-light">
+                    <div class="fw-bold small text-muted mb-2">Attached Receipt / Screenshot:</div>
+                    <a href="{{ payment.payment_screenshot.url }}" target="_blank">
+                        <img src="{{ payment.payment_screenshot.url }}" alt="bKash Proof" class="img-fluid rounded border shadow-sm" style="max-height: 350px;">
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Service Admin Profile -->
+        <div class="card-scb">
+            <div class="card-header">
+                <i class="bi bi-person-badge me-2 text-primary"></i> Service Admin Account
+            </div>
+            <div class="card-body">
+                <div class="row g-2 small">
+                    <div class="col-4 text-muted">Owner Name:</div>
+                    <div class="col-8 fw-bold">{{ user.get_full_name|default:user.username }}</div>
+
+                    <div class="col-4 text-muted">Business Name:</div>
+                    <div class="col-8 fw-bold">{{ user.business_name|default:"Not specified" }}</div>
+
+                    <div class="col-4 text-muted">Email:</div>
+                    <div class="col-8">{{ user.email }}</div>
+
+                    <div class="col-4 text-muted">Phone:</div>
+                    <div class="col-8">{{ user.phone_number }}</div>
+
+                    <div class="col-4 text-muted">User Status:</div>
+                    <div class="col-8"><span class="badge bg-light text-dark border">{{ user.get_status_display }}</span></div>
+
+                    <div class="col-4 text-muted">Tenant DB Status:</div>
+                    <div class="col-8">
+                        {% if tenant %}
+                        <span class="badge bg-success-subtle text-success">{{ tenant.db_name }} ({{ tenant.get_status_display }})</span>
+                        {% else %}
+                        <span class="badge bg-warning-subtle text-warning">Not yet provisioned (Will provision on approval)</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Decision Form -->
+    <div class="col-lg-5">
+        <div class="card-scb">
+            <div class="card-header bg-light">
+                <i class="bi bi-shield-check me-2 text-primary"></i> Verification Decision
+            </div>
+            <div class="card-body">
+                {% if payment.status == 'PENDING' %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Action Choice</label>
+                        <div class="p-3 border rounded-3 bg-light mb-2">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="action" id="actionApprove" value="APPROVE" checked>
+                                <label class="form-check-label fw-bold text-success" for="actionApprove">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Approve Payment & Activate Tenant
+                                </label>
+                                <div class="small text-muted ms-4">
+                                    Marks payment approved, extends/activates subscription, provisions dedicated PostgreSQL database, and notifies user.
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="action" id="actionReject" value="REJECT">
+                                <label class="form-check-label fw-bold text-danger" for="actionReject">
+                                    <i class="bi bi-x-circle-fill me-1"></i> Reject Payment
+                                </label>
+                                <div class="small text-muted ms-4">
+                                    Rejects transaction due to invalid TrxID, mismatched amount, or missing payment.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small">Admin Notes / Remarks</label>
+                        {{ form.admin_notes }}
+                        <div class="form-text small">Internal remarks or reason for rejection sent to customer.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" onclick="return confirm('Are you sure you want to proceed with this verification decision?');">
+                        Execute Verification Decision
+                    </button>
+                </form>
+                {% else %}
+                <div class="alert alert-secondary mb-0">
+                    <i class="bi bi-info-circle-fill me-2"></i> This payment was already processed on <strong>{{ payment.approval_date|date:"d M Y, h:i A" }}</strong> by <strong>{{ payment.approved_by.username|default:"Admin" }}</strong>.
+                    {% if payment.admin_notes %}
+                    <div class="mt-2 small"><strong>Notes:</strong> {{ payment.admin_notes }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
