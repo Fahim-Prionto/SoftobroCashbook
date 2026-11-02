@@ -90,20 +90,25 @@ class LoginForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        username_or_email = cleaned_data.get('username')
+        username_or_email = (cleaned_data.get('username') or '').strip()
         password = cleaned_data.get('password')
 
         if username_or_email and password:
+            # 1. Try authenticating directly by username
             user = authenticate(username=username_or_email, password=password)
+
+            # 2. If direct username auth fails and input looks like an email, test candidates
             if not user and '@' in username_or_email:
-                try:
-                    user_obj = User.objects.get(email__iexact=username_or_email)
-                    user = authenticate(username=user_obj.username, password=password)
-                except User.DoesNotExist:
-                    user = None
+                candidates = User.objects.filter(email__iexact=username_or_email).order_by('-is_superuser', '-date_joined')
+                for candidate in candidates:
+                    auth_user = authenticate(username=candidate.username, password=password)
+                    if auth_user:
+                        user = auth_user
+                        break
 
             if not user:
                 raise forms.ValidationError("Invalid username/email or password.")
+
             cleaned_data['user'] = user
 
         return cleaned_data

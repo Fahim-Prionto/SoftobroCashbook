@@ -214,7 +214,7 @@ def admin_service_admin_delete_view(request, user_id):
         # Safely delete tenant database first
         if tenant:
             try:
-                from accounts.views import get_client_ip
+                from core.utils import get_client_ip
                 delete_tenant_database(
                     tenant,
                     actor=request.user,
@@ -226,7 +226,7 @@ def admin_service_admin_delete_view(request, user_id):
 
         # Audit Log
         try:
-            from accounts.views import get_client_ip
+            from core.utils import get_client_ip
             AuditLog.objects.create(
                 actor=request.user,
                 action=AuditLog.Action.USER_STATUS_CHANGE,
