@@ -83,9 +83,17 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small text-dark">Confirm Password <span class="text-danger">*</span></label>
-                                {{ form.password_confirm }}
-                                {% if form.password_confirm.errors %}
-                                <div class="text-danger small mt-1">{{ form.password_confirm.errors.0 }}</div>
+                                {{ form.confirm_password }}
+                                {% if form.confirm_password.errors %}
+                                <div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small text-dark">Select Subscription Plan <span class="text-danger">*</span></label>
+                                {{ form.plan }}
+                                {% if form.plan.errors %}
+                                <div class="text-danger small mt-1">{{ form.plan.errors.0 }}</div>
                                 {% endif %}
                             </div>
 

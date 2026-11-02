@@ -64,3 +64,4 @@ class Command(BaseCommand):
         except Exception as e:
             tenant.delete()
             self.stdout.write(self.style.WARNING(f"Tenant record purged (notice: {e})"))
+
