@@ -69,3 +69,4 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f"Successfully checked subscriptions. Expired: {count_expired}, Warned: {count_warned}"
         ))
+
