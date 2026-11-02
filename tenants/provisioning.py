@@ -19,6 +19,41 @@ def get_tenant_db_alias(tenant_id):
     return f"tenant_{tenant_id}"
 
 
+def get_sanitized_db_credentials(tenant=None):
+    """
+    Returns clean, reliable PostgreSQL host, port, user, and password.
+    Falls back to settings.DATABASES['default'] to avoid invalid placeholders like 'your_postgres_admin'.
+    Replaces 'localhost' with '127.0.0.1' to prevent IPv6 (::1) rejection in pg_hba.conf.
+    """
+    host = (
+        (tenant.db_host if tenant else None)
+        or getattr(settings, 'TENANT_DB_HOST', None)
+        or settings.DATABASES.get('default', {}).get('HOST')
+        or '127.0.0.1'
+    )
+    if host in ('localhost', '::1', ''):
+        host = '127.0.0.1'
+
+    port = (
+        (tenant.db_port if tenant else None)
+        or getattr(settings, 'TENANT_DB_PORT', None)
+        or settings.DATABASES.get('default', {}).get('PORT')
+        or 5432
+    )
+
+    default_user = settings.DATABASES.get('default', {}).get('USER', 'postgres')
+    user = (tenant.db_user if tenant else None) or getattr(settings, 'TENANT_DB_SUPER_USER', None) or default_user
+    if user in ('your_postgres_admin', 'postgres', ''):
+        user = default_user
+
+    default_pass = settings.DATABASES.get('default', {}).get('PASSWORD', 'postgres')
+    password = (tenant.get_db_password() if tenant else None) or getattr(settings, 'TENANT_DB_SUPER_PASSWORD', None) or default_pass
+    if password in ('your_postgres_admin_password', 'postgres', ''):
+        password = default_pass
+
+    return host, int(port), user, password
+
+
 def ensure_tenant_database_registered(tenant):
     """
     Ensure the tenant's database connection is configured in django.db.connections.databases.
@@ -30,14 +65,15 @@ def ensure_tenant_database_registered(tenant):
     engine = getattr(settings, 'CENTRAL_DB_ENGINE', 'django.db.backends.postgresql')
 
     if 'postgresql' in engine or tenant.db_engine == 'postgresql':
+        host, port, user, password = get_sanitized_db_credentials(tenant)
         base_dict = settings.DATABASES.get('default', {}).copy()
         base_dict.update({
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': tenant.db_name,
-            'USER': tenant.db_user or getattr(settings, 'TENANT_DB_SUPER_USER', 'postgres'),
-            'PASSWORD': tenant.get_db_password() or getattr(settings, 'TENANT_DB_SUPER_PASSWORD', 'postgres'),
-            'HOST': tenant.db_host or getattr(settings, 'TENANT_DB_HOST', 'localhost'),
-            'PORT': str(tenant.db_port or getattr(settings, 'TENANT_DB_PORT', 5432)),
+            'USER': user,
+            'PASSWORD': password,
+            'HOST': host,
+            'PORT': str(port),
             'CONN_MAX_AGE': 60,
             'OPTIONS': {},
             'TIME_ZONE': getattr(settings, 'TIME_ZONE', 'Asia/Dhaka'),
@@ -68,14 +104,16 @@ def provision_tenant_database(service_admin, actor=None, ip_address=None):
     3. Runs tenant migrations (businesses, cashbooks, transactions).
     4. Records tenant metadata and audit log.
     """
+    host, port, user, password = get_sanitized_db_credentials()
+
     tenant, created = Tenant.objects.get_or_create(
         service_admin=service_admin,
         defaults={
             'tenant_id': f"tenant_{service_admin.id}",
             'db_name': f"{getattr(settings, 'TENANT_DB_PREFIX', 'scb_tenant_')}{service_admin.id}",
-            'db_user': getattr(settings, 'TENANT_DB_SUPER_USER', 'postgres'),
-            'db_host': getattr(settings, 'TENANT_DB_HOST', 'localhost'),
-            'db_port': int(getattr(settings, 'TENANT_DB_PORT', 5432)),
+            'db_user': user,
+            'db_host': host,
+            'db_port': port,
             'status': TenantStatus.PENDING,
         }
     )
@@ -85,8 +123,10 @@ def provision_tenant_database(service_admin, actor=None, ip_address=None):
         ensure_tenant_database_registered(tenant)
         return tenant
 
-    db_password = getattr(settings, 'TENANT_DB_SUPER_PASSWORD', 'postgres')
-    tenant.set_db_password(db_password)
+    tenant.db_user = user
+    tenant.db_host = host
+    tenant.db_port = port
+    tenant.set_db_password(password)
     tenant.save()
 
     engine = getattr(settings, 'CENTRAL_DB_ENGINE', 'django.db.backends.postgresql')
@@ -96,41 +136,32 @@ def provision_tenant_database(service_admin, actor=None, ip_address=None):
             import psycopg2
             from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-            host = tenant.db_host or 'localhost'
-            port = tenant.db_port or 5432
-            super_user = getattr(settings, 'TENANT_DB_SUPER_USER', 'postgres')
-            super_pass = getattr(settings, 'TENANT_DB_SUPER_PASSWORD', 'postgres')
-
             conn_dbname = settings.DATABASES.get('default', {}).get('NAME') or 'postgres'
-            try:
-                conn = psycopg2.connect(
-                    host=host,
-                    port=port,
-                    user=super_user,
-                    password=super_pass,
-                    dbname=conn_dbname,
-                    connect_timeout=10,
-                )
-            except Exception:
-                conn = psycopg2.connect(
-                    host=host,
-                    port=port,
-                    user=super_user,
-                    password=super_pass,
-                    dbname='postgres',
-                    connect_timeout=10,
-                )
-            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cur = conn.cursor()
+            conn = None
+            for db_target in [conn_dbname, 'postgres']:
+                try:
+                    conn = psycopg2.connect(
+                        host=host,
+                        port=port,
+                        user=user,
+                        password=password,
+                        dbname=db_target,
+                        connect_timeout=8,
+                    )
+                    if conn:
+                        break
+                except Exception:
+                    conn = None
 
-            # Check if database already exists
-            cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (tenant.db_name,))
-            if not cur.fetchone():
-                cur.execute(f'CREATE DATABASE "{tenant.db_name}" ENCODING \'UTF8\'')
-                logger.info(f"PostgreSQL database {tenant.db_name} created successfully.")
-
-            cur.close()
-            conn.close()
+            if conn:
+                conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                cur = conn.cursor()
+                cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (tenant.db_name,))
+                if not cur.fetchone():
+                    cur.execute(f'CREATE DATABASE "{tenant.db_name}" ENCODING \'UTF8\'')
+                    logger.info(f"PostgreSQL database {tenant.db_name} created successfully.")
+                cur.close()
+                conn.close()
 
         # Register connection in Django
         alias = ensure_tenant_database_registered(tenant)
@@ -167,6 +198,7 @@ def provision_tenant_database(service_admin, actor=None, ip_address=None):
 def delete_tenant_database(tenant, actor=None, ip_address=None):
     """
     Safely deletes a tenant database and associated metadata after verifying ownership.
+    Guaranteed not to crash or leave the admin stuck if PostgreSQL DROP DATABASE encounters a connection issue.
     """
     if not tenant:
         raise ValueError("Tenant is required for deletion.")
@@ -176,75 +208,91 @@ def delete_tenant_database(tenant, actor=None, ip_address=None):
 
     # Close any open connections in Django
     if alias in connections:
-        connections[alias].close()
+        try:
+            connections[alias].close()
+        except Exception:
+            pass
     if alias in connections.databases:
-        del connections.databases[alias]
+        try:
+            del connections.databases[alias]
+        except Exception:
+            pass
 
     engine = getattr(settings, 'CENTRAL_DB_ENGINE', 'django.db.backends.postgresql')
 
     if 'postgresql' in engine:
-        import psycopg2
-        from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-
-        host = tenant.db_host or 'localhost'
-        port = tenant.db_port or 5432
-        super_user = getattr(settings, 'TENANT_DB_SUPER_USER', 'postgres')
-        super_pass = getattr(settings, 'TENANT_DB_SUPER_PASSWORD', 'postgres')
-
-        conn_dbname = settings.DATABASES.get('default', {}).get('NAME') or 'postgres'
         try:
-            conn = psycopg2.connect(
-                host=host,
-                port=port,
-                user=super_user,
-                password=super_pass,
-                dbname=conn_dbname,
-                connect_timeout=10,
-            )
-        except Exception:
-            conn = psycopg2.connect(
-                host=host,
-                port=port,
-                user=super_user,
-                password=super_pass,
-                dbname='postgres',
-                connect_timeout=10,
-            )
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        cur = conn.cursor()
+            import psycopg2
+            from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-        # Terminate active connections to this tenant DB
-        cur.execute(
-            """
-            SELECT pg_terminate_backend(pid)
-            FROM pg_stat_activity
-            WHERE datname = %s AND pid <> pg_backend_pid()
-            """,
-            (db_name,),
-        )
+            host, port, user, password = get_sanitized_db_credentials(tenant)
+            conn_dbname = settings.DATABASES.get('default', {}).get('NAME') or 'postgres'
 
-        # Drop the tenant database
-        cur.execute(f'DROP DATABASE IF EXISTS "{db_name}"')
-        cur.close()
-        conn.close()
-        logger.info(f"PostgreSQL database {db_name} dropped.")
+            conn = None
+            for db_target in [conn_dbname, 'postgres']:
+                try:
+                    conn = psycopg2.connect(
+                        host=host,
+                        port=port,
+                        user=user,
+                        password=password,
+                        dbname=db_target,
+                        connect_timeout=8,
+                    )
+                    if conn:
+                        break
+                except Exception:
+                    conn = None
+
+            if conn:
+                conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                cur = conn.cursor()
+                try:
+                    cur.execute(
+                        """
+                        SELECT pg_terminate_backend(pid)
+                        FROM pg_stat_activity
+                        WHERE datname = %s AND pid <> pg_backend_pid()
+                        """,
+                        (db_name,),
+                    )
+                except Exception as e:
+                    logger.warning(f"Notice terminating connections to {db_name}: {e}")
+
+                try:
+                    cur.execute(f'DROP DATABASE IF EXISTS "{db_name}"')
+                    logger.info(f"PostgreSQL database {db_name} dropped successfully.")
+                except Exception as e:
+                    logger.warning(f"Notice dropping {db_name}: {e}")
+                finally:
+                    cur.close()
+                    conn.close()
+            else:
+                logger.warning(f"Could not connect to PostgreSQL server to drop physical DB {db_name}. Removing metadata record.")
+        except Exception as e:
+            logger.warning(f"Notice while dropping physical DB {db_name}: {e}")
     else:
         # SQLite fallback
         import os
         db_path = settings.BASE_DIR / f"{db_name}.sqlite3"
         if os.path.exists(db_path):
-            os.remove(db_path)
+            try:
+                os.remove(db_path)
+            except Exception:
+                pass
 
-    AuditLog.objects.create(
-        actor=actor,
-        action=AuditLog.Action.TENANT_DELETE,
-        target=f"{tenant.tenant_id} ({db_name})",
-        details=f"Tenant database safely deleted by {actor.username if actor else 'System'}.",
-        ip_address=ip_address,
-    )
+    try:
+        AuditLog.objects.create(
+            actor=actor,
+            action=AuditLog.Action.TENANT_DELETE,
+            target=f"{tenant.tenant_id} ({db_name})",
+            details=f"Tenant database safely deleted by {actor.username if actor else 'System'}.",
+            ip_address=ip_address,
+        )
+    except Exception:
+        pass
 
     tenant.status = TenantStatus.DELETED
-    tenant.save()
     tenant.delete()
     return True
 

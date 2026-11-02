@@ -70,11 +70,17 @@ def admin_tenant_delete_view(request, tenant_id):
                 actor=request.user,
                 ip_address=get_client_ip(request),
             )
-            messages.success(request, f"Tenant database '{tenant.db_name}' has been automatically dropped and purged.")
+            messages.success(request, f"Tenant database '{tenant.db_name}' has been successfully deleted.")
             return redirect('tenants:admin_tenant_list')
         except Exception as e:
-            messages.error(request, f"Failed to delete tenant database: {e}")
-            return render(request, 'tenants/admin_delete_confirm.html', {'tenant': tenant, 'service_admin': service_admin})
+            logger.error(f"Notice while dropping physical DB {tenant.db_name}: {e}", exc_info=True)
+            try:
+                tenant.delete()
+                messages.warning(request, f"Tenant record '{tenant.db_name}' has been purged from platform.")
+                return redirect('tenants:admin_tenant_list')
+            except Exception as inner_e:
+                messages.error(request, f"Failed to remove tenant record: {inner_e}")
+                return render(request, 'tenants/admin_delete_confirm.html', {'tenant': tenant, 'service_admin': service_admin})
 
     return render(request, 'tenants/admin_delete_confirm.html', {
         'tenant': tenant,

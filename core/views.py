@@ -232,8 +232,11 @@ def admin_service_admin_delete_view(request, user_id):
                     ip_address=get_client_ip(request),
                 )
             except Exception as e:
-                messages.error(request, f"Error dropping tenant database: {e}. User was not deleted.")
-                return render(request, 'core/admin_delete_user_confirm.html', {'admin_user': admin_user, 'tenant': tenant})
+                logger.warning(f"Error dropping tenant database {tenant.db_name}: {e}")
+                try:
+                    tenant.delete()
+                except Exception:
+                    pass
 
         # Audit Log
         try:

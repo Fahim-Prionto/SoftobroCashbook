@@ -112,11 +112,30 @@ DATABASES = {
 
 DATABASE_ROUTERS = ['tenants.router.TenantDatabaseRouter']
 
-# Tenant provisioning parameters
-TENANT_DB_HOST = os.getenv('TENANT_DB_HOST', os.getenv('CENTRAL_DB_HOST', 'localhost'))
-TENANT_DB_PORT = int(os.getenv('TENANT_DB_PORT', os.getenv('CENTRAL_DB_PORT', '5432')))
-TENANT_DB_SUPER_USER = os.getenv('TENANT_DB_SUPER_USER', os.getenv('CENTRAL_DB_USER', 'postgres'))
-TENANT_DB_SUPER_PASSWORD = os.getenv('TENANT_DB_SUPER_PASSWORD', os.getenv('CENTRAL_DB_PASSWORD', 'postgres'))
+# Tenant provisioning parameters - automatically sanitize placeholders from .env
+_t_host = os.getenv('TENANT_DB_HOST', '').strip()
+if not _t_host or _t_host.lower() in ('localhost', 'none', ''):
+    TENANT_DB_HOST = os.getenv('CENTRAL_DB_HOST', '127.0.0.1')
+else:
+    TENANT_DB_HOST = _t_host
+if TENANT_DB_HOST == 'localhost':
+    TENANT_DB_HOST = '127.0.0.1'
+
+_t_port = os.getenv('TENANT_DB_PORT', '').strip()
+TENANT_DB_PORT = int(_t_port if _t_port.isdigit() else os.getenv('CENTRAL_DB_PORT', 5432))
+
+_t_user = os.getenv('TENANT_DB_SUPER_USER', '').strip()
+if not _t_user or _t_user in ('your_postgres_admin', 'postgres'):
+    TENANT_DB_SUPER_USER = os.getenv('CENTRAL_DB_USER', 'postgres')
+else:
+    TENANT_DB_SUPER_USER = _t_user
+
+_t_pass = os.getenv('TENANT_DB_SUPER_PASSWORD', '').strip()
+if not _t_pass or _t_pass in ('your_postgres_admin_password', 'postgres'):
+    TENANT_DB_SUPER_PASSWORD = os.getenv('CENTRAL_DB_PASSWORD', 'postgres')
+else:
+    TENANT_DB_SUPER_PASSWORD = _t_pass
+
 TENANT_DB_PREFIX = os.getenv('TENANT_DB_PREFIX', 'scb_tenant_')
 ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', 'b5q3L9DVOgq27l6htokTAYMt3nC3R3pzZu1WonV18mk=')
 
