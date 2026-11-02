@@ -4,8 +4,14 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .env file
-load_dotenv(BASE_DIR / '.env')
+# Set UTF-8 encoding in OS environment if supported
+os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
+
+# Load .env file safely
+try:
+    load_dotenv(BASE_DIR / '.env')
+except Exception:
+    pass
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-softobrocashbook-dev-secret-key-2026')
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
@@ -125,7 +131,7 @@ BKASH_INSTRUCTIONS = os.getenv(
 SITE_NAME = os.getenv('SITE_NAME', 'SoftobroCashBook')
 SUPPORT_EMAIL = os.getenv('SUPPORT_EMAIL', 'support@softobrocashbook.com')
 SUPPORT_PHONE = os.getenv('SUPPORT_PHONE', '+880 1700-000000')
-CURRENCY_SYMBOL = os.getenv('CURRENCY_SYMBOL', '৳')
+CURRENCY_SYMBOL = '\u09f3'  # Bengali Taka symbol ৳
 
 # Authentication & Passwords
 AUTH_PASSWORD_VALIDATORS = [
