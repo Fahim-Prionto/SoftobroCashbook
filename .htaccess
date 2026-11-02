@@ -1,0 +1,30 @@
+# ========================================================
+# SoftobroCashBook cPanel Apache / LiteSpeed Configuration
+# ========================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Serve static files directly if they exist
+    RewriteCond %{REQUEST_URI} ^/static/(.*)$
+    RewriteCond %{DOCUMENT_ROOT}/staticfiles/%1 -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/static/%1 -f
+    RewriteRule ^static/(.*)$ staticfiles/$1 [L]
+
+    # Serve media files directly
+    RewriteCond %{REQUEST_URI} ^/media/(.*)$
+    RewriteCond %{DOCUMENT_ROOT}/media/%1 -f
+    RewriteRule ^media/(.*)$ media/$1 [L]
+</IfModule>
+
+# Caching for static assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>

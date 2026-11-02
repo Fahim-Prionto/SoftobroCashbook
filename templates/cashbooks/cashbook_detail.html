@@ -8,43 +8,43 @@
 <div class="row g-3 mb-4">
     <!-- Current Balance Card -->
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card border-primary border-2">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="stat-label text-primary">Current Cash Balance</div>
-                    <div class="stat-value text-primary" style="font-size: 1.5rem;">{{ overall_balance|bdt }}</div>
+        <div class="stat-card-gradient emerald">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="stat-label text-white-50">Current Cash Balance</div>
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
+                    <i class="bi bi-wallet2 fs-5 text-white"></i>
                 </div>
-                <div class="stat-icon blue"><i class="bi bi-wallet2"></i></div>
             </div>
-            <div class="mt-2 text-muted small">Opening: {{ cashbook.opening_balance|bdt }}</div>
+            <div class="stat-value text-white mb-1">{{ overall_balance|bdt }}</div>
+            <div class="small text-white-50">Opening: {{ cashbook.opening_balance|bdt }}</div>
         </div>
     </div>
 
     <!-- Total In -->
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card border-success">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="stat-label text-success">Total Cash-In</div>
-                    <div class="stat-value text-success" style="font-size: 1.5rem;">{{ overall_in|bdt }}</div>
+        <div class="stat-card-gradient blue">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="stat-label text-white-50">Total Cash-In</div>
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
+                    <i class="bi bi-arrow-down-left-circle-fill fs-5 text-white"></i>
                 </div>
-                <div class="stat-icon green"><i class="bi bi-arrow-down-left-circle-fill"></i></div>
             </div>
-            <div class="mt-2 text-muted small">Filtered sum: {{ filter_in|bdt }}</div>
+            <div class="stat-value text-white mb-1">{{ overall_in|bdt }}</div>
+            <div class="small text-white-50">Filtered: {{ filter_in|bdt }}</div>
         </div>
     </div>
 
     <!-- Total Out -->
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card border-danger">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="stat-label text-danger">Total Cash-Out</div>
-                    <div class="stat-value text-danger" style="font-size: 1.5rem;">{{ overall_out|bdt }}</div>
+        <div class="stat-card-gradient crimson">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="stat-label text-white-50">Total Cash-Out</div>
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
+                    <i class="bi bi-arrow-up-right-circle-fill fs-5 text-white"></i>
                 </div>
-                <div class="stat-icon red"><i class="bi bi-arrow-up-right-circle-fill"></i></div>
             </div>
-            <div class="mt-2 text-muted small">Filtered sum: {{ filter_out|bdt }}</div>
+            <div class="stat-value text-white mb-1">{{ overall_out|bdt }}</div>
+            <div class="small text-white-50">Filtered: {{ filter_out|bdt }}</div>
         </div>
     </div>
 
@@ -52,15 +52,15 @@
     <div class="col-sm-6 col-xl-3">
         <div class="stat-card d-flex flex-column justify-content-center gap-2">
             <div class="d-flex gap-2">
-                <a href="{% url 'transactions:transaction_create' cashbook.id %}?type=CASH_IN" class="btn btn-success flex-fill fw-bold shadow-sm">
+                <a href="{% url 'transactions:transaction_create' cashbook.id %}?type=CASH_IN" class="btn btn-success flex-fill fw-bold shadow-sm py-2">
                     <i class="bi bi-plus-circle me-1"></i> Cash In
                 </a>
-                <a href="{% url 'transactions:transaction_create' cashbook.id %}?type=CASH_OUT" class="btn btn-danger flex-fill fw-bold shadow-sm">
+                <a href="{% url 'transactions:transaction_create' cashbook.id %}?type=CASH_OUT" class="btn btn-danger flex-fill fw-bold shadow-sm py-2">
                     <i class="bi bi-dash-circle me-1"></i> Cash Out
                 </a>
             </div>
             <div class="d-flex gap-2">
-                <a href="{% url 'cashbooks:cashbook_print' cashbook.id %}{% if params.start_date or params.end_date %}?start_date={{ params.start_date }}&end_date={{ params.end_date }}{% endif %}" target="_blank" class="btn btn-outline-secondary btn-sm flex-fill">
+                <a href="{% url 'cashbooks:cashbook_print' cashbook.id %}{% if params.start_date or params.end_date %}?start_date={{ params.start_date }}&end_date={{ params.end_date }}{% endif %}" target="_blank" class="btn btn-outline-primary btn-sm flex-fill fw-semibold">
                     <i class="bi bi-printer me-1"></i> Print A4 Statement
                 </a>
                 <a href="{% url 'cashbooks:cashbook_edit' cashbook.id %}" class="btn btn-light btn-sm border" title="Settings">

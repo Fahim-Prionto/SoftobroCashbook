@@ -9,15 +9,296 @@
     <!-- Google Fonts & Bootstrap Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Dashboard & Print Styles -->
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/print.css' %}">
+    <!-- Dashboard Core Fail-Proof Dynamic Styles -->
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-bg: #0b1120;
+            --sidebar-text: #94a3b8;
+            --sidebar-active-bg: linear-gradient(90deg, #1e293b 0%, #1e3a8a 100%);
+            --sidebar-active-text: #38bdf8;
+            --content-bg: #f8fafc;
+            --topbar-height: 70px;
+        }
+        body.dashboard-body {
+            background-color: var(--content-bg);
+            min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            color: #0f172a;
+        }
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+        .app-sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1040;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.12);
+        }
+        .sidebar-brand {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #fff;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .sidebar-brand span {
+            background: linear-gradient(135deg, #38bdf8 0%, #0d9488 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-menu {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.25rem 0.85rem;
+        }
+        .sidebar-header {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 800;
+            color: #64748b;
+            padding: 0.85rem 0.75rem 0.4rem;
+        }
+        .sidebar-nav-item {
+            margin-bottom: 0.3rem;
+        }
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+        }
+        .sidebar-nav-link i {
+            font-size: 1.15rem;
+            width: 1.5rem;
+            text-align: center;
+        }
+        .sidebar-nav-link:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #f8fafc;
+            transform: translateX(3px);
+        }
+        .sidebar-nav-link.active {
+            background: var(--sidebar-active-bg);
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        .sidebar-nav-link.active i {
+            color: #38bdf8;
+        }
+        .sidebar-footer {
+            padding: 1.1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .app-main {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            transition: margin-left 0.3s ease;
+        }
+        .app-topbar {
+            height: var(--topbar-height);
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        }
+        .app-content {
+            padding: 2rem;
+            flex: 1;
+        }
+
+        /* Stat Cards */
+        .stat-card-gradient {
+            border-radius: 1.25rem;
+            padding: 1.65rem 1.5rem;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        .stat-card-gradient:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 35px -5px rgba(15, 23, 42, 0.2);
+        }
+        .stat-card-gradient::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+            pointer-events: none;
+        }
+        .stat-card-gradient.emerald {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        }
+        .stat-card-gradient.blue {
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+        }
+        .stat-card-gradient.crimson {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        }
+        .stat-card-gradient.purple {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1.25rem;
+            padding: 1.65rem 1.5rem;
+            transition: all 0.3s ease;
+            height: 100%;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.1);
+        }
+        .stat-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .stat-icon.blue { background: #eff6ff; color: #2563eb; }
+        .stat-icon.green { background: #ecfdf5; color: #059669; }
+        .stat-icon.red { background: #fef2f2; color: #dc2626; }
+        .stat-icon.purple { background: #faf5ff; color: #9333ea; }
+        .stat-icon.teal { background: #f0fdfa; color: #0d9488; }
+
+        .stat-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 0.35rem;
+        }
+        .stat-value {
+            font-size: clamp(1.5rem, 2.5vw, 1.85rem);
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .card-scb {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+            overflow: hidden;
+        }
+        .card-scb .card-header {
+            background: #ffffff;
+            border-bottom: 1.5px solid #f1f5f9;
+            padding: 1.25rem 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .card-scb .card-body {
+            padding: 1.75rem;
+        }
+
+        .cash-in-badge {
+            background-color: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+        }
+        .cash-out-badge {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+        }
+        .sub-status-pill {
+            padding: 0.35rem 0.85rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .sub-active { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .sub-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .sub-expired { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1035;
+        }
+        .sidebar-backdrop.show {
+            display: block;
+        }
+
+        @media (max-width: 991.98px) {
+            .app-sidebar { transform: translateX(-100%); }
+            .app-sidebar.show { transform: translateX(0); }
+            .app-main { margin-left: 0; }
+            .app-topbar { padding: 0 1.25rem; }
+            .app-content { padding: 1.25rem; }
+        }
+    </style>
+
+    <!-- Dashboard & Print Styles with Cache Versioning -->
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=2.2">
+    <link rel="stylesheet" href="{% static 'css/print.css' %}?v=2.2">
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
@@ -25,6 +306,9 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="dashboard-body">
+    <!-- Backdrop for mobile drawer -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
     <div class="app-wrapper">
         <!-- Sidebar Navigation -->
         <aside class="app-sidebar" id="appSidebar">
@@ -99,22 +383,27 @@
 
                     <div class="sidebar-header mt-3">Account & Billing</div>
                     <div class="sidebar-nav-item">
-                        <a href="{% url 'subscriptions:my_subscription' %}" class="sidebar-nav-link {% if 'subscriptions/my-subscription' in request.path %}active{% endif %}">
-                            <i class="bi bi-award-fill"></i> Subscription & Limits
+                        <a href="{% url 'subscriptions:my_subscription' %}" class="sidebar-nav-link {% if 'my-subscription' in request.path %}active{% endif %}">
+                            <i class="bi bi-award-fill"></i> My Subscription
                         </a>
                     </div>
                     <div class="sidebar-nav-item">
-                        <a href="{% url 'payments:payment_history' %}" class="sidebar-nav-link {% if 'payments/history' in request.path %}active{% endif %}">
-                            <i class="bi bi-clock-history"></i> Payment Records
+                        <a href="{% url 'payments:my_payment_history' %}" class="sidebar-nav-link {% if 'my-payments' in request.path %}active{% endif %}">
+                            <i class="bi bi-receipt"></i> Payment Receipts
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-item">
+                        <a href="{% url 'accounts:profile' %}" class="sidebar-nav-link {% if 'profile' in request.path %}active{% endif %}">
+                            <i class="bi bi-person-circle"></i> Profile & Security
                         </a>
                     </div>
                 {% endif %}
             </div>
 
-            <!-- Sidebar User Footprint -->
+            <!-- Sidebar User Profile Footer -->
             <div class="sidebar-footer">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle bg-primary bg-opacity-25 text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 38px; height: 38px; background: linear-gradient(135deg, #2563eb 0%, #0d9488 100%); font-size: 0.95rem;">
                         {{ user.username|slice:":1"|upper }}
                     </div>
                     <div class="overflow-hidden">
@@ -133,7 +422,7 @@
             <!-- Topbar Header -->
             <header class="app-topbar no-print">
                 <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-light d-lg-none p-1 px-2 border" id="sidebarToggleBtn">
+                    <button class="btn btn-light d-lg-none p-1 px-2 border rounded-3" id="sidebarToggleBtn" aria-label="Toggle Navigation">
                         <i class="bi bi-list fs-4"></i>
                     </button>
                     <div>
@@ -192,7 +481,7 @@
                     <!-- User Profile Dropdown -->
                     <div class="dropdown">
                         <button class="btn btn-light d-flex align-items-center gap-2 p-1 pe-3 border rounded-pill" type="button" data-bs-toggle="dropdown">
-                            <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px;">
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);">
                                 {{ user.username|slice:":1"|upper }}
                             </div>
                             <span class="small fw-semibold d-none d-md-inline">{{ user.username }}</span>
@@ -218,7 +507,7 @@
             {% if messages %}
             <div class="container-fluid px-4 pt-3 no-print">
                 {% for message in messages %}
-                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm rounded-4" role="alert">
                     {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill me-2 text-success"></i>
                     {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>
                     {% else %}<i class="bi bi-info-circle-fill me-2 text-primary"></i>{% endif %}
@@ -238,8 +527,27 @@
 
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/main.js' %}?v=2.2"></script>
+    <script>
+        // Sidebar Toggle with Backdrop
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const sidebar = document.getElementById('appSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+
+            if (toggleBtn && sidebar && backdrop) {
+                toggleBtn.addEventListener('click', function () {
+                    sidebar.classList.toggle('show');
+                    backdrop.classList.toggle('show');
+                });
+
+                backdrop.addEventListener('click', function () {
+                    sidebar.classList.remove('show');
+                    backdrop.classList.remove('show');
+                });
+            }
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
-

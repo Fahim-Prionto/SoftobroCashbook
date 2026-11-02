@@ -2,11 +2,13 @@
 {% block title %}How It Works - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<section class="py-5 bg-white border-bottom">
+<section class="py-5" style="background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
     <div class="container py-4 text-center">
-        <span class="badge bg-primary-subtle text-primary mb-2">Workflow</span>
-        <h1 class="fw-bold mb-3">How SoftobroCashBook Operates</h1>
-        <p class="text-secondary max-w-700 mx-auto">From registration to your private tenant database in 3 straightforward steps.</p>
+        <span class="badge px-3 py-2 rounded-pill fw-bold mb-3" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+            <i class="bi bi-gear-wide-connected me-1"></i> Simple Onboarding
+        </span>
+        <h1 class="fw-bold mb-3 text-dark">How SoftobroCashBook Operates</h1>
+        <p class="text-secondary max-w-700 mx-auto fs-5">From registration to your private tenant database in 3 straightforward steps.</p>
     </div>
 </section>
 
@@ -14,8 +16,8 @@
     <div class="container py-4">
         <div class="row g-5 align-items-center mb-5">
             <div class="col-md-6 order-md-2">
-                <span class="badge bg-primary fs-6 mb-2">Step 1</span>
-                <h3 class="fw-bold mb-3">Register Account & Select Plan</h3>
+                <span class="badge px-3 py-1 rounded-pill fw-bold mb-2" style="background: #eff6ff; color: #2563eb; font-size: 0.9rem;">Step 1</span>
+                <h3 class="fw-bold mb-3 text-dark">Register Account & Select Plan</h3>
                 <p class="text-secondary leading-relaxed">
                     Create your account with your business name, contact phone, and email. Choose a subscription package (Monthly, Quarterly, or Yearly) tailored to the number of businesses and cashbooks you require.
                 </p>
@@ -24,48 +26,53 @@
                 </p>
             </div>
             <div class="col-md-6 order-md-1">
-                <div class="p-4 bg-white rounded-4 border shadow-sm">
-                    <i class="bi bi-person-badge-fill text-primary display-4"></i>
-                    <h5 class="fw-bold mt-3">Simple Registration</h5>
-                    <p class="text-muted small">No credit cards required. Only your business name and contact number.</p>
+                <div class="p-4 bg-white rounded-4 border shadow-sm" style="border-left: 5px solid #2563eb !important;">
+                    <div class="rounded-3 p-3 d-inline-flex align-items-center justify-content-center mb-3" style="background: #eff6ff; color: #2563eb;">
+                        <i class="bi bi-person-badge-fill fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Simple Registration</h5>
+                    <p class="text-muted small mb-0">No credit cards required. Only your business name and contact number.</p>
                 </div>
             </div>
         </div>
 
         <div class="row g-5 align-items-center mb-5">
             <div class="col-md-6">
-                <span class="badge bg-danger fs-6 mb-2">Step 2</span>
-                <h3 class="fw-bold mb-3">Make Payment via bKash</h3>
+                <span class="badge px-3 py-1 rounded-pill fw-bold mb-2" style="background: #fdf2f8; color: #e2136e; font-size: 0.9rem;">Step 2</span>
+                <h3 class="fw-bold mb-3 text-dark">Make Payment via bKash</h3>
                 <p class="text-secondary leading-relaxed">
                     Open your bKash mobile app or dial *247# to transfer the exact subscription amount in BDT to our official account. Submit your 8-10 character bKash Transaction ID (TrxID) and an optional payment screenshot.
                 </p>
             </div>
             <div class="col-md-6">
-                <div class="p-4 bg-white rounded-4 border shadow-sm">
-                    <i class="bi bi-phone-vibrate-fill text-danger display-4"></i>
-                    <h5 class="fw-bold mt-3">bKash Verified Platform</h5>
-                    <p class="text-muted small">Quick, secure, and familiar payment workflow built for Bangladesh.</p>
+                <div class="p-4 bg-white rounded-4 border shadow-sm" style="border-left: 5px solid #e2136e !important;">
+                    <div class="rounded-3 p-3 d-inline-flex align-items-center justify-content-center mb-3" style="background: #fdf2f8; color: #e2136e;">
+                        <i class="bi bi-phone-vibrate-fill fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">bKash Verified Platform</h5>
+                    <p class="text-muted small mb-0">Quick, secure, and familiar payment workflow built for Bangladesh.</p>
                 </div>
             </div>
         </div>
 
         <div class="row g-5 align-items-center">
             <div class="col-md-6 order-md-2">
-                <span class="badge bg-success fs-6 mb-2">Step 3</span>
-                <h3 class="fw-bold mb-3">Verification & Database Provisioning</h3>
+                <span class="badge px-3 py-1 rounded-pill fw-bold mb-2" style="background: #ecfdf5; color: #059669; font-size: 0.9rem;">Step 3</span>
+                <h3 class="fw-bold mb-3 text-dark">Verification & Database Provisioning</h3>
                 <p class="text-secondary leading-relaxed">
                     Once our Super Admin confirms your payment, the system dynamically provisions a dedicated PostgreSQL database specifically for your business, runs tenant migrations, and activates your Service Admin portal.
                 </p>
             </div>
             <div class="col-md-6 order-md-1">
-                <div class="p-4 bg-white rounded-4 border shadow-sm">
-                    <i class="bi bi-hdd-network-fill text-success display-4"></i>
-                    <h5 class="fw-bold mt-3">Dedicated Database Isolation</h5>
-                    <p class="text-muted small">High-performance private ledger with zero risk of cross-tenant data leaks.</p>
+                <div class="p-4 bg-white rounded-4 border shadow-sm" style="border-left: 5px solid #059669 !important;">
+                    <div class="rounded-3 p-3 d-inline-flex align-items-center justify-content-center mb-3" style="background: #ecfdf5; color: #059669;">
+                        <i class="bi bi-hdd-network-fill fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark">Dedicated Database Isolation</h5>
+                    <p class="text-muted small mb-0">High-performance private ledger with zero risk of cross-tenant data leaks.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 {% endblock %}
-

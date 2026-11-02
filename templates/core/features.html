@@ -2,57 +2,71 @@
 {% block title %}Features - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<section class="py-5 bg-white border-bottom">
+<section class="py-5" style="background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
     <div class="container py-4 text-center">
-        <span class="badge bg-primary-subtle text-primary mb-2">Capabilities</span>
-        <h1 class="fw-bold mb-3">Enterprise Financial Control for Every Business</h1>
-        <p class="text-secondary max-w-700 mx-auto">Explore all the features packed into SoftobroCashBook to keep your business finances crystal-clear.</p>
+        <span class="badge px-3 py-2 rounded-pill fw-bold mb-3" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+            <i class="bi bi-stars me-1"></i> Powerful Architecture
+        </span>
+        <h1 class="fw-bold mb-3 text-dark">Enterprise Financial Control for Every Business</h1>
+        <p class="text-secondary max-w-700 mx-auto fs-5">Explore all the features packed into SoftobroCashBook to keep your business finances crystal-clear.</p>
     </div>
 </section>
 
 <section class="py-5">
     <div class="container py-4">
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border p-4 rounded-4 shadow-sm">
-                    <div class="fs-1 text-primary mb-3"><i class="bi bi-wallet-fill"></i></div>
-                    <h5 class="fw-bold">Cash-In & Cash-Out Ledger</h5>
-                    <p class="text-secondary small">Record daily sales, investments, expenses, bills, and draws with categorized breakdown and atomic balance updates.</p>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box" style="background: #eff6ff; color: #2563eb;">
+                        <i class="bi bi-wallet-fill"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Cash-In & Cash-Out Ledger</h5>
+                    <p class="text-secondary small mb-0">Record daily sales, investments, expenses, bills, and draws with categorized breakdown and atomic balance updates.</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border p-4 rounded-4 shadow-sm">
-                    <div class="fs-1 text-success mb-3"><i class="bi bi-diagram-3-fill"></i></div>
-                    <h5 class="fw-bold">Multi-Business Outlets</h5>
-                    <p class="text-secondary small">Manage multiple branches, stores, or subsidiaries from a single login while keeping their financial data separate.</p>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box" style="background: #ecfdf5; color: #059669;">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Multi-Business Outlets</h5>
+                    <p class="text-secondary small mb-0">Manage multiple branches, stores, or subsidiaries from a single login while keeping their financial data separate.</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border p-4 rounded-4 shadow-sm">
-                    <div class="fs-1 text-danger mb-3"><i class="bi bi-database-check"></i></div>
-                    <h5 class="fw-bold">Automatic Tenant Isolation</h5>
-                    <p class="text-secondary small">Upon Super Admin verification of your bKash payment, an isolated PostgreSQL database is instantly provisioned and routed for your account.</p>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box" style="background: #fef2f2; color: #dc2626;">
+                        <i class="bi bi-database-check"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Automatic Tenant Isolation</h5>
+                    <p class="text-secondary small mb-0">Upon Super Admin verification of your bKash payment, an isolated PostgreSQL database is instantly provisioned and routed for your account.</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border p-4 rounded-4 shadow-sm">
-                    <div class="fs-1 text-info mb-3"><i class="bi bi-file-earmark-pdf-fill"></i></div>
-                    <h5 class="fw-bold">A4 Print & PDF Reports</h5>
-                    <p class="text-secondary small">Generate print-ready statements filtered by cashbook, date-range, and category. Navigation and buttons automatically vanish when printing.</p>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box" style="background: #f0fdfa; color: #0d9488;">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">A4 Print & PDF Reports</h5>
+                    <p class="text-secondary small mb-0">Generate print-ready statements filtered by cashbook, date-range, and category. Navigation and buttons automatically vanish when printing.</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border p-4 rounded-4 shadow-sm">
-                    <div class="fs-1 text-warning mb-3"><i class="bi bi-credit-card-2-front-fill"></i></div>
-                    <h5 class="fw-bold">Manual bKash Workflow</h5>
-                    <p class="text-secondary small">Conveniently subscribe or renew with bKash TrxID verification, screenshot attachment, and automated expiry monitoring.</p>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box" style="background: #fdf2f8; color: #e2136e;">
+                        <i class="bi bi-phone-fill"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Manual bKash Workflow</h5>
+                    <p class="text-secondary small mb-0">Conveniently subscribe or renew with bKash TrxID verification, screenshot attachment, and automated expiry monitoring.</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border p-4 rounded-4 shadow-sm">
-                    <div class="fs-1 text-purple mb-3" style="color: #9333ea;"><i class="bi bi-phone-fill"></i></div>
-                    <h5 class="fw-bold">Mobile API Foundation</h5>
-                    <p class="text-secondary small">Complete Django REST Framework token-authenticated APIs, ensuring high performance for future Android & iOS companion apps.</p>
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box" style="background: #f5f3ff; color: #7c3aed;">
+                        <i class="bi bi-phone-vibrate-fill"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Mobile API Foundation</h5>
+                    <p class="text-secondary small mb-0">Complete Django REST Framework token-authenticated APIs, ensuring high performance for future Android & iOS companion apps.</p>
                 </div>
             </div>
         </div>

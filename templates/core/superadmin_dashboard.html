@@ -7,54 +7,54 @@
 <!-- KPI Stat Grid -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="stat-label">Service Admins</div>
-                    <div class="stat-value">{{ total_service_admins }}</div>
+        <div class="stat-card-gradient blue">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="stat-label text-white-50">Service Admins</div>
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
+                    <i class="bi bi-people-fill fs-5 text-white"></i>
                 </div>
-                <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
             </div>
-            <div class="mt-2 text-muted small"><span class="text-warning fw-bold">{{ pending_approvals }}</span> pending verification</div>
+            <div class="stat-value text-white mb-1">{{ total_service_admins }}</div>
+            <div class="small text-white-50"><span class="badge bg-warning text-dark fw-bold me-1">{{ pending_approvals }}</span> pending verification</div>
         </div>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="stat-label">Total Revenue</div>
-                    <div class="stat-value text-success" style="font-size: 1.45rem;">{{ total_revenue|bdt }}</div>
+        <div class="stat-card-gradient emerald">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="stat-label text-white-50">Total Revenue</div>
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
+                    <i class="bi bi-cash-stack fs-5 text-white"></i>
                 </div>
-                <div class="stat-icon green"><i class="bi bi-cash-stack"></i></div>
             </div>
-            <div class="mt-2 text-muted small"><span class="text-danger fw-bold">{{ pending_payments }}</span> payments awaiting review</div>
+            <div class="stat-value text-white mb-1">{{ total_revenue|bdt }}</div>
+            <div class="small text-white-50"><span class="badge bg-danger text-white fw-bold me-1">{{ pending_payments }}</span> awaiting review</div>
         </div>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="stat-label">Active Subscriptions</div>
-                    <div class="stat-value text-primary">{{ active_subscriptions }}</div>
+        <div class="stat-card-gradient purple">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="stat-label text-white-50">Active Subscriptions</div>
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
+                    <i class="bi bi-award-fill fs-5 text-white"></i>
                 </div>
-                <div class="stat-icon purple"><i class="bi bi-award-fill"></i></div>
             </div>
-            <div class="mt-2 text-muted small"><span class="text-danger fw-bold">{{ expired_subscriptions }}</span> expired plans</div>
+            <div class="stat-value text-white mb-1">{{ active_subscriptions }}</div>
+            <div class="small text-white-50"><span class="badge bg-danger bg-opacity-75 text-white fw-bold me-1">{{ expired_subscriptions }}</span> expired</div>
         </div>
     </div>
 
     <div class="col-sm-6 col-xl-3">
-        <div class="stat-card">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <div class="stat-label">Isolated Tenants</div>
-                    <div class="stat-value text-teal" style="color: #0d9488;">{{ total_tenants }}</div>
+        <div class="stat-card-gradient crimson">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="stat-label text-white-50">Isolated Tenants</div>
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
+                    <i class="bi bi-database-check fs-5 text-white"></i>
                 </div>
-                <div class="stat-icon teal"><i class="bi bi-database-check"></i></div>
             </div>
-            <div class="mt-2 text-muted small">PostgreSQL dedicated DBs</div>
+            <div class="stat-value text-white mb-1">{{ total_tenants }}</div>
+            <div class="small text-white-50">PostgreSQL dedicated DBs</div>
         </div>
     </div>
 </div>

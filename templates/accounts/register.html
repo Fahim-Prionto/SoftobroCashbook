@@ -2,21 +2,25 @@
 {% block title %}Register Business - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="py-5" style="background: radial-gradient(ellipse at top, rgba(37, 99, 235, 0.12) 0%, rgba(248, 250, 252, 1) 70%);">
     <div class="container py-4">
         <div class="row justify-content-center">
             <div class="col-lg-8 col-xl-7">
-                <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white">
+                <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5 bg-white position-relative overflow-hidden" style="border: 1.5px solid rgba(226, 232, 240, 0.8) !important; box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.12) !important;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #10b981, #2563eb, #e2136e);"></div>
+
                     <div class="text-center mb-4">
-                        <span class="badge bg-primary-subtle text-primary mb-2">Step 1 of 2: Registration</span>
+                        <span class="badge px-3 py-2 rounded-pill fw-bold mb-2" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+                            <i class="bi bi-shield-check me-1"></i> Step 1 of 2: Registration
+                        </span>
                         <h3 class="fw-bold text-dark">Register Your Business</h3>
-                        <p class="text-secondary small">Set up your account and get an isolated PostgreSQL tenant database</p>
+                        <p class="text-secondary small">Set up your business and get an isolated PostgreSQL tenant database</p>
                     </div>
 
                     <form method="post">
                         {% csrf_token %}
                         {% if form.non_field_errors %}
-                        <div class="alert alert-danger py-2 small">
+                        <div class="alert alert-danger py-2 small rounded-3">
                             {% for error in form.non_field_errors %}
                             {{ error }}
                             {% endfor %}
@@ -25,7 +29,7 @@
 
                         <div class="row g-3">
                             <div class="col-12">
-                                <label class="form-label fw-semibold small">Business / Company Name <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-dark">Business / Company Name <span class="text-danger">*</span></label>
                                 {{ form.business_name }}
                                 {% if form.business_name.errors %}
                                 <div class="text-danger small mt-1">{{ form.business_name.errors.0 }}</div>
@@ -33,14 +37,14 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small">Owner First Name <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-dark">Owner First Name <span class="text-danger">*</span></label>
                                 {{ form.first_name }}
                                 {% if form.first_name.errors %}
                                 <div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small">Owner Last Name <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-dark">Owner Last Name <span class="text-danger">*</span></label>
                                 {{ form.last_name }}
                                 {% if form.last_name.errors %}
                                 <div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>
@@ -48,14 +52,14 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small">Email Address <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-dark">Email Address <span class="text-danger">*</span></label>
                                 {{ form.email }}
                                 {% if form.email.errors %}
                                 <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small">Contact / bKash Phone <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-dark">Contact / bKash Phone <span class="text-danger">*</span></label>
                                 {{ form.phone_number }}
                                 {% if form.phone_number.errors %}
                                 <div class="text-danger small mt-1">{{ form.phone_number.errors.0 }}</div>
@@ -63,7 +67,7 @@
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label fw-semibold small">Username <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-dark">Username <span class="text-danger">*</span></label>
                                 {{ form.username }}
                                 {% if form.username.errors %}
                                 <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
@@ -71,41 +75,32 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small text-dark">Password <span class="text-danger">*</span></label>
                                 {{ form.password }}
                                 {% if form.password.errors %}
                                 <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small">Confirm Password <span class="text-danger">*</span></label>
-                                {{ form.confirm_password }}
-                                {% if form.confirm_password.errors %}
-                                <div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>
+                                <label class="form-label fw-semibold small text-dark">Confirm Password <span class="text-danger">*</span></label>
+                                {{ form.password_confirm }}
+                                {% if form.password_confirm.errors %}
+                                <div class="text-danger small mt-1">{{ form.password_confirm.errors.0 }}</div>
                                 {% endif %}
                             </div>
 
-                            <div class="col-12">
-                                <label class="form-label fw-semibold small">Selected Subscription Plan <span class="text-danger">*</span></label>
-                                {{ form.plan }}
-                                {% if form.plan.errors %}
-                                <div class="text-danger small mt-1">{{ form.plan.errors.0 }}</div>
-                                {% endif %}
-                                <div class="form-text small">You will submit your bKash payment verification in the next step.</div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-scb-primary w-100 py-3 fw-bold fs-6">
+                                    Continue to Subscription Plan <i class="bi bi-arrow-right ms-2"></i>
+                                </button>
                             </div>
-                        </div>
-
-                        <div class="mt-4 pt-2">
-                            <button type="submit" class="btn btn-scb-primary w-100 py-2 fs-6 fw-semibold">
-                                Continue to bKash Payment <i class="bi bi-arrow-right ms-2"></i>
-                            </button>
                         </div>
                     </form>
 
                     <div class="text-center mt-4 pt-3 border-top">
-                        <span class="text-secondary small">Already have an account?</span>
+                        <span class="text-secondary small">Already registered?</span>
                         <a href="{% url 'accounts:login' %}" class="small fw-bold text-primary text-decoration-none ms-1">
-                            Sign In
+                            Sign In to Account
                         </a>
                     </div>
                 </div>
@@ -114,4 +109,3 @@
     </div>
 </section>
 {% endblock %}
-

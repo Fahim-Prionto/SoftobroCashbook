@@ -1,12 +1,12 @@
 /* ========================================================
-   SoftobroCashBook - Dashboard & Admin Workspace Styles
+   SoftobroCashBook - Dynamic Dashboard & Workspace System
    ======================================================== */
 
 :root {
     --sidebar-width: 260px;
-    --sidebar-bg: #0f172a;
+    --sidebar-bg: #0b1120;
     --sidebar-text: #94a3b8;
-    --sidebar-active-bg: #1e293b;
+    --sidebar-active-bg: linear-gradient(90deg, #1e293b 0%, #1e3a8a 100%);
     --sidebar-active-text: #38bdf8;
     --content-bg: #f8fafc;
     --topbar-height: 70px;
@@ -17,13 +17,14 @@ body.dashboard-body {
     min-height: 100vh;
 }
 
-/* Layout */
+/* App Wrapper */
 .app-wrapper {
     display: flex;
     min-height: 100vh;
+    position: relative;
 }
 
-/* Sidebar */
+/* Sidebar Navigation */
 .app-sidebar {
     width: var(--sidebar-width);
     background: var(--sidebar-bg);
@@ -35,8 +36,8 @@ body.dashboard-body {
     z-index: 1040;
     display: flex;
     flex-direction: column;
-    transition: all 0.3s ease;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.12);
 }
 
 .sidebar-brand {
@@ -44,73 +45,81 @@ body.dashboard-body {
     display: flex;
     align-items: center;
     padding: 0 1.5rem;
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 800;
     color: #fff;
     text-decoration: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sidebar-brand span {
-    color: #0d9488;
+    background: linear-gradient(135deg, #38bdf8 0%, #0d9488 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .sidebar-menu {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem 0.75rem;
+    padding: 1.25rem 0.85rem;
 }
 
 .sidebar-header {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
+    letter-spacing: 1.2px;
+    font-weight: 800;
     color: #64748b;
-    padding: 0.75rem 0.75rem 0.35rem;
+    padding: 0.85rem 0.75rem 0.4rem;
 }
 
 .sidebar-nav-item {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.3rem;
 }
 
 .sidebar-nav-link {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.7rem 0.85rem;
-    border-radius: 0.5rem;
+    gap: 0.85rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
     color: var(--sidebar-text);
     text-decoration: none;
     font-size: 0.92rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-weight: 600;
+    transition: all 0.25s ease;
 }
 
 .sidebar-nav-link i {
-    font-size: 1.1rem;
-    width: 1.4rem;
+    font-size: 1.15rem;
+    width: 1.5rem;
     text-align: center;
 }
 
 .sidebar-nav-link:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #f1f5f9;
+    background: rgba(255, 255, 255, 0.06);
+    color: #f8fafc;
+    transform: translateX(3px);
 }
 
 .sidebar-nav-link.active {
-    background: #1e293b;
+    background: var(--sidebar-active-bg);
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.sidebar-nav-link.active i {
     color: #38bdf8;
-    font-weight: 600;
-    box-shadow: inset 3px 0 0 #38bdf8;
 }
 
 .sidebar-footer {
-    padding: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 1.1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
 }
 
-/* Main Content Area */
+/* App Main & Topbar */
 .app-main {
     flex: 1;
     margin-left: var(--sidebar-width);
@@ -120,7 +129,6 @@ body.dashboard-body {
     transition: margin-left 0.3s ease;
 }
 
-/* Topbar */
 .app-topbar {
     height: var(--topbar-height);
     background: #ffffff;
@@ -132,87 +140,133 @@ body.dashboard-body {
     position: sticky;
     top: 0;
     z-index: 1020;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
 }
 
-.topbar-search input {
-    background: #f1f5f9;
-    border: 1px solid transparent;
-    border-radius: 2rem;
-    padding: 0.45rem 1.25rem 0.45rem 2.2rem;
-    font-size: 0.88rem;
-    width: 260px;
-    transition: all 0.2s ease;
-}
-
-.topbar-search input:focus {
-    background: #fff;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    width: 320px;
-}
-
-/* Content Container */
 .app-content {
     padding: 2rem;
     flex: 1;
 }
 
-/* Stat Cards */
-.stat-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    height: 100%;
+/* Vibrant KPI Metric Cards */
+.stat-card-gradient {
+    border-radius: 1.25rem;
+    padding: 1.65rem 1.5rem;
+    color: #ffffff;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.stat-card-gradient:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 35px -5px rgba(15, 23, 42, 0.2);
+}
+
+.stat-card-gradient::after {
+    content: '';
+    position: absolute;
+    right: -20px;
+    bottom: -20px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+}
+
+.stat-card-gradient.emerald {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+}
+
+.stat-card-gradient.blue {
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+}
+
+.stat-card-gradient.crimson {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+}
+
+.stat-card-gradient.purple {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.stat-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 1.25rem;
+    padding: 1.65rem 1.5rem;
+    transition: all 0.3s ease;
+    height: 100%;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.1);
 }
 
 .stat-icon {
-    width: 3.25rem;
-    height: 3.25rem;
-    border-radius: 0.75rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
 }
 
 .stat-icon.blue { background: #eff6ff; color: #2563eb; }
 .stat-icon.green { background: #ecfdf5; color: #059669; }
 .stat-icon.red { background: #fef2f2; color: #dc2626; }
 .stat-icon.purple { background: #faf5ff; color: #9333ea; }
-.stat-icon.amber { background: #fffbeb; color: #d97706; }
 .stat-icon.teal { background: #f0fdfa; color: #0d9488; }
 
 .stat-label {
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #64748b;
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.6px;
+    margin-bottom: 0.35rem;
 }
 
 .stat-value {
-    font-size: 1.75rem;
+    font-size: clamp(1.5rem, 2.5vw, 1.85rem);
     font-weight: 800;
-    color: #0f172a;
     line-height: 1.2;
 }
 
-/* Financial Accent Cards */
+/* Modern Card Containers */
+.card-scb {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+.card-scb .card-header {
+    background: #ffffff;
+    border-bottom: 1.5px solid #f1f5f9;
+    padding: 1.25rem 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.card-scb .card-body {
+    padding: 1.75rem;
+}
+
+/* Badges & Pills */
 .cash-in-badge {
     background-color: #ecfdf5;
     color: #059669;
     border: 1px solid #a7f3d0;
     font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
 }
 
 .cash-out-badge {
@@ -220,69 +274,63 @@ body.dashboard-body {
     color: #dc2626;
     border: 1px solid #fecaca;
     font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
 }
 
-.card-scb {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-}
-
-.card-scb .card-header {
-    background: transparent;
-    border-bottom: 1px solid #f1f5f9;
-    padding: 1.25rem 1.5rem;
+.sub-status-pill {
+    padding: 0.35rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
     font-weight: 700;
-    color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
-.card-scb .card-body {
-    padding: 1.5rem;
-}
+.sub-active { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.sub-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.sub-expired { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
-/* Tables */
-.table-scb {
-    margin-bottom: 0;
-}
-
+/* Table Styling */
 .table-scb th {
     background-color: #f8fafc;
     color: #475569;
     font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 700;
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
+    letter-spacing: 0.6px;
+    font-weight: 800;
+    padding: 1rem 1.25rem;
+    border-bottom: 1.5px solid #e2e8f0;
 }
 
 .table-scb td {
-    padding: 1rem;
+    padding: 1.1rem 1.25rem;
     vertical-align: middle;
     color: #334155;
     border-bottom: 1px solid #f1f5f9;
 }
 
 .table-scb tr:hover td {
-    background-color: #f8fafc;
+    background-color: #f8faff;
 }
 
-/* Subscription status pill */
-.sub-status-pill {
-    padding: 0.35rem 0.75rem;
-    border-radius: 30px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+/* Mobile Sidebar Backdrop */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1035;
 }
 
-.sub-active { background: #dcfce7; color: #15803d; }
-.sub-pending { background: #fef3c7; color: #b45309; }
-.sub-expired { background: #fee2e2; color: #b91c1c; }
-.sub-suspended { background: #f1f5f9; color: #475569; }
+.sidebar-backdrop.show {
+    display: block;
+}
 
 /* Responsive */
 @media (max-width: 991.98px) {
@@ -296,10 +344,9 @@ body.dashboard-body {
         margin-left: 0;
     }
     .app-topbar {
-        padding: 0 1rem;
+        padding: 0 1.25rem;
     }
     .app-content {
-        padding: 1.25rem 1rem;
+        padding: 1.25rem;
     }
 }
-

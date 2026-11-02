@@ -1,21 +1,41 @@
 /* ========================================================
-   SoftobroCashBook - Modern SaaS Design System
+   SoftobroCashBook - Modern SaaS Dynamic Design System
+   Tailored for Bangladesh Business & Financial Excellence
    ======================================================== */
 
 :root {
-    --scb-primary: #1e3a8a;          /* Deep Indigo */
-    --scb-primary-dark: #0f172a;     /* Slate Dark */
-    --scb-primary-light: #3b82f6;    /* Electric Blue */
-    --scb-secondary: #0d9488;        /* Teal */
-    --scb-accent: #e2136e;           /* bKash Pink */
+    --scb-primary: #1e40af;          /* Royal Deep Blue */
+    --scb-primary-hover: #1d4ed8;
+    --scb-primary-dark: #0f172a;     /* Obsidian Slate */
+    --scb-electric: #2563eb;         /* Electric Indigo */
+    --scb-cyan: #06b6d4;             /* Vibrant Cyan */
+    --scb-teal: #0d9488;             /* Deep Teal */
+    --scb-bkash: #e2136e;            /* Official bKash Magenta */
+    --scb-bkash-dark: #9c0c4a;
     --scb-cash-in: #10b981;          /* Emerald Green */
-    --scb-cash-out: #ef4444;         /* Crimson Red */
-    --scb-bg: #f8fafc;               /* Slate Light */
+    --scb-cash-in-bg: #ecfdf5;
+    --scb-cash-out: #ef4444;         /* Coral Crimson */
+    --scb-cash-out-bg: #fef2f2;
+    --scb-amber: #f59e0b;
+    --scb-purple: #8b5cf6;
+    --scb-bg: #f8fafc;
     --scb-card-bg: #ffffff;
     --scb-text: #0f172a;
     --scb-text-muted: #64748b;
     --scb-border: #e2e8f0;
-    --scb-glow: rgba(59, 130, 246, 0.15);
+    --scb-radius-sm: 8px;
+    --scb-radius-md: 14px;
+    --scb-radius-lg: 20px;
+    --scb-radius-xl: 28px;
+    --scb-shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+    --scb-shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+    --scb-shadow-lg: 0 20px 40px -10px rgba(15, 23, 42, 0.12);
+    --scb-shadow-glow: 0 12px 35px -5px rgba(37, 99, 235, 0.25);
+}
+
+/* Global Reset & Base */
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 body {
@@ -27,25 +47,51 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* Keyframe Animations */
+@keyframes floatSlow {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+@keyframes pulseBkash {
+    0% { box-shadow: 0 0 0 0 rgba(226, 19, 110, 0.5); }
+    70% { box-shadow: 0 0 0 12px rgba(226, 19, 110, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(226, 19, 110, 0); }
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
 /* Glassmorphism Navbar */
 .navbar-scb {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
     transition: all 0.3s ease;
-    padding: 0.85rem 0;
+    padding: 0.9rem 0;
+    z-index: 1030;
 }
 
 .navbar-scb .navbar-brand {
     font-weight: 800;
-    font-size: 1.4rem;
+    font-size: 1.45rem;
     letter-spacing: -0.6px;
-    color: var(--scb-primary-dark);
+    color: #0f172a;
+    text-decoration: none;
 }
 
 .navbar-scb .navbar-brand span {
-    background: linear-gradient(135deg, #2563eb 0%, #0d9488 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #06b6d4 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -53,42 +99,53 @@ body {
 .navbar-scb .nav-link {
     font-weight: 600;
     color: #475569;
-    padding: 0.5rem 1rem;
-    font-size: 0.94rem;
-    transition: all 0.2s ease;
-    border-radius: 8px;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.95rem;
+    border-radius: 50px;
+    transition: all 0.25s ease;
 }
 
 .navbar-scb .nav-link:hover {
     color: #2563eb;
-    background: rgba(37, 99, 235, 0.04);
+    background: rgba(37, 99, 235, 0.08);
 }
 
-/* Hero Section */
+/* Vibrant Hero Section */
 .hero-section {
     position: relative;
     padding: 6.5rem 0 5.5rem;
-    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37, 99, 235, 0.12), transparent),
-                radial-gradient(circle at 100% 60%, rgba(13, 148, 136, 0.08), transparent 30%),
-                radial-gradient(circle at 0% 80%, rgba(226, 19, 110, 0.05), transparent 25%);
+    background: radial-gradient(ellipse 90% 60% at 50% -10%, rgba(37, 99, 235, 0.15), transparent),
+                radial-gradient(circle at 100% 40%, rgba(13, 148, 136, 0.1), transparent 40%),
+                radial-gradient(circle at 0% 70%, rgba(226, 19, 110, 0.08), transparent 35%),
+                linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    overflow: hidden;
 }
 
 .hero-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
     background: #ffffff;
-    border: 1px solid rgba(37, 99, 235, 0.2);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
-    padding: 0.4rem 1.1rem;
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.09);
+    padding: 0.45rem 1.25rem;
     border-radius: 100px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--scb-primary);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #1e40af;
+}
+
+.live-pulse {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: pulseGlow 2s infinite;
 }
 
 .hero-title {
-    font-size: 3.4rem;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -1.2px;
@@ -96,13 +153,13 @@ body {
 }
 
 .hero-title .gradient-text {
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0d9488 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 40%, #0d9488 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .hero-subtitle {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     color: #475569;
     font-weight: 400;
     line-height: 1.7;
@@ -111,23 +168,25 @@ body {
 /* Hero Interactive Mockup Card */
 .hero-mockup-card {
     background: #ffffff;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 1.5rem;
-    box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.12),
-                0 0 0 1px rgba(15, 23, 42, 0.04);
+    border: 1.5px solid rgba(226, 232, 240, 0.95);
+    border-radius: var(--scb-radius-xl);
+    box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.15),
+                0 0 0 1px rgba(37, 99, 235, 0.05);
     overflow: hidden;
     position: relative;
-    transition: transform 0.3s ease;
+    animation: floatSlow 6s ease-in-out infinite;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .hero-mockup-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 30px 70px -10px rgba(37, 99, 235, 0.2);
 }
 
 .mockup-header {
-    background: #f8fafc;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
     border-bottom: 1px solid var(--scb-border);
-    padding: 0.85rem 1.25rem;
+    padding: 0.9rem 1.4rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -135,12 +194,12 @@ body {
 
 .window-dots {
     display: flex;
-    gap: 6px;
+    gap: 7px;
 }
 
 .window-dot {
-    width: 10px;
-    height: 10px;
+    width: 11px;
+    height: 11px;
     border-radius: 50%;
 }
 
@@ -152,28 +211,12 @@ body {
     padding: 1.75rem;
 }
 
-.live-pulse {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #10b981;
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    animation: pulse 1.8s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-
-/* Metric Ticker Bar */
+/* Metric Ribbon */
 .stats-ribbon {
     background: #ffffff;
     border-top: 1px solid var(--scb-border);
     border-bottom: 1px solid var(--scb-border);
-    padding: 2.25rem 0;
+    padding: 2.75rem 0;
 }
 
 .stat-item {
@@ -182,90 +225,125 @@ body {
 }
 
 .stat-number {
-    font-size: 2.25rem;
+    font-size: clamp(2rem, 3.5vw, 2.75rem);
     font-weight: 800;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.8px;
     color: var(--scb-primary-dark);
     line-height: 1.1;
     margin-bottom: 0.35rem;
 }
 
 .stat-title {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--scb-text-muted);
-    font-weight: 500;
+    font-weight: 600;
 }
 
-/* Problem vs Solution */
+/* Problem vs Solution Comparison */
 .comparison-card {
-    border-radius: 1.25rem;
-    padding: 2rem;
-    height: 100%;
-}
-
-.comparison-card.problem {
-    background: #fff5f5;
-    border: 1px solid #fecaca;
-}
-
-.comparison-card.solution {
-    background: #f0fdf4;
-    border: 1.5px solid #86efac;
-    box-shadow: 0 10px 30px -5px rgba(22, 163, 74, 0.1);
-}
-
-/* Feature Cards */
-.feature-card-modern {
-    background: #ffffff;
-    border: 1px solid var(--scb-border);
-    border-radius: 1.25rem;
+    border-radius: var(--scb-radius-lg);
     padding: 2.25rem 2rem;
     height: 100%;
     transition: all 0.3s ease;
+}
+
+.comparison-card.problem {
+    background: linear-gradient(145deg, #fff5f5 0%, #fef2f2 100%);
+    border: 1.5px solid #fecaca;
+    box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.08);
+}
+
+.comparison-card.solution {
+    background: linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 2px solid #86efac;
+    box-shadow: 0 12px 30px -5px rgba(16, 185, 129, 0.15);
+}
+
+.comparison-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Colorful Modern Feature Cards */
+.feature-card-modern {
+    background: #ffffff;
+    border: 1.5px solid var(--scb-border);
+    border-radius: var(--scb-radius-lg);
+    padding: 2.25rem 2rem;
+    height: 100%;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
+    box-shadow: var(--scb-shadow-sm);
+}
+
+.feature-card-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #2563eb, #06b6d4);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .feature-card-modern:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.08);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 45px -10px rgba(37, 99, 235, 0.14);
     border-color: #93c5fd;
 }
 
+.feature-card-modern:hover::before {
+    opacity: 1;
+}
+
 .feature-icon-box {
-    width: 3.8rem;
-    height: 3.8rem;
-    border-radius: 1rem;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1.15rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.7rem;
+    font-size: 1.85rem;
     margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
 }
 
-/* Pricing Section */
+.feature-card-modern:hover .feature-icon-box {
+    transform: scale(1.1) rotate(2deg);
+}
+
+/* Pricing Cards */
 .pricing-card-modern {
     background: #ffffff;
-    border: 1px solid var(--scb-border);
-    border-radius: 1.5rem;
+    border: 1.5px solid var(--scb-border);
+    border-radius: var(--scb-radius-xl);
     padding: 2.75rem 2.25rem;
-    transition: all 0.3s ease;
+    transition: all 0.35s ease;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
     position: relative;
+    box-shadow: var(--scb-shadow-sm);
 }
 
 .pricing-card-modern:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+    transform: translateY(-6px);
+    box-shadow: var(--scb-shadow-lg);
+    border-color: #93c5fd;
 }
 
 .pricing-card-modern.popular {
-    border: 2px solid #2563eb;
-    box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.2);
+    border: 2.5px solid #2563eb;
+    box-shadow: 0 25px 60px -10px rgba(37, 99, 235, 0.22);
+    background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
     transform: scale(1.03);
+}
+
+.pricing-card-modern.popular:hover {
+    transform: scale(1.04) translateY(-6px);
 }
 
 .popular-ribbon {
@@ -273,15 +351,15 @@ body {
     top: -14px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
     color: #ffffff;
     font-size: 0.78rem;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 0.35rem 1.25rem;
+    letter-spacing: 1.2px;
+    padding: 0.4rem 1.4rem;
     border-radius: 50px;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
 }
 
 .price-box {
@@ -289,14 +367,15 @@ body {
 }
 
 .price-currency {
-    font-size: 1.6rem;
-    font-weight: 700;
+    font-size: 1.75rem;
+    font-weight: 800;
     vertical-align: top;
-    margin-right: 2px;
+    color: #2563eb;
+    margin-right: 3px;
 }
 
 .price-val {
-    font-size: 3.25rem;
+    font-size: clamp(2.5rem, 4vw, 3.4rem);
     font-weight: 800;
     color: var(--scb-primary-dark);
     line-height: 1;
@@ -304,17 +383,17 @@ body {
 
 .price-term {
     color: var(--scb-text-muted);
-    font-size: 0.95rem;
-    font-weight: 500;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
-/* bKash Banner */
+/* Signature bKash Banner */
 .bkash-lux-banner {
-    background: linear-gradient(135deg, #e2136e 0%, #9c0c4a 100%);
+    background: linear-gradient(135deg, #e2136e 0%, #be1259 50%, #880b40 100%);
     color: #ffffff;
-    border-radius: 1.75rem;
-    padding: 3.5rem 3rem;
-    box-shadow: 0 20px 45px -10px rgba(226, 19, 110, 0.35);
+    border-radius: var(--scb-radius-xl);
+    padding: 3.75rem 3.25rem;
+    box-shadow: 0 25px 60px -12px rgba(226, 19, 110, 0.45);
     position: relative;
     overflow: hidden;
 }
@@ -324,64 +403,113 @@ body {
     position: absolute;
     top: -50%;
     right: -20%;
-    width: 400px;
-    height: 400px;
+    width: 450px;
+    height: 450px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
     pointer-events: none;
+}
+
+.bkash-lux-banner .badge-pill-step {
+    background: rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 0.55rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
 /* Testimonial Cards */
 .testimonial-card {
     background: #ffffff;
-    border: 1px solid var(--scb-border);
-    border-radius: 1.25rem;
-    padding: 2rem;
+    border: 1.5px solid var(--scb-border);
+    border-radius: var(--scb-radius-lg);
+    padding: 2.25rem 2rem;
     height: 100%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    box-shadow: var(--scb-shadow-sm);
+    transition: all 0.3s ease;
 }
 
-/* Buttons */
+.testimonial-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--scb-shadow-md);
+    border-color: #cbd5e1;
+}
+
+/* Dynamic Buttons */
 .btn-scb-primary {
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-    color: #ffffff;
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+    color: #ffffff !important;
     border: none;
     padding: 0.85rem 2rem;
-    border-radius: 0.75rem;
+    border-radius: 50px;
     font-weight: 700;
     font-size: 1rem;
-    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.4);
     transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
 .btn-scb-primary:hover {
     background: linear-gradient(135deg, #172554 0%, #1d4ed8 100%);
-    color: #ffffff;
+    color: #ffffff !important;
     transform: translateY(-2px);
-    box-shadow: 0 12px 25px -4px rgba(37, 99, 235, 0.45);
+    box-shadow: 0 12px 30px -4px rgba(37, 99, 235, 0.55);
 }
 
 .btn-scb-outline {
     background: #ffffff;
-    color: var(--scb-primary-dark);
+    color: #1e40af !important;
     border: 1.5px solid #cbd5e1;
     padding: 0.8rem 2rem;
-    border-radius: 0.75rem;
+    border-radius: 50px;
     font-weight: 700;
     font-size: 1rem;
     transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
 }
 
 .btn-scb-outline:hover {
-    background: #f8fafc;
-    border-color: #94a3b8;
-    color: #2563eb;
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #1d4ed8 !important;
     transform: translateY(-2px);
 }
 
-/* Footer */
+.btn-scb-bkash {
+    background: #ffffff;
+    color: #e2136e !important;
+    border: none;
+    padding: 0.95rem 2.25rem;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-scb-bkash:hover {
+    background: #fff;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.22);
+    color: #be1259 !important;
+}
+
+/* Footer Modern */
 .footer-modern {
-    background: #090d16;
+    background: #0b0f19;
     color: #94a3b8;
     padding: 5rem 0 2.5rem;
     border-top: 1px solid #1e293b;
@@ -404,11 +532,18 @@ body {
     color: #38bdf8;
 }
 
+/* Responsive Rules */
 @media (max-width: 991.98px) {
-    .hero-title {
-        font-size: 2.6rem;
+    .hero-section {
+        padding: 4.5rem 0 3.5rem;
     }
     .pricing-card-modern.popular {
         transform: none;
+    }
+    .pricing-card-modern.popular:hover {
+        transform: translateY(-4px);
+    }
+    .bkash-lux-banner {
+        padding: 2.5rem 1.75rem;
     }
 }
