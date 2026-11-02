@@ -101,9 +101,21 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'payments:admin_payment_detail' p.id %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye me-1"></i> Review
-                            </a>
+                            <div class="d-flex align-items-center gap-1">
+                                {% if p.status == 'PENDING' %}
+                                <form method="post" action="{% url 'payments:admin_payment_detail' p.id %}" class="d-inline" onsubmit="return confirm('Approve payment #{{ p.id }} and automatically provision tenant database?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="APPROVE">
+                                    <input type="hidden" name="admin_notes" value="Quick approved via payments list.">
+                                    <button type="submit" class="btn btn-sm btn-success text-white" title="Approve & Automatically Provision Database">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Approve
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <a href="{% url 'payments:admin_payment_detail' p.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i> Review
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}

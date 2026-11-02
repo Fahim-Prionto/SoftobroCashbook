@@ -30,18 +30,15 @@
 
                 <form method="post">
                     {% csrf_token %}
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-dark">
-                            Type the exact database name to confirm: <span class="text-danger font-monospace">{{ tenant.db_name }}</span>
-                        </label>
-                        <input type="text" name="confirm_db_name" class="form-control font-monospace" placeholder="{{ tenant.db_name }}" required autocomplete="off">
-                    </div>
+                    <p class="text-danger fw-bold small mb-4">
+                        <i class="bi bi-info-circle me-1"></i> Clicking the button below will immediately drop <code>{{ tenant.db_name }}</code> from PostgreSQL without additional verification prompts.
+                    </p>
 
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'tenants:admin_tenant_list' %}" class="btn btn-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'tenants:admin_tenant_list' %}" class="btn btn-light px-4">
                             Cancel
                         </a>
-                        <button type="submit" class="btn btn-danger px-4 fw-bold">
+                        <button type="submit" class="btn btn-danger px-4 py-2 fw-bold">
                             Permanently Drop Database <i class="bi bi-trash ms-1"></i>
                         </button>
                     </div>

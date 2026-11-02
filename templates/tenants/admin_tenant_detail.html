@@ -51,9 +51,12 @@
                     <a href="{% url 'tenants:admin_tenant_reprovision' tenant.id %}" class="btn btn-outline-warning" onclick="return confirm('Do you want to re-run tenant migrations on this database?');">
                         <i class="bi bi-arrow-repeat me-1"></i> Re-Run Migrations
                     </a>
-                    <a href="{% url 'tenants:admin_tenant_delete' tenant.id %}" class="btn btn-outline-danger ms-auto">
-                        <i class="bi bi-trash me-1"></i> Safe Drop Database
-                    </a>
+                    <form method="post" action="{% url 'tenants:admin_tenant_delete' tenant.id %}" class="ms-auto" onsubmit="return confirm('Permanently drop tenant database {{ tenant.db_name }}? All ledger records will be permanently erased.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger fw-bold">
+                            <i class="bi bi-trash me-1"></i> Drop Database Now
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

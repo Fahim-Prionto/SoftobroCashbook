@@ -63,11 +63,6 @@ def admin_tenant_delete_view(request, tenant_id):
     service_admin = tenant.service_admin
 
     if request.method == 'POST':
-        confirm_name = request.POST.get('confirm_db_name', '').strip()
-        if confirm_name != tenant.db_name:
-            messages.error(request, f"Database name confirmation does not match '{tenant.db_name}'. Deletion aborted.")
-            return render(request, 'tenants/admin_delete_confirm.html', {'tenant': tenant, 'service_admin': service_admin})
-
         try:
             from core.utils import get_client_ip
             delete_tenant_database(
@@ -75,10 +70,10 @@ def admin_tenant_delete_view(request, tenant_id):
                 actor=request.user,
                 ip_address=get_client_ip(request),
             )
-            messages.success(request, f"Tenant database '{tenant.db_name}' has been safely dropped and metadata purged.")
+            messages.success(request, f"Tenant database '{tenant.db_name}' has been automatically dropped and purged.")
             return redirect('tenants:admin_tenant_list')
         except Exception as e:
-            messages.error(request, f"Failed to safely delete tenant database: {e}")
+            messages.error(request, f"Failed to delete tenant database: {e}")
             return render(request, 'tenants/admin_delete_confirm.html', {'tenant': tenant, 'service_admin': service_admin})
 
     return render(request, 'tenants/admin_delete_confirm.html', {

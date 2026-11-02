@@ -42,22 +42,27 @@
                     </div>
                 </div>
 
-                <!-- Status Management Form -->
-                <form method="post" action="{% url 'core:admin_service_admin_status' admin_user.id %}" class="d-flex align-items-center gap-2 pt-3 border-top">
-                    {% csrf_token %}
-                    <label class="form-label small fw-bold mb-0 text-dark">Change Account Status:</label>
-                    <select name="status" class="form-select form-select-sm" style="width: 180px;">
-                        <option value="ACTIVE" {% if admin_user.status == 'ACTIVE' %}selected{% endif %}>Active</option>
-                        <option value="PENDING_APPROVAL" {% if admin_user.status == 'PENDING_APPROVAL' %}selected{% endif %}>Pending Approval</option>
-                        <option value="SUSPENDED" {% if admin_user.status == 'SUSPENDED' %}selected{% endif %}>Suspended</option>
-                        <option value="DEACTIVATED" {% if admin_user.status == 'DEACTIVATED' %}selected{% endif %}>Deactivated</option>
-                    </select>
-                    <button type="submit" class="btn btn-sm btn-outline-primary">Update Status</button>
+                <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap gap-2">
+                    <!-- Status Management Form -->
+                    <form method="post" action="{% url 'core:admin_service_admin_status' admin_user.id %}" class="d-flex align-items-center gap-2">
+                        {% csrf_token %}
+                        <label class="form-label small fw-bold mb-0 text-dark">Change Account Status:</label>
+                        <select name="status" class="form-select form-select-sm" style="width: 180px;">
+                            <option value="ACTIVE" {% if admin_user.status == 'ACTIVE' %}selected{% endif %}>Active (Auto-creates DB)</option>
+                            <option value="PENDING_APPROVAL" {% if admin_user.status == 'PENDING_APPROVAL' %}selected{% endif %}>Pending Approval</option>
+                            <option value="SUSPENDED" {% if admin_user.status == 'SUSPENDED' %}selected{% endif %}>Suspended</option>
+                            <option value="DEACTIVATED" {% if admin_user.status == 'DEACTIVATED' %}selected{% endif %}>Deactivated</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Update Status</button>
+                    </form>
 
-                    <a href="{% url 'core:admin_service_admin_delete' admin_user.id %}" class="btn btn-sm btn-outline-danger ms-auto">
-                        <i class="bi bi-trash me-1"></i> Delete Admin & Tenant DB
-                    </a>
-                </form>
+                    <form method="post" action="{% url 'core:admin_service_admin_delete' admin_user.id %}" onsubmit="return confirm('Permanently delete Service Admin {{ admin_user.username }} and drop their isolated tenant database?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger fw-bold">
+                            <i class="bi bi-trash me-1"></i> Delete Admin & Database
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 

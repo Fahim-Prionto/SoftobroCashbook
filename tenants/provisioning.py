@@ -101,14 +101,25 @@ def provision_tenant_database(service_admin, actor=None, ip_address=None):
             super_user = getattr(settings, 'TENANT_DB_SUPER_USER', 'postgres')
             super_pass = getattr(settings, 'TENANT_DB_SUPER_PASSWORD', 'postgres')
 
-            conn = psycopg2.connect(
-                host=host,
-                port=port,
-                user=super_user,
-                password=super_pass,
-                dbname='postgres',
-                connect_timeout=10,
-            )
+            conn_dbname = settings.DATABASES.get('default', {}).get('NAME') or 'postgres'
+            try:
+                conn = psycopg2.connect(
+                    host=host,
+                    port=port,
+                    user=super_user,
+                    password=super_pass,
+                    dbname=conn_dbname,
+                    connect_timeout=10,
+                )
+            except Exception:
+                conn = psycopg2.connect(
+                    host=host,
+                    port=port,
+                    user=super_user,
+                    password=super_pass,
+                    dbname='postgres',
+                    connect_timeout=10,
+                )
             conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             cur = conn.cursor()
 
@@ -180,14 +191,25 @@ def delete_tenant_database(tenant, actor=None, ip_address=None):
         super_user = getattr(settings, 'TENANT_DB_SUPER_USER', 'postgres')
         super_pass = getattr(settings, 'TENANT_DB_SUPER_PASSWORD', 'postgres')
 
-        conn = psycopg2.connect(
-            host=host,
-            port=port,
-            user=super_user,
-            password=super_pass,
-            dbname='postgres',
-            connect_timeout=10,
-        )
+        conn_dbname = settings.DATABASES.get('default', {}).get('NAME') or 'postgres'
+        try:
+            conn = psycopg2.connect(
+                host=host,
+                port=port,
+                user=super_user,
+                password=super_pass,
+                dbname=conn_dbname,
+                connect_timeout=10,
+            )
+        except Exception:
+            conn = psycopg2.connect(
+                host=host,
+                port=port,
+                user=super_user,
+                password=super_pass,
+                dbname='postgres',
+                connect_timeout=10,
+            )
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur = conn.cursor()
 

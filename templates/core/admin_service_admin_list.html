@@ -87,13 +87,26 @@
                             {% endif %}
                         </td>
                         <td>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex align-items-center gap-1">
+                                {% if a.status == 'PENDING_APPROVAL' %}
+                                <form method="post" action="{% url 'core:admin_service_admin_status' a.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="ACTIVE">
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="btn btn-sm btn-success px-2 py-1 text-white" title="Approve & Create Database Automatically">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Approve
+                                    </button>
+                                </form>
+                                {% endif %}
                                 <a href="{% url 'core:admin_service_admin_detail' a.id %}" class="btn btn-sm btn-outline-primary" title="Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{% url 'core:admin_service_admin_delete' a.id %}" class="btn btn-sm btn-outline-danger" title="Delete Admin & DB">
-                                    <i class="bi bi-trash"></i>
-                                </a>
+                                <form method="post" action="{% url 'core:admin_service_admin_delete' a.id %}" class="d-inline" onsubmit="return confirm('Permanently delete Service Admin {{ a.username }} and drop their database?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Admin & DB Automatically">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

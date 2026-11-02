@@ -113,10 +113,10 @@ DATABASES = {
 DATABASE_ROUTERS = ['tenants.router.TenantDatabaseRouter']
 
 # Tenant provisioning parameters
-TENANT_DB_HOST = os.getenv('TENANT_DB_HOST', 'localhost')
-TENANT_DB_PORT = int(os.getenv('TENANT_DB_PORT', 5432))
-TENANT_DB_SUPER_USER = os.getenv('TENANT_DB_SUPER_USER', 'postgres')
-TENANT_DB_SUPER_PASSWORD = os.getenv('TENANT_DB_SUPER_PASSWORD', 'postgres')
+TENANT_DB_HOST = os.getenv('TENANT_DB_HOST', os.getenv('CENTRAL_DB_HOST', 'localhost'))
+TENANT_DB_PORT = int(os.getenv('TENANT_DB_PORT', os.getenv('CENTRAL_DB_PORT', '5432')))
+TENANT_DB_SUPER_USER = os.getenv('TENANT_DB_SUPER_USER', os.getenv('CENTRAL_DB_USER', 'postgres'))
+TENANT_DB_SUPER_PASSWORD = os.getenv('TENANT_DB_SUPER_PASSWORD', os.getenv('CENTRAL_DB_PASSWORD', 'postgres'))
 TENANT_DB_PREFIX = os.getenv('TENANT_DB_PREFIX', 'scb_tenant_')
 ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', 'b5q3L9DVOgq27l6htokTAYMt3nC3R3pzZu1WonV18mk=')
 

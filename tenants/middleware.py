@@ -19,9 +19,31 @@ class TenantMiddleware:
         request.tenant = None
         user = getattr(request, 'user', None)
 
+        # Support DRF token authentication in middleware if session auth is not present
+        if not user or not user.is_authenticated:
+            auth_header = request.headers.get('Authorization', '') or request.META.get('HTTP_AUTHORIZATION', '')
+            if auth_header.startswith('Token '):
+                token_key = auth_header.split(' ', 1)[1].strip()
+                try:
+                    from rest_framework.authtoken.models import Token
+                    token = Token.objects.select_related('user').get(key=token_key)
+                    user = token.user
+                    request.user = user
+                except Exception:
+                    pass
+
         if user and user.is_authenticated and hasattr(user, 'is_service_admin') and user.is_service_admin:
             try:
                 tenant = getattr(user, 'tenant', None)
+
+                # If user is ACTIVE but tenant DB is not yet provisioned, auto-provision
+                if getattr(user, 'status', None) == 'ACTIVE' and (not tenant or tenant.status != TenantStatus.PROVISIONED):
+                    try:
+                        from tenants.provisioning import provision_tenant_database
+                        tenant = provision_tenant_database(user)
+                    except Exception as e:
+                        logger.error(f"On-the-fly tenant provisioning failed for user {user.id}: {e}")
+
                 if tenant and tenant.status == TenantStatus.PROVISIONED:
                     alias = ensure_tenant_database_registered(tenant)
                     set_current_tenant_alias(alias)

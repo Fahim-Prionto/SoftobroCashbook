@@ -48,8 +48,17 @@ def approved_service_admin_required(view_func):
         # Check tenant database status
         tenant = getattr(request.user, 'tenant', None)
         if not tenant or tenant.status != TenantStatus.PROVISIONED:
-            messages.warning(request, "Your isolated database is being set up. Please wait or check your payment status.")
-            return redirect('payments:payment_pending')
+            if request.user.status == AccountStatus.ACTIVE:
+                try:
+                    from tenants.provisioning import provision_tenant_database
+                    from core.utils import get_client_ip
+                    tenant = provision_tenant_database(request.user, actor=request.user, ip_address=get_client_ip(request))
+                except Exception:
+                    pass
+
+            if not tenant or tenant.status != TenantStatus.PROVISIONED:
+                messages.warning(request, "Your isolated database is being set up. Please wait or check your payment status.")
+                return redirect('payments:payment_pending')
 
         # Check subscription status
         subscription = getattr(request.user, 'subscription', None)

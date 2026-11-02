@@ -179,6 +179,19 @@ def admin_service_admin_status_view(request, user_id):
         admin_user.status = new_status
         admin_user.save()
 
+        # If activated / approved, automatically provision tenant database if not already provisioned
+        if new_status == AccountStatus.ACTIVE:
+            tenant = getattr(admin_user, 'tenant', None)
+            if not tenant or tenant.status != TenantStatus.PROVISIONED:
+                try:
+                    from tenants.provisioning import provision_tenant_database
+                    from core.utils import get_client_ip
+                    provision_tenant_database(admin_user, actor=request.user, ip_address=get_client_ip(request))
+                    messages.success(request, f"Tenant database for '{admin_user.username}' was automatically created & provisioned.")
+                except Exception as e:
+                    logger.error(f"Auto-provisioning failed for {admin_user.username}: {e}", exc_info=True)
+                    messages.warning(request, f"Account activated, but tenant database provisioning encountered an issue: {e}")
+
         try:
             from core.utils import get_client_ip
             AuditLog.objects.create(
@@ -192,6 +205,9 @@ def admin_service_admin_status_view(request, user_id):
             pass
         messages.success(request, f"Status of '{admin_user.username}' changed to {admin_user.get_status_display()}.")
 
+    next_url = request.POST.get('next') or request.GET.get('next')
+    if next_url:
+        return redirect(next_url)
     return redirect('core:admin_service_admin_detail', user_id=admin_user.id)
 
 
@@ -206,11 +222,6 @@ def admin_service_admin_delete_view(request, user_id):
     tenant = getattr(admin_user, 'tenant', None)
 
     if request.method == 'POST':
-        confirm_text = request.POST.get('confirm_username', '').strip()
-        if confirm_text != admin_user.username:
-            messages.error(request, f"Username confirmation does not match '{admin_user.username}'. Deletion cancelled.")
-            return render(request, 'core/admin_delete_user_confirm.html', {'admin_user': admin_user, 'tenant': tenant})
-
         # Safely delete tenant database first
         if tenant:
             try:
@@ -239,7 +250,7 @@ def admin_service_admin_delete_view(request, user_id):
 
         username = admin_user.username
         admin_user.delete()
-        messages.success(request, f"Service Admin '{username}' and their isolated tenant database have been permanently deleted.")
+        messages.success(request, f"Service Admin '{username}' and their isolated tenant database have been automatically deleted.")
         return redirect('core:admin_service_admin_list')
 
     return render(request, 'core/admin_delete_user_confirm.html', {

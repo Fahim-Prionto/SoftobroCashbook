@@ -60,9 +60,12 @@
                                 <a href="{% url 'tenants:admin_tenant_detail' t.id %}" class="btn btn-sm btn-outline-primary" title="Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{% url 'tenants:admin_tenant_delete' t.id %}" class="btn btn-sm btn-outline-danger" title="Drop Database">
-                                    <i class="bi bi-trash"></i>
-                                </a>
+                                <form method="post" action="{% url 'tenants:admin_tenant_delete' t.id %}" class="d-inline" onsubmit="return confirm('Permanently drop tenant database {{ t.db_name }}? All ledger records will be erased.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Drop Database Automatically">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
