@@ -11,10 +11,21 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-softobrocashbook-dev-secre
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 hosts_str = os.getenv('ALLOWED_HOSTS', '*')
-if hosts_str == '*':
+if hosts_str == '*' or not hosts_str:
     ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = [h.strip() for h in hosts_str.split(',') if h.strip()]
+
+# Ensure current production domains are always allowed
+for h in ['cashbook.softobro.com', '.softobro.com', 'localhost', '127.0.0.1']:
+    if h not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(h)
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://cashbook.softobro.com',
+    'http://cashbook.softobro.com',
+    'https://*.softobro.com',
+]
 
 AUTH_USER_MODEL = 'accounts.User'
 

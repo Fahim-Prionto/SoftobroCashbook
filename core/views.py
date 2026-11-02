@@ -17,7 +17,10 @@ from tenants.provisioning import delete_tenant_database
 def landing_view(request):
     if request.user.is_authenticated:
         return redirect('core:dashboard_redirect')
-    plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_bdt')
+    try:
+        plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_bdt')
+    except Exception:
+        plans = []
     return render(request, 'core/landing.html', {'plans': plans})
 
 
@@ -30,7 +33,10 @@ def features_view(request):
 
 
 def pricing_view(request):
-    plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_bdt')
+    try:
+        plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_bdt')
+    except Exception:
+        plans = []
     return render(request, 'core/pricing.html', {'plans': plans})
 
 
