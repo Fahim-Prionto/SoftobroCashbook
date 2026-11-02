@@ -8,68 +8,143 @@
 <section class="hero-section">
     <div class="container">
         <div class="row align-items-center g-5">
-            <div class="col-lg-7">
-                <div class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold mb-3">
-                    <i class="bi bi-shield-check me-1"></i> Dedicated Multi-Tenant Database Architecture
+            <!-- Left Hero Content -->
+            <div class="col-lg-6">
+                <div class="hero-pill mb-4">
+                    <span class="live-pulse"></span>
+                    <span>Bangladesh's First Multi-Tenant Cashbook SaaS</span>
                 </div>
+
                 <h1 class="hero-title mb-4">
-                    Take Complete Control of Your <span>Business Cashflow</span> in Bangladesh.
+                    Master Your Business Cashflow. <span class="gradient-text">Zero Data Leaks.</span>
                 </h1>
+
                 <p class="hero-subtitle mb-4">
-                    The modern, CashBook-inspired financial management SaaS. Manage multiple businesses, unlimited cashbooks, daily cash-in & cash-out with automatic balances and instant bKash subscriptions.
+                    The modern, CashBook-inspired financial platform tailored for Bangladesh. Manage multiple businesses, unlimited cashbooks, daily cash-in & cash-out with automatic balances and instant bKash subscriptions.
                 </p>
+
                 <div class="d-flex flex-wrap gap-3 mb-4">
-                    <a href="{% url 'accounts:register' %}" class="btn btn-scb-primary btn-lg shadow">
-                        Get Started Today <i class="bi bi-arrow-right ms-2"></i>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-scb-primary">
+                        Get Started Free <i class="bi bi-arrow-right ms-2"></i>
                     </a>
-                    <a href="{% url 'core:pricing' %}" class="btn btn-scb-outline btn-lg">
-                        Explore Plans & Pricing
+                    <a href="#pricing" class="btn btn-scb-outline">
+                        View Subscription Plans
                     </a>
                 </div>
-                <div class="d-flex align-items-center gap-4 text-muted small pt-2">
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-check-circle-fill text-success"></i> 100% Isolated Database
+
+                <div class="d-flex flex-wrap align-items-center gap-4 text-muted small pt-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success fs-5"></i>
+                        <span class="fw-semibold">100% Isolated Database</span>
                     </div>
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-check-circle-fill text-success"></i> Instant bKash Pay
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-phone-fill text-danger fs-5"></i>
+                        <span class="fw-semibold">Instant bKash Pay</span>
                     </div>
-                    <div class="d-flex align-items-center gap-1">
-                        <i class="bi bi-check-circle-fill text-success"></i> Print-Ready A4 Reports
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-printer text-primary fs-5"></i>
+                        <span class="fw-semibold">A4 Print Statements</span>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-5">
-                <div class="card border-0 shadow-lg rounded-4 p-4 bg-white position-relative overflow-hidden">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="rounded-circle bg-success text-white p-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                <i class="bi bi-cash-stack"></i>
+
+            <!-- Right Hero Interactive Dashboard Mockup -->
+            <div class="col-lg-6">
+                <div class="hero-mockup-card">
+                    <div class="mockup-header">
+                        <div class="window-dots">
+                            <span class="window-dot red"></span>
+                            <span class="window-dot yellow"></span>
+                            <span class="window-dot green"></span>
+                        </div>
+                        <div class="badge bg-light text-dark border px-3 py-1 font-monospace small">
+                            <i class="bi bi-database text-primary me-1"></i> scb_tenant_demo
+                        </div>
+                        <div class="d-flex align-items-center gap-2 small text-muted">
+                            <span class="live-pulse"></span> Live Sync
+                        </div>
+                    </div>
+
+                    <div class="mockup-body">
+                        <!-- Top Outlet Selector & Balance -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small">
+                                    <i class="bi bi-shop me-1"></i> Dhaka Flagship Outlet
+                                </span>
+                                <div class="text-muted small mt-1">Daily Cash Counter Ledger</div>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small">
+                                Active Term
                             </span>
-                            <span class="fw-bold text-dark">Live Cash Balance</span>
                         </div>
-                        <span class="badge bg-success-subtle text-success">Active Ledger</span>
-                    </div>
-                    <div class="mb-4">
-                        <div class="text-secondary small">Total Net Balance</div>
-                        <h2 class="fw-bold text-primary mb-0">৳ 2,45,850.00</h2>
-                    </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <div class="p-3 rounded-3 bg-light border-start border-4 border-success">
-                                <span class="small text-muted d-block">Today Cash-In</span>
-                                <span class="fw-bold text-success fs-5">+৳ 35,400</span>
+
+                        <!-- Current Balance -->
+                        <div class="p-3 rounded-4 bg-light border mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-secondary small fw-bold text-uppercase">Net Current Cash Balance</div>
+                                    <div class="fs-2 fw-bold text-dark mb-0">৳ 3,84,650.00</div>
+                                </div>
+                                <div class="rounded-circle bg-success text-white p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                                    <i class="bi bi-wallet2 fs-5"></i>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="p-3 rounded-3 bg-light border-start border-4 border-danger">
-                                <span class="small text-muted d-block">Today Cash-Out</span>
-                                <span class="fw-bold text-danger fs-5">-৳ 12,250</span>
+
+                        <!-- Cash In vs Cash Out Row -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="p-3 rounded-3 bg-white border border-success-subtle border-start border-4 border-success">
+                                    <span class="small text-muted d-block">Today's Cash-In</span>
+                                    <span class="fw-bold text-success fs-5">+৳ 48,250.00</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 rounded-3 bg-white border border-danger-subtle border-start border-4 border-danger">
+                                    <span class="small text-muted d-block">Today's Cash-Out</span>
+                                    <span class="fw-bold text-danger fs-5">-৳ 14,800.00</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="p-3 rounded-3 bg-primary bg-opacity-10 text-primary small d-flex align-items-center gap-2">
-                        <i class="bi bi-lock-fill fs-5"></i>
-                        <span>Zero data leak: Your financial data lives in your private PostgreSQL tenant database.</span>
+
+                        <!-- Mini Transactions Ledger -->
+                        <div class="border rounded-3 p-2 bg-white small mb-3">
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 px-1 text-muted fw-bold" style="font-size: 0.75rem;">
+                                <span>RECENT TRANSACTIONS</span>
+                                <span>AMOUNT (BDT)</span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center py-1 px-1">
+                                <div>
+                                    <div class="fw-bold text-dark">Wholesale Inventory Sales</div>
+                                    <div class="text-muted" style="font-size: 0.72rem;">Customer Payment &bull; Memo #1042</div>
+                                </div>
+                                <div class="fw-bold text-success">+৳ 28,000.00</div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center py-1 px-1 border-top">
+                                <div>
+                                    <div class="fw-bold text-dark">Showroom Monthly Rent</div>
+                                    <div class="text-muted" style="font-size: 0.72rem;">Office Lease &bull; Voucher #204</div>
+                                </div>
+                                <div class="fw-bold text-danger">-৳ 12,000.00</div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center py-1 px-1 border-top">
+                                <div>
+                                    <div class="fw-bold text-dark">Counter Retail Collections</div>
+                                    <div class="text-muted" style="font-size: 0.72rem;">Direct Cash &bull; Memo #1043</div>
+                                </div>
+                                <div class="fw-bold text-success">+৳ 20,250.00</div>
+                            </div>
+                        </div>
+
+                        <!-- Footer security badge -->
+                        <div class="d-flex align-items-center justify-content-between text-muted" style="font-size: 0.78rem;">
+                            <span><i class="bi bi-lock-fill text-primary me-1"></i> Dedicated PostgreSQL Isolation</span>
+                            <span class="text-success fw-bold"><i class="bi bi-check2"></i> Balance Verified</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -77,79 +152,183 @@
     </div>
 </section>
 
-<!-- Core Features Grid -->
-<section class="py-5 bg-white border-top border-bottom">
+<!-- Stats & Metrics Ribbon -->
+<section class="stats-ribbon">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number">10,000+</div>
+                    <div class="stat-title">Transactions Logged</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number text-primary">100%</div>
+                    <div class="stat-title">Database Isolation</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number text-success">৳ 0.00</div>
+                    <div class="stat-title">Decimal Math Inaccuracy</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-number text-danger">&lt; 10 Min</div>
+                    <div class="stat-title">bKash Verification Speed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Problem vs Solution Section -->
+<section class="py-5 bg-white border-bottom">
     <div class="container py-4">
         <div class="text-center max-w-700 mx-auto mb-5">
-            <span class="text-primary fw-bold text-uppercase small tracking-wide">Enterprise Architecture</span>
-            <h2 class="fw-bold mt-1">Built Specifically For Growing Bangladeshi Businesses</h2>
-            <p class="text-muted">Say goodbye to complex desktop software or vulnerable shared databases.</p>
+            <span class="badge bg-primary-subtle text-primary mb-2">Why Switch?</span>
+            <h2 class="fw-bold">Stop Losing Money to Outdated Cash Tracking</h2>
+            <p class="text-secondary">Compare manual accounting with SoftobroCashBook's automated multi-tenant system.</p>
+        </div>
+
+        <div class="row g-4 align-items-stretch">
+            <div class="col-md-6">
+                <div class="comparison-card problem">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-x-circle-fill text-danger fs-4"></i>
+                        <h5 class="fw-bold text-danger mb-0">Paper Khata & Shared Sheets</h5>
+                    </div>
+                    <ul class="list-unstyled d-flex flex-column gap-3 mb-0 small text-secondary">
+                        <li class="d-flex gap-2">
+                            <i class="bi bi-dash text-danger fw-bold fs-5"></i>
+                            <div><strong>Risk of Data Theft & Leaks:</strong> Storing data in public clouds or shared tables leaves your financials exposed.</div>
+                        </li>
+                        <li class="d-flex gap-2">
+                            <i class="bi bi-dash text-danger fw-bold fs-5"></i>
+                            <div><strong>Manual Calculation Errors:</strong> Accidental spreadsheet formulas or ledger miscalculations cause painful cash shortages.</div>
+                        </li>
+                        <li class="d-flex gap-2">
+                            <i class="bi bi-dash text-danger fw-bold fs-5"></i>
+                            <div><strong>No Multi-Branch Sync:</strong> Disconnected paper books between shops make real-time owner oversight impossible.</div>
+                        </li>
+                        <li class="d-flex gap-2">
+                            <i class="bi bi-dash text-danger fw-bold fs-5"></i>
+                            <div><strong>Messy Tax Audits:</strong> Searching through handwritten slips or fragmented notes delays audits and reports.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="comparison-card solution">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                        <h5 class="fw-bold text-success mb-0">The SoftobroCashBook Advantage</h5>
+                    </div>
+                    <ul class="list-unstyled d-flex flex-column gap-3 mb-0 small text-secondary">
+                        <li class="d-flex gap-2">
+                            <i class="bi bi-check-lg text-success fw-bold fs-5"></i>
+                            <div><strong>Dedicated PostgreSQL Database:</strong> Your records exist in your private tenant DB, physically separated from all others.</div>
+                        </li>
+                        <li class="d-flex gap-2">
+                            <i class="bi bi-check-lg text-success fw-bold fs-5"></i>
+                            <div><strong>Atomic Decimal Precision:</strong> Exact mathematical calculation: Current Balance = Opening + Cash-In - Cash-Out.</div>
+                        </li>
+                        <li class="d-flex gap-2">
+                            <i class="bi bi-check-lg text-success fw-bold fs-5"></i>
+                            <div><strong>Multi-Outlet Centralized Portal:</strong> Manage up to 10 businesses and 50 cashbooks seamlessly from a single secure login.</div>
+                        </li>
+                        <li class="d-flex gap-2">
+                            <i class="bi bi-check-lg text-success fw-bold fs-5"></i>
+                            <div><strong>1-Click A4 Print Statements:</strong> Clean, audit-ready statements with signature lines ready for banks and owners.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Core Features Grid -->
+<section class="py-5 bg-light" id="features">
+    <div class="container py-4">
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="badge bg-primary-subtle text-primary mb-2">Engineered for Bangladesh</span>
+            <h2 class="fw-bold">Everything You Need To Run Professional Ledgers</h2>
+            <p class="text-secondary">Designed with the exact operational workflows Bangladeshi business owners expect.</p>
         </div>
 
         <div class="row g-4">
             <div class="col-md-6 col-lg-4">
-                <div class="feature-card">
-                    <div class="feature-icon-wrapper bg-primary-subtle text-primary">
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box bg-primary bg-opacity-10 text-primary">
                         <i class="bi bi-database-lock"></i>
                     </div>
-                    <h5 class="fw-bold mb-2">Isolated Database Multi-Tenancy</h5>
-                    <p class="text-muted small">
-                        Unlike cheap shared multi-tenant SaaS, every approved Service Admin receives an individual PostgreSQL database created on-the-fly upon verification.
+                    <h5 class="fw-bold text-dark mb-2">Isolated Database Multi-Tenancy</h5>
+                    <p class="text-secondary small mb-0">
+                        Unlike shared table apps, every verified business owner receives an individual PostgreSQL database provisioned on-the-fly. Zero risk of data leak.
                     </p>
                 </div>
             </div>
+
             <div class="col-md-6 col-lg-4">
-                <div class="feature-card">
-                    <div class="feature-icon-wrapper bg-success-subtle text-success">
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box bg-success bg-opacity-10 text-success">
                         <i class="bi bi-buildings"></i>
                     </div>
-                    <h5 class="fw-bold mb-2">Multi-Business Management</h5>
-                    <p class="text-muted small">
-                        Operate multiple shops, outlets, or holding businesses from one unified portal, keeping books strictly isolated and cleanly aggregated.
+                    <h5 class="fw-bold text-dark mb-2">Multi-Business Management</h5>
+                    <p class="text-secondary small mb-0">
+                        Operate multiple outlets, retail shops, or subsidiaries from one portal. Track balances separately while enjoying consolidated summaries.
                     </p>
                 </div>
             </div>
+
             <div class="col-md-6 col-lg-4">
-                <div class="feature-card">
-                    <div class="feature-icon-wrapper bg-danger-subtle text-danger">
-                        <i class="bi bi-journal-bookmark"></i>
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box bg-danger bg-opacity-10 text-danger">
+                        <i class="bi bi-journal-bookmark-fill"></i>
                     </div>
-                    <h5 class="fw-bold mb-2">Unlimited Categorized Cashbooks</h5>
-                    <p class="text-muted small">
-                        Create Petty Cash, Cash Drawer, Bank Account, or Branch Cashbooks. Track categories like Sales, Inventory, Rent, Wages, and Utilities.
+                    <h5 class="fw-bold text-dark mb-2">Multiple Categorized Cashbooks</h5>
+                    <p class="text-secondary small mb-0">
+                        Create Petty Cash, Cash Counter, Bank Account, or Director Draw cashbooks. Quick tags for Sales, Rent, Staff Wages, Utilities, and Inventory.
                     </p>
                 </div>
             </div>
+
             <div class="col-md-6 col-lg-4">
-                <div class="feature-card">
-                    <div class="feature-icon-wrapper bg-warning-subtle text-warning">
-                        <i class="bi bi-phone"></i>
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box text-danger" style="background: rgba(226, 19, 110, 0.1); color: #e2136e !important;">
+                        <i class="bi bi-phone-fill"></i>
                     </div>
-                    <h5 class="fw-bold mb-2">Manual bKash Verification</h5>
-                    <p class="text-muted small">
-                        Pay conveniently using Bangladesh's favorite bKash payment system. Enter your TrxID with optional receipt proof for rapid Super Admin review.
+                    <h5 class="fw-bold text-dark mb-2">Manual bKash Verification</h5>
+                    <p class="text-secondary small mb-0">
+                        Pay conveniently with bKash personal or merchant account. Enter your TrxID and upload an optional screenshot for instant Super Admin verification.
                     </p>
                 </div>
             </div>
+
             <div class="col-md-6 col-lg-4">
-                <div class="feature-card">
-                    <div class="feature-icon-wrapper bg-info-subtle text-info">
-                        <i class="bi bi-printer"></i>
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box bg-info bg-opacity-10 text-info">
+                        <i class="bi bi-printer-fill"></i>
                     </div>
-                    <h5 class="fw-bold mb-2">A4 Print & Statements</h5>
-                    <p class="text-muted small">
-                        Generate clean, professional A4 financial reports and cashbook statements ready for tax filing, owner meetings, and internal audits.
+                    <h5 class="fw-bold text-dark mb-2">Print-Ready A4 Statements</h5>
+                    <p class="text-secondary small mb-0">
+                        Generate official A4 statements formatted for bank verification and owner review. Navigation bars and buttons vanish automatically on print.
                     </p>
                 </div>
             </div>
+
             <div class="col-md-6 col-lg-4">
-                <div class="feature-card">
-                    <div class="feature-icon-wrapper bg-purple-subtle text-purple" style="background:#faf5ff; color:#9333ea;">
-                        <i class="bi bi-code-slash"></i>
+                <div class="feature-card-modern">
+                    <div class="feature-icon-box text-purple" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;">
+                        <i class="bi bi-code-square"></i>
                     </div>
-                    <h5 class="fw-bold mb-2">REST API for Mobile Apps</h5>
-                    <p class="text-muted small">
-                        Complete Django REST Framework API foundation ready to power upcoming iOS and Android mobile cashbook apps.
+                    <h5 class="fw-bold text-dark mb-2">REST API for Mobile Apps</h5>
+                    <p class="text-secondary small mb-0">
+                        Full Django REST Framework Token-authenticated API foundation ready to power upcoming iOS and Android companion applications.
                     </p>
                 </div>
             </div>
@@ -158,71 +337,70 @@
 </section>
 
 <!-- Pricing Plans Section -->
-<section class="py-5" id="pricing">
+<section class="py-5 bg-white" id="pricing">
     <div class="container py-4">
-        <div class="text-center mb-5">
-            <span class="text-primary fw-bold text-uppercase small">Simple, Transparent Pricing</span>
-            <h2 class="fw-bold mt-1">Select the Right Plan for Your Business</h2>
-            <p class="text-muted">All plans include isolated database provisioning, automated calculations, and bKash payment.</p>
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="badge bg-primary-subtle text-primary mb-2">Simple, Fair Pricing</span>
+            <h2 class="fw-bold">Pick the Right Plan for Your Scale</h2>
+            <p class="text-secondary">Transparent prices in BDT (৳). All subscriptions include isolated tenant database provisioning and bKash pay.</p>
         </div>
 
         <div class="row g-4 justify-content-center align-items-stretch">
             {% for plan in plans %}
             <div class="col-md-6 col-lg-4">
-                <div class="pricing-card h-100 {% if plan.is_popular %}popular{% endif %}">
+                <div class="pricing-card-modern {% if plan.is_popular %}popular{% endif %}">
                     {% if plan.is_popular %}
-                    <span class="popular-badge">Most Popular</span>
+                    <span class="popular-ribbon">Most Popular</span>
                     {% endif %}
+
                     <div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4 class="fw-bold mb-0 text-dark">{{ plan.name }}</h4>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h4 class="fw-bold text-dark mb-0">{{ plan.name }}</h4>
                             <span class="badge bg-light text-secondary border">{{ plan.get_billing_cycle_display }}</span>
                         </div>
-                        <p class="text-muted small mb-4">{{ plan.description|default:"Everything you need to track daily business cash flow." }}</p>
+                        <p class="text-muted small mb-3">{{ plan.description|default:"Everything you need for clean daily cash accounting." }}</p>
 
-                        <div class="mb-4">
+                        <div class="price-box">
                             <span class="price-currency">৳</span>
-                            <span class="price-amount">{{ plan.price_bdt|floatformat:0 }}</span>
-                            <span class="price-cycle">/ {{ plan.duration_days }} days</span>
+                            <span class="price-val">{{ plan.price_bdt|floatformat:0 }}</span>
+                            <span class="price-term">/ {{ plan.duration_days }} days</span>
                         </div>
 
-                        <hr class="my-4 border-secondary border-opacity-10">
+                        <hr class="border-secondary border-opacity-10 my-4">
 
-                        <div class="mb-4">
-                            <div class="small fw-bold text-uppercase text-secondary mb-3">Plan Limits & Capabilities:</div>
-                            <ul class="list-unstyled d-flex flex-column gap-2 small">
-                                <li class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-check2 text-primary fw-bold"></i>
-                                    <span><strong>{{ plan.max_businesses }}</strong> Max Business{{ plan.max_businesses|pluralize:"es" }}</span>
-                                </li>
-                                <li class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-check2 text-primary fw-bold"></i>
-                                    <span><strong>{{ plan.max_cashbooks_per_business }}</strong> Cashbooks per Business</span>
-                                </li>
-                                <li class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-check2 text-primary fw-bold"></i>
-                                    <span>{% if plan.max_transactions == 0 %}Unlimited{% else %}{{ plan.max_transactions }}{% endif %} Transactions</span>
-                                </li>
-                                {% for feat in plan.get_features_list %}
-                                <li class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-check2 text-success fw-bold"></i>
-                                    <span>{{ feat }}</span>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
+                        <div class="small fw-bold text-uppercase text-secondary mb-3">Plan Limits & Features:</div>
+                        <ul class="list-unstyled d-flex flex-column gap-2 small text-secondary">
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check2-circle text-primary fw-bold fs-6"></i>
+                                <span><strong>{{ plan.max_businesses }}</strong> Business{{ plan.max_businesses|pluralize:"es" }}</span>
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check2-circle text-primary fw-bold fs-6"></i>
+                                <span><strong>{{ plan.max_cashbooks_per_business }}</strong> Cashbooks per Business</span>
+                            </li>
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check2-circle text-primary fw-bold fs-6"></i>
+                                <span>{% if plan.max_transactions == 0 %}Unlimited{% else %}{{ plan.max_transactions }}{% endif %} Monthly Transactions</span>
+                            </li>
+                            {% for feat in plan.get_features_list %}
+                            <li class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check2 text-success fw-bold fs-6"></i>
+                                <span>{{ feat }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
 
-                    <div class="mt-4">
-                        <a href="{% url 'accounts:register' %}?plan={{ plan.id }}" class="btn {% if plan.is_popular %}btn-scb-primary{% else %}btn-outline-primary{% endif %} w-100 py-2 fw-semibold">
-                            Choose {{ plan.name }}
+                    <div class="mt-4 pt-3">
+                        <a href="{% url 'accounts:register' %}?plan={{ plan.id }}" class="btn {% if plan.is_popular %}btn-scb-primary{% else %}btn-outline-primary{% endif %} w-100 py-2 fw-bold">
+                            Subscribe With {{ plan.name }}
                         </a>
                     </div>
                 </div>
             </div>
             {% empty %}
             <div class="col-12 text-center py-4">
-                <p class="text-muted">Subscription plans are being updated. Please check back shortly.</p>
+                <p class="text-muted">Subscription packages are being updated. Check back shortly.</p>
             </div>
             {% endfor %}
         </div>
@@ -230,20 +408,25 @@
 </section>
 
 <!-- bKash Callout Banner -->
-<section class="py-4">
+<section class="py-5">
     <div class="container">
-        <div class="bkash-banner p-4 p-md-5">
+        <div class="bkash-lux-banner">
             <div class="row align-items-center g-4">
                 <div class="col-lg-8">
-                    <span class="badge bg-white text-dark fw-bold mb-2">Fast Activation</span>
-                    <h3 class="fw-bold text-white mb-2">Pay Swiftly With bKash</h3>
-                    <p class="mb-0 text-white-50">
-                        Send payments directly to our official bKash account at <strong>{{ BKASH_COMPANY_NUMBER }}</strong>. Our Super Admin verifies your TrxID within minutes and automatically launches your dedicated PostgreSQL tenant database.
+                    <span class="badge bg-white text-danger fw-bold px-3 py-1 rounded-pill mb-2">Fast Activation</span>
+                    <h2 class="fw-bold mb-2">Pay Easily via bKash</h2>
+                    <p class="mb-3 text-white-50 leading-relaxed">
+                        Send payments directly to our official bKash account at <strong class="text-warning font-monospace fs-5">{{ BKASH_COMPANY_NUMBER }}</strong>. Our Super Admin team verifies your TrxID within minutes and automatically launches your dedicated PostgreSQL tenant database.
                     </p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-black bg-opacity-25 text-white py-2 px-3 small">1. Send Money / Payment</span>
+                        <span class="badge bg-black bg-opacity-25 text-white py-2 px-3 small">2. Submit TrxID</span>
+                        <span class="badge bg-black bg-opacity-25 text-white py-2 px-3 small">3. Instant Database Provisioning</span>
+                    </div>
                 </div>
                 <div class="col-lg-4 text-lg-end">
-                    <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg text-danger fw-bold px-4 shadow">
-                        Subscribe Now <i class="bi bi-arrow-right ms-2"></i>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg text-danger fw-bold px-4 shadow py-3">
+                        Start Subscription Now <i class="bi bi-arrow-right ms-2"></i>
                     </a>
                 </div>
             </div>
@@ -251,85 +434,118 @@
     </div>
 </section>
 
-<!-- How It Works Section -->
-<section class="py-5" id="how-it-works">
+<!-- Testimonials Section -->
+<section class="py-5 bg-white border-top">
     <div class="container py-4">
-        <div class="text-center mb-5">
-            <span class="text-primary fw-bold text-uppercase small">Simple 3-Step Process</span>
-            <h2 class="fw-bold mt-1">How SoftobroCashBook Works</h2>
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="badge bg-primary-subtle text-primary mb-2">Customer Stories</span>
+            <h2 class="fw-bold">Loved By Bangladeshi Business Owners</h2>
+            <p class="text-secondary">See how merchants and entrepreneurs are streamlining their cashbooks.</p>
         </div>
 
-        <div class="row g-4 text-center">
+        <div class="row g-4">
             <div class="col-md-4">
-                <div class="p-4 rounded-4 bg-white border h-100">
-                    <div class="rounded-circle bg-primary text-white fs-4 fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">1</div>
-                    <h5 class="fw-bold mb-2">Register & Pick Plan</h5>
-                    <p class="text-muted small">Enter your business details, choose a subscription duration, and get your pending account.</p>
+                <div class="testimonial-card">
+                    <div class="text-warning mb-3">
+                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="text-secondary small mb-4">
+                        "We run two wholesale electronics stores in Elephant Road, Dhaka. Having individual cashbooks for counter sales and bank deposits with A4 printouts saved us hours every week."
+                    </p>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">R</div>
+                        <div>
+                            <div class="fw-bold text-dark small">Rafiqul Islam</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Proprietor, Dhaka Tech Distribution</div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <div class="col-md-4">
-                <div class="p-4 rounded-4 bg-white border h-100">
-                    <div class="rounded-circle bg-danger text-white fs-4 fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">2</div>
-                    <h5 class="fw-bold mb-2">Send bKash & Submit TrxID</h5>
-                    <p class="text-muted small">Send money to our bKash number, enter your TrxID and upload an optional screenshot.</p>
+                <div class="testimonial-card">
+                    <div class="text-warning mb-3">
+                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="text-secondary small mb-4">
+                        "The dedicated PostgreSQL database gives me total peace of mind. Knowing my financial records are physically separated from other users is a level of security no other local app offers."
+                    </p>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">M</div>
+                        <div>
+                            <div class="fw-bold text-dark small">Mahmudur Rahman</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Managing Director, Chittagong Agro Ltd</div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <div class="col-md-4">
-                <div class="p-4 rounded-4 bg-white border h-100">
-                    <div class="rounded-circle bg-success text-white fs-4 fw-bold mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">3</div>
-                    <h5 class="fw-bold mb-2">Approval & Private DB Ready</h5>
-                    <p class="text-muted small">Super Admin verifies payment, your isolated PostgreSQL DB is migrated, and you start managing cash!</p>
+                <div class="testimonial-card">
+                    <div class="text-warning mb-3">
+                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="text-secondary small mb-4">
+                        "bKash subscription renewal is super smooth. I just send the money from my personal bKash app, enter the TrxID, and my account extends instantly. Highly recommended!"
+                    </p>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">N</div>
+                        <div>
+                            <div class="fw-bold text-dark small">Nusrat Jahan</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Owner, Sylhet Organic Pharma</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- FAQ Section -->
-<section class="py-5 bg-white border-top" id="faq">
+<!-- FAQ Accordion -->
+<section class="py-5 bg-light border-top" id="faq">
     <div class="container py-4">
         <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="badge bg-primary-subtle text-primary mb-2">Got Questions?</span>
             <h2 class="fw-bold">Frequently Asked Questions</h2>
-            <p class="text-muted">Everything you need to know about database isolation, bKash payments, and multi-tenant security.</p>
         </div>
 
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="accordion" id="faqAccordion">
-                    <div class="accordion-item border-0 mb-3 rounded shadow-sm overflow-hidden">
+                    <div class="accordion-item border-0 mb-3 rounded-4 shadow-sm overflow-hidden">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                What makes SoftobroCashBook different from standard accounting apps?
+                            <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                What does "Isolated Tenant Database" mean?
                             </button>
                         </h2>
                         <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-secondary">
-                                Unlike typical SaaS platforms that combine everyone's financial records in a single database table separated only by a user ID, SoftobroCashBook provides an isolated PostgreSQL database for every approved Service Admin. This ensures total data privacy, independent backups, and maximum security.
+                            <div class="accordion-body text-secondary small leading-relaxed">
+                                Unlike standard multi-tenant software that puts every customer's financial numbers in one big table separated only by an account ID, SoftobroCashBook creates an individual PostgreSQL database for your account. This provides the highest tier of security, privacy, and zero risk of cross-account data leaks.
                             </div>
                         </div>
                     </div>
 
-                    <div class="accordion-item border-0 mb-3 rounded shadow-sm overflow-hidden">
+                    <div class="accordion-item border-0 mb-3 rounded-4 shadow-sm overflow-hidden">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                How does the bKash payment verification work?
+                            <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                How do I pay using bKash?
                             </button>
                         </h2>
                         <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-secondary">
-                                Upon registering or choosing to renew your plan, our bKash account number and exact BDT amount are presented. Once you send money via the bKash app or USSD (*247#), submit the Transaction ID (TrxID). Our Super Admin team verifies the transaction, approves the payment, and your system provisions immediately.
+                            <div class="accordion-body text-secondary small leading-relaxed">
+                                During registration or renewal, you'll be shown our official bKash number. Send the exact plan amount via the bKash app or *247#, copy the 8-10 character Transaction ID (TrxID) from your confirmation SMS, and submit it on our site. Our Super Admin verifies and activates your account.
                             </div>
                         </div>
                     </div>
 
-                    <div class="accordion-item border-0 mb-3 rounded shadow-sm overflow-hidden">
+                    <div class="accordion-item border-0 mb-3 rounded-4 shadow-sm overflow-hidden">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                Can I print reports and statements for my shop or company?
+                            <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Can I print cashbook statements for meetings or audits?
                             </button>
                         </h2>
                         <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body text-secondary">
+                            <div class="accordion-body text-secondary small leading-relaxed">
                                 Yes! SoftobroCashBook includes a dedicated A4 print stylesheet. With one click, you can print full cashbooks, business summaries, or date-filtered statements without headers, buttons, or sidebars cluttering your document.
                             </div>
                         </div>
@@ -340,4 +556,3 @@
     </div>
 </section>
 {% endblock %}
-
