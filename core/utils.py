@@ -25,3 +25,4 @@ def get_client_ip(request) -> str | None:
             ip = None
 
     return ip
+

@@ -7,6 +7,7 @@ urlpatterns = [
     path('submit/', views.submit_payment_view, name='submit_payment'),
     path('pending/', views.payment_pending_view, name='payment_pending'),
     path('history/', views.payment_history_view, name='payment_history'),
+    path('history/my/', views.payment_history_view, name='my_payment_history'),
 
     # Super Admin management
     path('admin/list/', views.admin_payment_list_view, name='admin_payment_list'),

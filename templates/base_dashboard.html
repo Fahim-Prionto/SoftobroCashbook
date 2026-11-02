@@ -388,7 +388,7 @@
                         </a>
                     </div>
                     <div class="sidebar-nav-item">
-                        <a href="{% url 'payments:my_payment_history' %}" class="sidebar-nav-link {% if 'my-payments' in request.path %}active{% endif %}">
+                        <a href="{% url 'payments:payment_history' %}" class="sidebar-nav-link {% if 'payment' in request.path and 'admin' not in request.path %}active{% endif %}">
                             <i class="bi bi-receipt"></i> Payment Receipts
                         </a>
                     </div>
