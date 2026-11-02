@@ -1,3 +1,4 @@
+import logging
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -5,8 +6,11 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect
 from accounts.forms import ServiceAdminRegistrationForm, LoginForm, UserProfileForm
 from accounts.models import UserRole, AccountStatus
+from core.utils import get_client_ip
 from subscriptions.models import Subscription, SubscriptionStatus
 from tenants.models import AuditLog
+
+logger = logging.getLogger(__name__)
 
 
 def register_view(request):
@@ -32,15 +36,23 @@ def register_view(request):
             )
 
             # Audit log
-            AuditLog.objects.create(
-                actor=user,
-                action=AuditLog.Action.LOGIN,
-                target=f"User Registration: {user.username}",
-                details=f"Registered with business: {user.business_name}, Plan: {plan.name}",
-                ip_address=request.META.get('REMOTE_ADDR'),
-            )
+            try:
+                client_ip = get_client_ip(request)
+                AuditLog.objects.create(
+                    actor=user,
+                    action=AuditLog.Action.LOGIN,
+                    target=f"User Registration: {user.username}",
+                    details=f"Registered with business: {user.business_name}, Plan: {plan.name}",
+                    ip_address=client_ip,
+                )
+            except Exception as e:
+                logger.warning(f"Registration audit log failed (non-fatal): {e}")
 
-            login(request, user)
+            try:
+                login(request, user)
+            except Exception as e:
+                logger.error(f"Error during registration auto-login: {e}", exc_info=True)
+
             messages.success(request, f"Welcome to SoftobroCashBook! Please complete your bKash payment for the {plan.name}.")
             return redirect('payments:submit_payment')
     else:
@@ -61,20 +73,30 @@ def login_view(request):
         if form.is_valid():
             user = form.cleaned_data['user']
             remember_me = form.cleaned_data.get('remember_me')
-            login(request, user)
 
-            if not remember_me:
-                request.session.set_expiry(0)  # Browser close expires session
-            else:
-                request.session.set_expiry(1209600)  # 2 weeks
+            try:
+                login(request, user)
+                if not remember_me:
+                    request.session.set_expiry(0)  # Browser close expires session
+                else:
+                    request.session.set_expiry(1209600)  # 2 weeks
+            except Exception as e:
+                logger.error(f"Error establishing user session: {e}", exc_info=True)
+                messages.error(request, f"Unable to establish session. Database error: {e}")
+                return render(request, 'accounts/login.html', {'form': form})
 
-            AuditLog.objects.create(
-                actor=user,
-                action=AuditLog.Action.LOGIN,
-                target=f"User Login: {user.username}",
-                details=f"Role: {user.get_role_display()}, IP: {request.META.get('REMOTE_ADDR')}",
-                ip_address=request.META.get('REMOTE_ADDR'),
-            )
+            # Non-fatal audit log
+            try:
+                client_ip = get_client_ip(request)
+                AuditLog.objects.create(
+                    actor=user,
+                    action=AuditLog.Action.LOGIN,
+                    target=f"User Login: {user.username}",
+                    details=f"Role: {user.get_role_display()}, IP: {client_ip}",
+                    ip_address=client_ip,
+                )
+            except Exception as e:
+                logger.warning(f"Login audit log creation failed (non-fatal): {e}")
 
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
             return redirect('core:dashboard_redirect')

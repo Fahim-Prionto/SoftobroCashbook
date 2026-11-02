@@ -63,3 +63,4 @@ class Command(BaseCommand):
             f"  Status:   ACTIVE\n"
             f"  Role:     SUPER_ADMIN\n"
         ))
+

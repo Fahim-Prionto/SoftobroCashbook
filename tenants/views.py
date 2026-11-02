@@ -48,7 +48,8 @@ def admin_tenant_detail_view(request, tenant_id):
 def admin_tenant_reprovision_view(request, tenant_id):
     tenant = get_object_or_404(Tenant, id=tenant_id)
     try:
-        provision_tenant_database(tenant.service_admin, actor=request.user, ip_address=request.META.get('REMOTE_ADDR'))
+        from core.utils import get_client_ip
+        provision_tenant_database(tenant.service_admin, actor=request.user, ip_address=get_client_ip(request))
         messages.success(request, f"Tenant {tenant.tenant_id} reprovisioned successfully.")
     except Exception as e:
         messages.error(request, f"Reprovisioning failed: {e}")
@@ -68,10 +69,11 @@ def admin_tenant_delete_view(request, tenant_id):
             return render(request, 'tenants/admin_delete_confirm.html', {'tenant': tenant, 'service_admin': service_admin})
 
         try:
+            from core.utils import get_client_ip
             delete_tenant_database(
                 tenant,
                 actor=request.user,
-                ip_address=request.META.get('REMOTE_ADDR'),
+                ip_address=get_client_ip(request),
             )
             messages.success(request, f"Tenant database '{tenant.db_name}' has been safely dropped and metadata purged.")
             return redirect('tenants:admin_tenant_list')

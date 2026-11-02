@@ -62,13 +62,17 @@ def submit_payment_view(request):
                 )
 
                 # Central audit log
-                AuditLog.objects.create(
-                    actor=user,
-                    action=AuditLog.Action.LOGIN,
-                    target=f"Payment Submitted: {payment.bkash_transaction_id}",
-                    details=f"Amount: ৳{payment.amount_bdt}, Plan: {plan.name}, Renewal: {is_renewal}",
-                    ip_address=request.META.get('REMOTE_ADDR'),
-                )
+                try:
+                    from core.utils import get_client_ip
+                    AuditLog.objects.create(
+                        actor=user,
+                        action=AuditLog.Action.LOGIN,
+                        target=f"Payment Submitted: {payment.bkash_transaction_id}",
+                        details=f"Amount: ৳{payment.amount_bdt}, Plan: {plan.name}, Renewal: {is_renewal}",
+                        ip_address=get_client_ip(request),
+                    )
+                except Exception:
+                    pass
 
             messages.success(request, "Payment submitted successfully! Super Admin will verify your transaction shortly.")
             return redirect('payments:payment_pending')
@@ -204,19 +208,24 @@ def admin_payment_detail_view(request, payment_id):
                 # Provision isolated tenant database if not already provisioned
                 if not tenant or tenant.status != TenantStatus.PROVISIONED:
                     try:
-                        tenant = provision_tenant_database(user, actor=request.user, ip_address=request.META.get('REMOTE_ADDR'))
+                        from core.utils import get_client_ip
+                        tenant = provision_tenant_database(user, actor=request.user, ip_address=get_client_ip(request))
                     except Exception as e:
                         messages.error(request, f"Payment approved, but tenant database provisioning encountered an issue: {e}")
                         return redirect('payments:admin_payment_detail', payment_id=payment.id)
 
                 # Audit Log
-                AuditLog.objects.create(
-                    actor=request.user,
-                    action=AuditLog.Action.PAYMENT_APPROVE,
-                    target=f"Payment #{payment.id} for {user.username}",
-                    details=f"Approved TrxID: {payment.bkash_transaction_id}, Amount: ৳{payment.amount_bdt}. Plan: {plan.name}. Notes: {admin_notes}",
-                    ip_address=request.META.get('REMOTE_ADDR'),
-                )
+                try:
+                    from core.utils import get_client_ip
+                    AuditLog.objects.create(
+                        actor=request.user,
+                        action=AuditLog.Action.PAYMENT_APPROVE,
+                        target=f"Payment #{payment.id} for {user.username}",
+                        details=f"Approved TrxID: {payment.bkash_transaction_id}, Amount: ৳{payment.amount_bdt}. Plan: {plan.name}. Notes: {admin_notes}",
+                        ip_address=get_client_ip(request),
+                    )
+                except Exception:
+                    pass
 
                 # Notification to user
                 Notification.objects.create(
@@ -237,13 +246,17 @@ def admin_payment_detail_view(request, payment_id):
                 payment.admin_notes = admin_notes
                 payment.save()
 
-                AuditLog.objects.create(
-                    actor=request.user,
-                    action=AuditLog.Action.PAYMENT_REJECT,
-                    target=f"Payment #{payment.id} for {user.username}",
-                    details=f"Rejected TrxID: {payment.bkash_transaction_id}. Reason: {admin_notes}",
-                    ip_address=request.META.get('REMOTE_ADDR'),
-                )
+                try:
+                    from core.utils import get_client_ip
+                    AuditLog.objects.create(
+                        actor=request.user,
+                        action=AuditLog.Action.PAYMENT_REJECT,
+                        target=f"Payment #{payment.id} for {user.username}",
+                        details=f"Rejected TrxID: {payment.bkash_transaction_id}. Reason: {admin_notes}",
+                        ip_address=get_client_ip(request),
+                    )
+                except Exception:
+                    pass
 
                 Notification.objects.create(
                     recipient=user,

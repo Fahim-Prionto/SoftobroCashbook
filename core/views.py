@@ -14,6 +14,11 @@ from tenants.models import Tenant, TenantStatus, AuditLog
 from tenants.provisioning import delete_tenant_database
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 def landing_view(request):
     if request.user.is_authenticated:
         return redirect('core:dashboard_redirect')
@@ -69,21 +74,29 @@ def dashboard_redirect(request):
 @login_required
 @super_admin_required
 def superadmin_dashboard_view(request):
-    total_service_admins = User.objects.filter(role=UserRole.SERVICE_ADMIN).count()
-    pending_approvals = User.objects.filter(role=UserRole.SERVICE_ADMIN, status=AccountStatus.PENDING_APPROVAL).count()
-    active_subscriptions = Subscription.objects.filter(status=SubscriptionStatus.ACTIVE).count()
-    expired_subscriptions = Subscription.objects.filter(status=SubscriptionStatus.EXPIRED).count()
-    suspended_accounts = User.objects.filter(status=AccountStatus.SUSPENDED).count()
+    try:
+        total_service_admins = User.objects.filter(role=UserRole.SERVICE_ADMIN).count()
+        pending_approvals = User.objects.filter(role=UserRole.SERVICE_ADMIN, status=AccountStatus.PENDING_APPROVAL).count()
+        active_subscriptions = Subscription.objects.filter(status=SubscriptionStatus.ACTIVE).count()
+        expired_subscriptions = Subscription.objects.filter(status=SubscriptionStatus.EXPIRED).count()
+        suspended_accounts = User.objects.filter(status=AccountStatus.SUSPENDED).count()
 
-    total_revenue = Payment.objects.filter(status=PaymentStatus.APPROVED).aggregate(
-        total=Sum('amount_bdt')
-    )['total'] or Decimal('0.00')
+        total_revenue = Payment.objects.filter(status=PaymentStatus.APPROVED).aggregate(
+            total=Sum('amount_bdt')
+        )['total'] or Decimal('0.00')
 
-    pending_payments = Payment.objects.filter(status=PaymentStatus.PENDING).count()
-    total_tenants = Tenant.objects.count()
+        pending_payments = Payment.objects.filter(status=PaymentStatus.PENDING).count()
+        total_tenants = Tenant.objects.count()
 
-    recent_users = User.objects.filter(role=UserRole.SERVICE_ADMIN).select_related('subscription__plan', 'tenant').order_by('-date_joined')[:8]
-    recent_payments = Payment.objects.select_related('service_admin', 'plan').order_by('-created_at')[:8]
+        recent_users = User.objects.filter(role=UserRole.SERVICE_ADMIN).select_related('subscription__plan', 'tenant').order_by('-date_joined')[:8]
+        recent_payments = Payment.objects.select_related('service_admin', 'plan').order_by('-created_at')[:8]
+    except Exception as e:
+        logger.error(f"Error in superadmin_dashboard_view stats: {e}", exc_info=True)
+        total_service_admins = pending_approvals = active_subscriptions = expired_subscriptions = suspended_accounts = 0
+        total_revenue = Decimal('0.00')
+        pending_payments = total_tenants = 0
+        recent_users = []
+        recent_payments = []
 
     return render(request, 'core/superadmin_dashboard.html', {
         'total_service_admins': total_service_admins,
@@ -166,13 +179,17 @@ def admin_service_admin_status_view(request, user_id):
         admin_user.status = new_status
         admin_user.save()
 
-        AuditLog.objects.create(
-            actor=request.user,
-            action=AuditLog.Action.USER_STATUS_CHANGE,
-            target=f"User: {admin_user.username}",
-            details=f"Status changed from {old_status} to {new_status}",
-            ip_address=request.META.get('REMOTE_ADDR'),
-        )
+        try:
+            from core.utils import get_client_ip
+            AuditLog.objects.create(
+                actor=request.user,
+                action=AuditLog.Action.USER_STATUS_CHANGE,
+                target=f"User: {admin_user.username}",
+                details=f"Status changed from {old_status} to {new_status}",
+                ip_address=get_client_ip(request),
+            )
+        except Exception:
+            pass
         messages.success(request, f"Status of '{admin_user.username}' changed to {admin_user.get_status_display()}.")
 
     return redirect('core:admin_service_admin_detail', user_id=admin_user.id)
@@ -197,23 +214,28 @@ def admin_service_admin_delete_view(request, user_id):
         # Safely delete tenant database first
         if tenant:
             try:
+                from accounts.views import get_client_ip
                 delete_tenant_database(
                     tenant,
                     actor=request.user,
-                    ip_address=request.META.get('REMOTE_ADDR'),
+                    ip_address=get_client_ip(request),
                 )
             except Exception as e:
                 messages.error(request, f"Error dropping tenant database: {e}. User was not deleted.")
                 return render(request, 'core/admin_delete_user_confirm.html', {'admin_user': admin_user, 'tenant': tenant})
 
         # Audit Log
-        AuditLog.objects.create(
-            actor=request.user,
-            action=AuditLog.Action.USER_STATUS_CHANGE,
-            target=f"Deleted Service Admin: {admin_user.username}",
-            details=f"Email: {admin_user.email}, Business: {admin_user.business_name}",
-            ip_address=request.META.get('REMOTE_ADDR'),
-        )
+        try:
+            from accounts.views import get_client_ip
+            AuditLog.objects.create(
+                actor=request.user,
+                action=AuditLog.Action.USER_STATUS_CHANGE,
+                target=f"Deleted Service Admin: {admin_user.username}",
+                details=f"Email: {admin_user.email}, Business: {admin_user.business_name}",
+                ip_address=get_client_ip(request),
+            )
+        except Exception:
+            pass
 
         username = admin_user.username
         admin_user.delete()
