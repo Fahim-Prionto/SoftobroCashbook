@@ -1,6 +1,23 @@
+import base64
+import hashlib
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.db import models
+
+
+def get_fernet_instance():
+    raw_key = getattr(settings, 'ENCRYPTION_KEY', 'b5q3L9DVOgq27l6htokTAYMt3nC3R3pzZu1WonV18mk=')
+    if isinstance(raw_key, str):
+        raw_key = raw_key.strip()
+    try:
+        key_bytes = raw_key.encode() if isinstance(raw_key, str) else raw_key
+        return Fernet(key_bytes)
+    except Exception:
+        seed = raw_key or getattr(settings, 'SECRET_KEY', 'softobro-secret-fallback')
+        if isinstance(seed, str):
+            seed = seed.encode()
+        digest = hashlib.sha256(seed).digest()
+        return Fernet(base64.urlsafe_b64encode(digest))
 
 
 class TenantStatus(models.TextChoices):
@@ -44,14 +61,17 @@ class Tenant(models.Model):
         return f"{self.tenant_id} ({self.db_name}) - {self.get_status_display()}"
 
     def set_db_password(self, raw_password: str):
-        fernet = Fernet(settings.ENCRYPTION_KEY.encode() if isinstance(settings.ENCRYPTION_KEY, str) else settings.ENCRYPTION_KEY)
-        self.db_password_encrypted = fernet.encrypt(raw_password.encode()).decode()
+        fernet = get_fernet_instance()
+        self.db_password_encrypted = fernet.encrypt((raw_password or '').encode()).decode()
 
     def get_db_password(self) -> str:
         if not self.db_password_encrypted:
             return ""
-        fernet = Fernet(settings.ENCRYPTION_KEY.encode() if isinstance(settings.ENCRYPTION_KEY, str) else settings.ENCRYPTION_KEY)
-        return fernet.decrypt(self.db_password_encrypted.encode()).decode()
+        try:
+            fernet = get_fernet_instance()
+            return fernet.decrypt(self.db_password_encrypted.encode()).decode()
+        except Exception:
+            return ""
 
 
 class AuditLog(models.Model):

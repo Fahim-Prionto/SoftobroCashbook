@@ -137,7 +137,19 @@ else:
     TENANT_DB_SUPER_PASSWORD = _t_pass
 
 TENANT_DB_PREFIX = os.getenv('TENANT_DB_PREFIX', 'scb_tenant_')
-ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', 'b5q3L9DVOgq27l6htokTAYMt3nC3R3pzZu1WonV18mk=')
+
+# Safe Fernet encryption key - auto-derive valid 32 url-safe base64 key if .env key is malformed
+_raw_enc_key = os.getenv('ENCRYPTION_KEY', '').strip()
+if _raw_enc_key:
+    try:
+        from cryptography.fernet import Fernet
+        Fernet(_raw_enc_key.encode())
+        ENCRYPTION_KEY = _raw_enc_key
+    except Exception:
+        import base64, hashlib
+        ENCRYPTION_KEY = base64.urlsafe_b64encode(hashlib.sha256(_raw_enc_key.encode()).digest()).decode()
+else:
+    ENCRYPTION_KEY = 'b5q3L9DVOgq27l6htokTAYMt3nC3R3pzZu1WonV18mk='
 
 # bKash manual payment details
 BKASH_COMPANY_NUMBER = os.getenv('BKASH_COMPANY_NUMBER', '01712345678')
