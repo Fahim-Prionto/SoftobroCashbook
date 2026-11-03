@@ -1,5 +1,5 @@
 {% extends 'base_dashboard.html' %}
-{% block title %}Confirm Delete Tenant Database - {{ SITE_NAME }}{% endblock %}
+{% block title %}Confirm Delete Tenant Schema - {{ SITE_NAME }}{% endblock %}
 {% block page_title %}Drop Tenant Database{% endblock %}
 
 {% block content %}
@@ -11,35 +11,72 @@
                     <i class="bi bi-exclamation-triangle-fill fs-1"></i>
                     <div>
                         <h4 class="fw-bold mb-0">High-Risk Deletion Warning</h4>
-                        <div class="small opacity-75">Irreversible Tenant Database Dropping</div>
+                        <div class="small opacity-75">Irreversible Tenant Schema Dropping</div>
                     </div>
                 </div>
             </div>
 
             <div class="p-4">
                 <p class="text-secondary">
-                    You are preparing to delete the isolated PostgreSQL database <strong>{{ tenant.db_name }}</strong> belonging to Service Admin <strong>{{ service_admin.username }}</strong> ({{ service_admin.email }}).
+                    You are preparing to delete the isolated PostgreSQL schema <strong>{{ tenant.db_name }}</strong> belonging to Service Admin <strong>{{ service_admin.username }}</strong> ({{ service_admin.email }}).
                 </p>
                 <div class="alert alert-warning small">
                     <ul class="mb-0 ps-3">
-                        <li>All businesses, cashbooks, and transactions stored in this tenant database will be permanently purged.</li>
-                        <li>Existing database connections will be terminated prior to running <code>DROP DATABASE</code>.</li>
+                        <li>All businesses, cashbooks, and transactions stored in this tenant schema will be permanently purged.</li>
+                        <li>Existing database connections will be terminated prior to running <code>DROP SCHEMA CASCADE</code>.</li>
                         <li>This action will be logged in the central immutable audit log.</li>
                     </ul>
                 </div>
 
-                <form method="post">
+                <form method="post" id="deleteForm">
                     {% csrf_token %}
-                    <p class="text-danger fw-bold small mb-4">
-                        <i class="bi bi-info-circle me-1"></i> Clicking the button below will immediately drop <code>{{ tenant.db_name }}</code> from PostgreSQL without additional verification prompts.
-                    </p>
+
+                    <!-- Confirm Password field -->
+                    <div class="mb-4">
+                        <label for="confirm_password" class="form-label fw-semibold text-danger">
+                            <i class="bi bi-lock-fill me-1"></i> Confirm Your Password <span class="text-danger">*</span>
+                        </label>
+                        <input
+                            type="password"
+                            id="confirm_password"
+                            name="confirm_password"
+                            class="form-control border-danger {% if password_error %}is-invalid{% endif %}"
+                            placeholder="Enter your admin password to confirm deletion"
+                            autocomplete="current-password"
+                            required
+                        >
+                        {% if password_error %}
+                            <div class="invalid-feedback">{{ password_error }}</div>
+                        {% endif %}
+                        <div class="form-text text-muted small">Enter your Super Admin login password to authorize this irreversible action.</div>
+                    </div>
+
+                    <!-- Schema name confirmation -->
+                    <div class="mb-4">
+                        <label for="confirm_schema" class="form-label fw-semibold text-danger">
+                            <i class="bi bi-database-x me-1"></i> Type schema name to confirm <span class="text-danger">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="confirm_schema"
+                            name="confirm_schema"
+                            class="form-control border-danger {% if schema_error %}is-invalid{% endif %}"
+                            placeholder="{{ tenant.db_name }}"
+                            autocomplete="off"
+                            required
+                        >
+                        {% if schema_error %}
+                            <div class="invalid-feedback">{{ schema_error }}</div>
+                        {% endif %}
+                        <div class="form-text text-muted small">Type exactly: <code class="text-danger">{{ tenant.db_name }}</code></div>
+                    </div>
 
                     <div class="d-flex justify-content-between align-items-center">
                         <a href="{% url 'tenants:admin_tenant_list' %}" class="btn btn-light px-4">
                             Cancel
                         </a>
-                        <button type="submit" class="btn btn-danger px-4 py-2 fw-bold">
-                            Permanently Drop Database <i class="bi bi-trash ms-1"></i>
+                        <button type="submit" class="btn btn-danger px-4 py-2 fw-bold" id="deleteBtn" disabled>
+                            Permanently Drop Schema <i class="bi bi-trash ms-1"></i>
                         </button>
                     </div>
                 </form>
@@ -47,5 +84,23 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
+<script>
+// Enable delete button only when schema name matches
+(function () {
+    const schemaInput = document.getElementById('confirm_schema');
+    const passwordInput = document.getElementById('confirm_password');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const expectedSchema = "{{ tenant.db_name }}";
+
+    function checkReady() {
+        const schemaOk = schemaInput.value.trim() === expectedSchema;
+        const passwordOk = passwordInput.value.trim().length >= 1;
+        deleteBtn.disabled = !(schemaOk && passwordOk);
+    }
+
+    schemaInput.addEventListener('input', checkReady);
+    passwordInput.addEventListener('input', checkReady);
+})();
+</script>
+{% endblock %}

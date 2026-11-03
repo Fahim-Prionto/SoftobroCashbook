@@ -102,14 +102,24 @@ WSGI_APPLICATION = 'softobrocashbook.wsgi.application'
 # Database configuration
 CENTRAL_DB_ENGINE = os.getenv('CENTRAL_DB_ENGINE', 'django.db.backends.postgresql')
 
+# Resolve 'localhost' to '127.0.0.1' to force IPv4 — cPanel servers often resolve
+# 'localhost' to ::1 (IPv6) which is blocked by pg_hba.conf on shared hosting.
+_central_db_host = os.getenv('CENTRAL_DB_HOST', '127.0.0.1').strip()
+if _central_db_host.lower() == 'localhost':
+    _central_db_host = '127.0.0.1'
+
 DATABASES = {
     'default': {
         'ENGINE': CENTRAL_DB_ENGINE,
         'NAME': os.getenv('CENTRAL_DB_NAME', 'softobrocashbook_central'),
         'USER': os.getenv('CENTRAL_DB_USER', 'postgres'),
         'PASSWORD': os.getenv('CENTRAL_DB_PASSWORD', 'postgres'),
-        'HOST': os.getenv('CENTRAL_DB_HOST', 'localhost'),
+        'HOST': _central_db_host,
         'PORT': os.getenv('CENTRAL_DB_PORT', '5432'),
+        'OPTIONS': {
+            # Ensure TCP connections use IPv4 on cPanel/shared hosting
+            'connect_timeout': 10,
+        },
     }
 }
 
@@ -118,10 +128,11 @@ DATABASE_ROUTERS = ['tenants.router.TenantDatabaseRouter']
 # Tenant provisioning parameters - automatically sanitize placeholders from .env
 _t_host = os.getenv('TENANT_DB_HOST', '').strip()
 if not _t_host or _t_host.lower() in ('localhost', 'none', ''):
-    TENANT_DB_HOST = os.getenv('CENTRAL_DB_HOST', '127.0.0.1')
+    TENANT_DB_HOST = _central_db_host  # already resolved to 127.0.0.1 if was localhost
 else:
     TENANT_DB_HOST = _t_host
-if TENANT_DB_HOST == 'localhost':
+# Always force IPv4 — cPanel resolves 'localhost' to ::1 which is rejected by pg_hba.conf
+if TENANT_DB_HOST.lower() == 'localhost':
     TENANT_DB_HOST = '127.0.0.1'
 
 _t_port = os.getenv('TENANT_DB_PORT', '').strip()

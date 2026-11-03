@@ -6,18 +6,25 @@ from django.db import models
 
 
 def get_fernet_instance():
-    raw_key = getattr(settings, 'ENCRYPTION_KEY', 'b5q3L9DVOgq27l6htokTAYMt3nC3R3pzZu1WonV18mk=')
+    raw_key = getattr(settings, 'ENCRYPTION_KEY', '').strip()
+    if not raw_key:
+        raw_key = 'b5q3L9DVOgq27l6htokTAYMt3nC3R3pzZu1WonV18mk='
     if isinstance(raw_key, str):
-        raw_key = raw_key.strip()
+        key_bytes = raw_key.encode('utf-8')
+    else:
+        key_bytes = raw_key
+    # Try the key as-is (must be valid Fernet: 32 url-safe base64 bytes)
     try:
-        key_bytes = raw_key.encode() if isinstance(raw_key, str) else raw_key
         return Fernet(key_bytes)
     except Exception:
-        seed = raw_key or getattr(settings, 'SECRET_KEY', 'softobro-secret-fallback')
-        if isinstance(seed, str):
-            seed = seed.encode()
-        digest = hashlib.sha256(seed).digest()
-        return Fernet(base64.urlsafe_b64encode(digest))
+        pass
+    # Fallback: derive a valid 32-byte key from whatever value was set
+    import base64, hashlib
+    seed = key_bytes or getattr(settings, 'SECRET_KEY', 'softobro-secret-fallback').encode()
+    if isinstance(seed, str):
+        seed = seed.encode('utf-8')
+    digest = hashlib.sha256(seed).digest()
+    return Fernet(base64.urlsafe_b64encode(digest))
 
 
 class TenantStatus(models.TextChoices):

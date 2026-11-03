@@ -1,3 +1,4 @@
+import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -5,6 +6,8 @@ from accounts.models import User, AccountStatus
 from core.decorators import super_admin_required
 from tenants.models import Tenant, TenantStatus, AuditLog
 from tenants.provisioning import delete_tenant_database, provision_tenant_database
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -63,6 +66,30 @@ def admin_tenant_delete_view(request, tenant_id):
     service_admin = tenant.service_admin
 
     if request.method == 'POST':
+        confirm_password = request.POST.get('confirm_password', '').strip()
+        confirm_schema = request.POST.get('confirm_schema', '').strip()
+
+        password_error = None
+        schema_error = None
+
+        # Validate password
+        if not confirm_password:
+            password_error = 'Password is required to confirm this action.'
+        elif not request.user.check_password(confirm_password):
+            password_error = 'Incorrect password. Please enter your Super Admin login password.'
+
+        # Validate schema name matches
+        if confirm_schema != tenant.db_name:
+            schema_error = f"Schema name does not match. Expected: {tenant.db_name}"
+
+        if password_error or schema_error:
+            return render(request, 'tenants/admin_delete_confirm.html', {
+                'tenant': tenant,
+                'service_admin': service_admin,
+                'password_error': password_error,
+                'schema_error': schema_error,
+            })
+
         try:
             from core.utils import get_client_ip
             delete_tenant_database(
@@ -70,13 +97,13 @@ def admin_tenant_delete_view(request, tenant_id):
                 actor=request.user,
                 ip_address=get_client_ip(request),
             )
-            messages.success(request, f"Tenant database '{tenant.db_name}' has been successfully deleted.")
+            messages.success(request, f"Tenant schema '{tenant.db_name}' has been successfully deleted.")
             return redirect('tenants:admin_tenant_list')
         except Exception as e:
-            logger.error(f"Notice while dropping physical DB {tenant.db_name}: {e}", exc_info=True)
+            logger.error(f"Notice while dropping physical schema {tenant.db_name}: {e}", exc_info=True)
             try:
                 tenant.delete()
-                messages.warning(request, f"Tenant record '{tenant.db_name}' has been purged from platform.")
+                messages.warning(request, f"Tenant record '{tenant.db_name}' has been purged from platform (schema may need manual cleanup).")
                 return redirect('tenants:admin_tenant_list')
             except Exception as inner_e:
                 messages.error(request, f"Failed to remove tenant record: {inner_e}")

@@ -69,10 +69,15 @@ def provision_tenant_database(service_admin, actor=None, ip_address=None):
     """
     schema_name = f"{getattr(settings, 'TENANT_DB_PREFIX', 'scb_tenant_')}{service_admin.id}"
 
-    default_user = settings.DATABASES.get('default', {}).get('USER', 'postgres')
-    default_host = settings.DATABASES.get('default', {}).get('HOST', '127.0.0.1')
-    default_port = int(settings.DATABASES.get('default', {}).get('PORT', 5432))
-    default_pass = settings.DATABASES.get('default', {}).get('PASSWORD', 'postgres')
+    # Use settings from DATABASES['default'] (already IPv4-resolved in settings.py)
+    default_db = settings.DATABASES.get('default', {})
+    default_user = default_db.get('USER', 'postgres')
+    default_host = default_db.get('HOST', '127.0.0.1')
+    # Force IPv4 — safety net in case settings were loaded before our fix applied
+    if default_host.lower() == 'localhost':
+        default_host = '127.0.0.1'
+    default_port = int(default_db.get('PORT', 5432) or 5432)
+    default_pass = default_db.get('PASSWORD', 'postgres')
 
     tenant, created = Tenant.objects.get_or_create(
         service_admin=service_admin,
