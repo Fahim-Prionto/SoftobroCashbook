@@ -1,5 +1,5 @@
 from django import forms
-from payments.models import Payment
+from payments.models import Payment, BKashSetting
 
 
 class ManualBkashPaymentForm(forms.ModelForm):
@@ -51,4 +51,42 @@ class AdminPaymentVerificationForm(forms.Form):
             attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional internal remarks or rejection reason...'}
         )
     )
+
+
+class BKashSettingForm(forms.ModelForm):
+    class Meta:
+        model = BKashSetting
+        fields = ['company_number', 'account_type', 'instruction_text', 'is_active']
+        widgets = {
+            'company_number': forms.TextInput(
+                attrs={
+                    'class': 'form-control form-control-lg font-monospace fw-bold',
+                    'placeholder': 'e.g. 01712345678',
+                }
+            ),
+            'account_type': forms.Select(
+                attrs={
+                    'class': 'form-select form-select-lg',
+                }
+            ),
+            'instruction_text': forms.Textarea(
+                attrs={
+                    'class': 'form-control',
+                    'rows': 3,
+                    'placeholder': 'Instructions shown to customers during bKash payment...',
+                }
+            ),
+            'is_active': forms.CheckboxInput(
+                attrs={
+                    'class': 'form-check-input',
+                }
+            ),
+        }
+
+    def clean_company_number(self):
+        number = self.cleaned_data.get('company_number', '').strip()
+        if not number:
+            raise forms.ValidationError("bKash company number cannot be empty.")
+        return number
+
 

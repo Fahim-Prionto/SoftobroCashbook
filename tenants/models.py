@@ -84,6 +84,7 @@ class AuditLog(models.Model):
         SUBSCRIPTION_RENEW = 'SUBSCRIPTION_RENEW', 'Subscription Renewed'
         SUBSCRIPTION_EXPIRE = 'SUBSCRIPTION_EXPIRE', 'Subscription Expired'
         USER_STATUS_CHANGE = 'USER_STATUS_CHANGE', 'User Status Changed'
+        SETTINGS_UPDATE = 'SETTINGS_UPDATE', 'Settings Updated'
         LOGIN = 'LOGIN', 'User Logged In'
 
     actor = models.ForeignKey(

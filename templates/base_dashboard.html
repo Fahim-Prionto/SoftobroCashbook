@@ -337,8 +337,13 @@
                         </a>
                     </div>
                     <div class="sidebar-nav-item">
-                        <a href="{% url 'payments:admin_payment_list' %}" class="sidebar-nav-link {% if 'payments/admin' in request.path %}active{% endif %}">
+                        <a href="{% url 'payments:admin_payment_list' %}" class="sidebar-nav-link {% if 'payments/admin' in request.path and 'settings' not in request.path %}active{% endif %}">
                             <i class="bi bi-credit-card-2-back-fill"></i> bKash Payments
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-item">
+                        <a href="{% url 'payments:admin_bkash_settings' %}" class="sidebar-nav-link {% if 'payments/admin/settings' in request.path %}active{% endif %}">
+                            <i class="bi bi-gear-wide-connected"></i> bKash Settings
                         </a>
                     </div>
                     <div class="sidebar-nav-item">

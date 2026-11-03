@@ -11,6 +11,7 @@ urlpatterns = [
 
     # Super Admin management
     path('admin/list/', views.admin_payment_list_view, name='admin_payment_list'),
+    path('admin/settings/', views.admin_bkash_settings_view, name='admin_bkash_settings'),
     path('admin/verify/<int:payment_id>/', views.admin_payment_detail_view, name='admin_payment_detail'),
 ]
 

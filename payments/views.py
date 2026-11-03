@@ -7,8 +7,8 @@ from django.utils import timezone
 from accounts.models import AccountStatus
 from core.decorators import super_admin_required, service_admin_required
 from notifications.models import Notification, NotificationType
-from payments.forms import ManualBkashPaymentForm, AdminPaymentVerificationForm
-from payments.models import Payment, PaymentStatus
+from payments.forms import ManualBkashPaymentForm, AdminPaymentVerificationForm, BKashSettingForm
+from payments.models import Payment, PaymentStatus, BKashSetting
 from subscriptions.models import Subscription, SubscriptionStatus, SubscriptionPlan
 from tenants.models import AuditLog, Tenant, TenantStatus
 from tenants.provisioning import provision_tenant_database
@@ -278,3 +278,42 @@ def admin_payment_detail_view(request, payment_id):
         'tenant': tenant,
         'subscription': subscription,
     })
+
+
+@login_required
+@super_admin_required
+def admin_bkash_settings_view(request):
+    bkash_setting = BKashSetting.get_settings()
+
+    if request.method == 'POST':
+        form = BKashSettingForm(request.POST, instance=bkash_setting)
+        if form.is_valid():
+            setting_obj = form.save(commit=False)
+            setting_obj.updated_by = request.user
+            setting_obj.save()
+
+            try:
+                from core.utils import get_client_ip
+                AuditLog.objects.create(
+                    actor=request.user,
+                    action='SETTINGS_UPDATE',
+                    target=f"bKash Number: {setting_obj.company_number}",
+                    details=f"Updated bKash payment number to {setting_obj.company_number} ({setting_obj.account_type})",
+                    ip_address=get_client_ip(request),
+                )
+            except Exception:
+                pass
+
+            messages.success(
+                request,
+                f"bKash receiving configuration updated! Official number '{setting_obj.company_number}' ({setting_obj.account_type}) is now active across all customer payment and landing pages."
+            )
+            return redirect('payments:admin_payment_list')
+    else:
+        form = BKashSettingForm(instance=bkash_setting)
+
+    return render(request, 'payments/admin_bkash_settings.html', {
+        'form': form,
+        'bkash_setting': bkash_setting,
+    })
+
