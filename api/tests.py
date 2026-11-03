@@ -28,8 +28,11 @@ class RestApiTests(TestCase):
         }, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('token', response.data)
+        # JWT login returns 'access' and 'refresh' tokens
+        self.assertIn('access', response.data)
+        self.assertIn('refresh', response.data)
         self.assertEqual(response.data['user']['username'], 'api_merchant')
+        self.assertTrue(response.data['is_approved'])
 
     def test_api_businesses_crud(self):
         self.client.force_authenticate(user=self.user)

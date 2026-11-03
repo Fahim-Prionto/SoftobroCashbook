@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
+    'drf_spectacular',
 
     # Project Apps
     'accounts.apps.AccountsConfig',
@@ -63,6 +65,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -197,6 +200,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
@@ -205,6 +209,36 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 25,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# JWT Settings (for mobile app)
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=12),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+# CORS — allow React Native app and the web dashboard
+CORS_ALLOWED_ORIGINS = [
+    'https://cashbook.softobro.com',
+    'http://localhost:8081',   # Expo / Metro bundler
+    'http://localhost:3000',
+    'http://127.0.0.1:8000',
+]
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL', 'False').lower() in ('true', '1')
+CORS_ALLOW_CREDENTIALS = True
+
+# DRF Spectacular API docs
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'SoftobroCashBook API',
+    'DESCRIPTION': 'REST API for the SoftobroCashBook mobile application (React Native). Provides JWT auth, dashboard, businesses, cashbooks, transactions, subscriptions, and notifications.',
+    'VERSION': 'v1.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
 }
 
 # Logging Configuration

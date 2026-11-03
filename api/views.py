@@ -2,9 +2,9 @@ from decimal import Decimal
 from django.contrib.auth import authenticate
 from django.db.models import Sum, Q
 from rest_framework import viewsets, permissions, status
-from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from accounts.models import User, UserRole, AccountStatus
 from api.serializers import (
     UserProfileSerializer,
@@ -43,16 +43,39 @@ def api_login(request):
     if not user:
         return Response({'error': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    token, _ = Token.objects.get_or_create(user=user)
+    if not user.is_active:
+        return Response({'error': 'Account is inactive.'}, status=status.HTTP_403_FORBIDDEN)
+
+    if user.role not in (UserRole.SERVICE_ADMIN, UserRole.SUPER_ADMIN):
+        return Response({'error': 'Access denied. This app is for Service Admins only.'}, status=status.HTTP_403_FORBIDDEN)
+
+    # Issue JWT tokens
+    refresh = RefreshToken.for_user(user)
     tenant = getattr(user, 'tenant', None)
     subscription = getattr(user, 'subscription', None)
 
     return Response({
-        'token': token.key,
+        'access': str(refresh.access_token),
+        'refresh': str(refresh),
         'user': UserProfileSerializer(user).data,
         'tenant_status': tenant.status if tenant else None,
         'subscription_status': subscription.status if subscription else None,
+        'is_approved': user.status == AccountStatus.ACTIVE,
     })
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def api_logout(request):
+    """Invalidate the refresh token on logout."""
+    try:
+        refresh_token = request.data.get('refresh')
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+    except Exception:
+        pass
+    return Response({'detail': 'Successfully logged out.'}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', 'PUT', 'PATCH'])
@@ -170,6 +193,52 @@ def api_financial_summary(request):
         'total_cash_out': str(total_out),
         'total_opening_balance': str(total_opening),
         'current_balance': str(current_balance),
+    })
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def api_dashboard(request):
+    """Single endpoint that returns everything the mobile dashboard screen needs."""
+    user = request.user
+    businesses = Business.objects.all()
+    cashbooks = Cashbook.objects.all()
+
+    total_in = Transaction.objects.filter(
+        transaction_type=TransactionType.CASH_IN
+    ).aggregate(t=Sum('amount'))['t'] or Decimal('0.00')
+
+    total_out = Transaction.objects.filter(
+        transaction_type=TransactionType.CASH_OUT
+    ).aggregate(t=Sum('amount'))['t'] or Decimal('0.00')
+
+    total_opening = (
+        sum((b.opening_balance for b in businesses), Decimal('0.00')) +
+        sum((cb.opening_balance for cb in cashbooks), Decimal('0.00'))
+    )
+    current_balance = total_opening + total_in - total_out
+
+    recent_transactions = Transaction.objects.select_related(
+        'cashbook__business'
+    ).order_by('-date', '-created_at')[:10]
+
+    subscription = getattr(user, 'subscription', None)
+    unread_count = user.notifications.filter(is_read=False).count()
+
+    return Response({
+        'financials': {
+            'current_balance': str(current_balance),
+            'total_cash_in': str(total_in),
+            'total_cash_out': str(total_out),
+            'total_opening_balance': str(total_opening),
+        },
+        'counts': {
+            'total_businesses': businesses.count(),
+            'total_cashbooks': cashbooks.count(),
+            'unread_notifications': unread_count,
+        },
+        'recent_transactions': TransactionSerializer(recent_transactions, many=True).data,
+        'subscription': SubscriptionSerializer(subscription).data if subscription else None,
     })
 
 
