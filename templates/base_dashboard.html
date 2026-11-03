@@ -423,7 +423,7 @@
                         <span class="fw-bold fs-5 text-dark">{% block page_title %}Dashboard{% endblock %}</span>
                         {% if user.is_service_admin and request.tenant %}
                         <span class="badge bg-light text-secondary border ms-2 small d-none d-md-inline-block">
-                            <i class="bi bi-database me-1 text-primary"></i> Isolated DB: {{ request.tenant.db_name }}
+                            <i class="bi bi-database me-1 text-primary"></i> Schema: {{ request.tenant.db_name }}
                         </span>
                         {% elif user.is_super_admin %}
                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2 small">
@@ -434,6 +434,14 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-3">
+                    {% if user.is_service_admin and user.subscription and user.subscription.end_date %}
+                    <div class="d-none d-md-flex align-items-center gap-2 px-3 py-1 bg-light rounded-pill border shadow-sm">
+                        <span class="small text-secondary fw-semibold">Plan: <strong>{{ user.subscription.plan.name }}</strong></span>
+                        <span data-countdown-end="{{ user.subscription.end_date|date:'c' }}" data-countdown-compact="true">
+                            <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace">Calculating...</span>
+                        </span>
+                    </div>
+                    {% endif %}
                     <!-- Notifications Dropdown -->
                     <div class="dropdown">
                         <button class="btn btn-light rounded-circle position-relative p-2" type="button" data-bs-toggle="dropdown">
@@ -540,6 +548,69 @@
                     backdrop.classList.remove('show');
                 });
             }
+
+            // Real-Time Live Plan Countdown Engine
+            function updateCountdowns() {
+                const elements = document.querySelectorAll('[data-countdown-end]');
+                if (!elements.length) return;
+                const now = new Date().getTime();
+
+                elements.forEach(function (el) {
+                    const endAttr = el.getAttribute('data-countdown-end');
+                    if (!endAttr) return;
+
+                    const target = new Date(endAttr).getTime();
+                    const diff = target - now;
+                    const isCompact = el.hasAttribute('data-countdown-compact');
+
+                    if (isNaN(diff) || diff <= 0) {
+                        if (isCompact) {
+                            el.innerHTML = '<span class="badge bg-danger text-white"><i class="bi bi-exclamation-triangle-fill me-1"></i>Expired</span>';
+                        } else {
+                            el.innerHTML = '<div class="alert alert-danger py-2 px-3 small fw-bold mb-0 rounded-3"><i class="bi bi-exclamation-triangle-fill me-1"></i> Plan Has Expired</div>';
+                        }
+                        return;
+                    }
+
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    if (isCompact) {
+                        let badgeClass = days < 3 ? 'bg-danger text-white' : (days < 7 ? 'bg-warning text-dark' : 'bg-success text-white');
+                        el.innerHTML = `<span class="badge ${badgeClass} font-monospace shadow-sm" style="font-size: 0.78rem;"><i class="bi bi-clock-history me-1"></i>${days}d ${String(hours).padStart(2,'0')}h ${String(minutes).padStart(2,'0')}m ${String(seconds).padStart(2,'0')}s</span>`;
+                    } else {
+                        let tileBorder = days < 3 ? 'border-danger bg-danger-subtle text-danger' : (days < 7 ? 'border-warning bg-warning-subtle text-dark' : 'border-success-subtle bg-success-subtle text-success');
+                        el.innerHTML = `
+                            <div class="d-flex align-items-center gap-1 justify-content-start">
+                                <div class="text-center p-2 rounded-3 border ${tileBorder} shadow-sm" style="min-width: 50px;">
+                                    <div class="fs-4 fw-bold font-monospace lh-1">${days}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem; text-transform: uppercase;">Days</div>
+                                </div>
+                                <span class="fw-bold fs-5 text-muted">:</span>
+                                <div class="text-center p-2 rounded-3 border ${tileBorder} shadow-sm" style="min-width: 46px;">
+                                    <div class="fs-4 fw-bold font-monospace lh-1">${String(hours).padStart(2, '0')}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem; text-transform: uppercase;">Hours</div>
+                                </div>
+                                <span class="fw-bold fs-5 text-muted">:</span>
+                                <div class="text-center p-2 rounded-3 border ${tileBorder} shadow-sm" style="min-width: 46px;">
+                                    <div class="fs-4 fw-bold font-monospace lh-1">${String(minutes).padStart(2, '0')}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem; text-transform: uppercase;">Mins</div>
+                                </div>
+                                <span class="fw-bold fs-5 text-muted">:</span>
+                                <div class="text-center p-2 rounded-3 border ${tileBorder} shadow-sm" style="min-width: 46px;">
+                                    <div class="fs-4 fw-bold font-monospace lh-1">${String(seconds).padStart(2, '0')}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem; text-transform: uppercase;">Secs</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+
+            updateCountdowns();
+            setInterval(updateCountdowns, 1000);
         });
     </script>
     {% block extra_js %}{% endblock %}

@@ -14,17 +14,32 @@
                 </span>
                 <div>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="fw-bold fs-6 text-dark">Plan: {{ subscription.plan.name }}</span>
+                        <span class="fw-bold fs-6 text-dark">Plan: {{ subscription.plan.name|default:"No Active Plan" }}</span>
+                        {% if subscription %}
                         <span class="sub-status-pill {% if subscription.is_currently_active %}sub-active{% else %}sub-expired{% endif %} py-0 px-2" style="font-size: 0.72rem;">
                             {{ subscription.get_status_display }}
                         </span>
+                        {% endif %}
                     </div>
                     <div class="text-secondary small">
-                        Valid until: <strong>{{ subscription.end_date|date:"d M Y"|default:"-" }}</strong>
-                        &bull; <span class="{% if subscription.remaining_days < 5 %}text-danger fw-bold{% else %}text-muted{% endif %}">{{ subscription.remaining_days }} days remaining</span>
+                        Valid until: <strong>{{ subscription.end_date|date:"d M Y, h:i A"|default:"-" }}</strong>
+                        {% if subscription.plan %}
+                        &bull; Quota: <strong>{{ total_businesses }}/{{ subscription.plan.max_businesses }} Biz</strong> (Max {{ subscription.plan.max_cashbooks_per_business }} CB/Biz)
+                        {% endif %}
                     </div>
                 </div>
             </div>
+
+            {% if subscription.end_date %}
+            <div class="d-flex flex-column align-items-start align-items-md-center">
+                <div class="text-muted small fw-bold mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                    <i class="bi bi-clock-history me-1 text-primary"></i> REAL-TIME PLAN COUNTDOWN
+                </div>
+                <div data-countdown-end="{{ subscription.end_date|date:'c' }}">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace">Calculating...</span>
+                </div>
+            </div>
+            {% endif %}
 
             <div class="d-flex gap-2">
                 <a href="{% url 'businesses:business_create' %}" class="btn btn-outline-primary btn-sm">
@@ -86,13 +101,17 @@
     <div class="col-sm-6 col-xl-3">
         <div class="stat-card-gradient purple">
             <div class="d-flex align-items-center justify-content-between mb-2">
-                <div class="stat-label text-white-50">Active Outlets</div>
+                <div class="stat-label text-white-50">Active Outlets & Quotas</div>
                 <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
                     <i class="bi bi-buildings-fill fs-5 text-white"></i>
                 </div>
             </div>
-            <div class="stat-value text-white mb-1">{{ total_businesses }} <span class="fs-6 font-normal opacity-75">Biz</span> / {{ total_cashbooks }} <span class="fs-6 font-normal opacity-75">CB</span></div>
-            <div class="small text-white-50">Businesses & ledgers</div>
+            <div class="stat-value text-white mb-1">
+                {{ total_businesses }}{% if subscription.plan.max_businesses %}<span class="fs-6 font-normal opacity-75">/{{ subscription.plan.max_businesses }} Biz</span>{% else %}<span class="fs-6 font-normal opacity-75"> Biz</span>{% endif %}
+            </div>
+            <div class="small text-white-75">
+                {{ total_cashbooks }} Cashbooks running {% if subscription.plan.max_cashbooks_per_business %}(Max {{ subscription.plan.max_cashbooks_per_business }}/Biz){% endif %}
+            </div>
         </div>
     </div>
 </div>

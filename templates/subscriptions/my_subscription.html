@@ -36,17 +36,28 @@
                     </div>
                 </div>
 
-                <!-- Remaining Days Counter -->
-                <div class="p-3 rounded-3 bg-light border d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <div class="text-muted small">Remaining Subscription Period</div>
-                        <div class="fs-4 fw-bold {% if subscription.remaining_days < 5 %}text-danger{% else %}text-primary{% endif %}">
-                            {{ subscription.remaining_days }} Days Left
+                <!-- Live Real-Time Plan Countdown -->
+                <div class="p-3 rounded-3 bg-light border mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">
+                                    <i class="bi bi-clock-history text-primary me-1"></i> Live Plan Countdown
+                                </span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.7rem;">Live Sync</span>
+                            </div>
+                            {% if subscription.end_date %}
+                            <div data-countdown-end="{{ subscription.end_date|date:'c' }}">
+                                <div class="fs-4 fw-bold text-primary">{{ subscription.remaining_days }} Days</div>
+                            </div>
+                            {% else %}
+                            <div class="text-muted small">No expiration date set</div>
+                            {% endif %}
                         </div>
+                        <a href="{% url 'subscriptions:renew' %}" class="btn btn-primary px-4 fw-bold shadow-sm">
+                            <i class="bi bi-arrow-repeat me-1"></i> Renew Plan
+                        </a>
                     </div>
-                    <a href="{% url 'subscriptions:renew' %}" class="btn btn-primary px-4 fw-bold">
-                        <i class="bi bi-arrow-repeat me-1"></i> Renew Plan
-                    </a>
                 </div>
 
                 {% if subscription.is_in_grace_period %}

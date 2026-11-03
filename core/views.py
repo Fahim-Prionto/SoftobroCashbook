@@ -160,11 +160,32 @@ def admin_service_admin_detail_view(request, user_id):
     tenant = getattr(admin_user, 'tenant', None)
     subscription = getattr(admin_user, 'subscription', None)
 
+    business_count = 0
+    cashbook_count = 0
+    transaction_count = 0
+
+    if tenant and tenant.status == TenantStatus.PROVISIONED:
+        try:
+            from tenants.provisioning import ensure_tenant_database_registered
+            from businesses.models import Business
+            from cashbooks.models import Cashbook
+            from transactions.models import Transaction
+
+            alias = ensure_tenant_database_registered(tenant)
+            business_count = Business.objects.using(alias).count()
+            cashbook_count = Cashbook.objects.using(alias).count()
+            transaction_count = Transaction.objects.using(alias).count()
+        except Exception as e:
+            logger.warning(f"Could not load tenant metrics for {tenant.db_name}: {e}")
+
     return render(request, 'core/admin_service_admin_detail.html', {
         'admin_user': admin_user,
         'payments': payments,
         'tenant': tenant,
         'subscription': subscription,
+        'business_count': business_count,
+        'cashbook_count': cashbook_count,
+        'transaction_count': transaction_count,
     })
 
 

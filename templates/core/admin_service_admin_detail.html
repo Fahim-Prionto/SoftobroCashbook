@@ -153,23 +153,71 @@
             </div>
             <div class="card-body">
                 {% if subscription %}
-                <div class="mb-2">
-                    <span class="text-muted small">Plan:</span>
-                    <div class="fw-bold text-dark">{{ subscription.plan.name }}</div>
-                </div>
-                <div class="mb-2">
-                    <span class="text-muted small">Validity Period:</span>
-                    <div class="small">{{ subscription.start_date|date:"d M Y"|default:"-" }} to {{ subscription.end_date|date:"d M Y"|default:"-" }}</div>
-                </div>
-                <div class="mb-2">
-                    <span class="text-muted small">Remaining:</span>
-                    <div class="fw-bold {% if subscription.remaining_days < 5 %}text-danger{% else %}text-success{% endif %}">
-                        {{ subscription.remaining_days }} Days
+                <div class="mb-3">
+                    <span class="text-muted small">Subscribed Plan:</span>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <span class="fw-bold fs-5 text-dark">{{ subscription.plan.name }}</span>
+                        <span class="badge {% if subscription.is_currently_active %}bg-success{% else %}bg-danger{% endif %} px-2 py-1">
+                            {{ subscription.get_status_display }}
+                        </span>
                     </div>
                 </div>
-                <div>
-                    <span class="text-muted small">Limits:</span>
-                    <div class="small">{{ subscription.plan.max_businesses }} Biz, {{ subscription.plan.max_cashbooks_per_business }} CB/Biz</div>
+
+                <div class="mb-3">
+                    <span class="text-muted small">Validity Period:</span>
+                    <div class="small fw-semibold text-dark mt-1">{{ subscription.start_date|date:"d M Y, h:i A"|default:"-" }} &rarr; {{ subscription.end_date|date:"d M Y, h:i A"|default:"-" }}</div>
+                </div>
+
+                <!-- Live Real-Time Countdown Timer -->
+                <div class="mb-4 p-3 bg-light rounded-3 border">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Live Real-Time Countdown:</span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.7rem;"><i class="bi bi-clock-history me-1"></i> Live Sync</span>
+                    </div>
+                    {% if subscription.end_date %}
+                    <div data-countdown-end="{{ subscription.end_date|date:'c' }}">
+                        <div class="fw-bold text-success">{{ subscription.remaining_days }} Days</div>
+                    </div>
+                    {% else %}
+                    <span class="text-muted small">No expiration date set</span>
+                    {% endif %}
+                </div>
+
+                <!-- Resource Quotas & Running Usage vs Limits -->
+                <div class="pt-3 border-top">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="fw-bold text-dark small"><i class="bi bi-speedometer2 text-primary me-1"></i> Running Usage vs Limits</span>
+                        <span class="badge bg-light text-secondary border small">Real-Time Quota</span>
+                    </div>
+
+                    <!-- Businesses Usage -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-secondary fw-semibold">Businesses Running:</span>
+                            <span class="fw-bold {% if business_count >= subscription.plan.max_businesses %}text-danger{% else %}text-primary{% endif %}">
+                                {{ business_count }} / {{ subscription.plan.max_businesses }} Used
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 7px;">
+                            <div class="progress-bar {% if business_count >= subscription.plan.max_businesses %}bg-danger{% else %}bg-primary{% endif %}" style="width: {% widthratio business_count subscription.plan.max_businesses 100 %}%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Cashbooks Usage -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-secondary fw-semibold">Cashbooks Created:</span>
+                            <span class="fw-bold text-dark">
+                                {{ cashbook_count }} Running (Max {{ subscription.plan.max_cashbooks_per_business }}/Biz)
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Transactions Usage -->
+                    <div class="p-2 bg-light rounded-2 d-flex justify-content-between align-items-center small">
+                        <span class="text-secondary">Transactions Recorded:</span>
+                        <span class="fw-bold text-success font-monospace">{{ transaction_count }} Transactions</span>
+                    </div>
                 </div>
                 {% else %}
                 <p class="text-muted small mb-0">No subscription record assigned.</p>
