@@ -47,9 +47,24 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'rest_framework.authtoken',
-    'corsheaders',
-    'drf_spectacular',
+]
 
+# Conditionally load optional packages so cPanel never crashes with 500 if pip install hasn't run yet
+try:
+    import corsheaders
+    INSTALLED_APPS.append('corsheaders')
+    _has_cors = True
+except ImportError:
+    _has_cors = False
+
+try:
+    import drf_spectacular
+    INSTALLED_APPS.append('drf_spectacular')
+    _has_spectacular = True
+except ImportError:
+    _has_spectacular = False
+
+INSTALLED_APPS += [
     # Project Apps
     'accounts.apps.AccountsConfig',
     'core.apps.CoreConfig',
@@ -65,7 +80,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -76,6 +90,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tenants.middleware.TenantMiddleware',
 ]
+
+if _has_cors:
+    MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 
 ROOT_URLCONF = 'softobrocashbook.urls'
 
