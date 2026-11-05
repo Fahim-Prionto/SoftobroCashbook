@@ -19,10 +19,23 @@ class TenantMiddleware:
         request.tenant = None
         user = getattr(request, 'user', None)
 
-        # Support DRF token authentication in middleware if session auth is not present
+        # Support DRF token authentication & JWT Bearer authentication in middleware
         if not user or not user.is_authenticated:
             auth_header = request.headers.get('Authorization', '') or request.META.get('HTTP_AUTHORIZATION', '')
-            if auth_header.startswith('Token '):
+            if auth_header.startswith('Bearer '):
+                jwt_token = auth_header.split(' ', 1)[1].strip()
+                try:
+                    from rest_framework_simplejwt.tokens import AccessToken
+                    from accounts.models import User
+                    validated_token = AccessToken(jwt_token)
+                    user_id = validated_token.get('user_id')
+                    if user_id:
+                        user = User.objects.filter(id=user_id).first()
+                        if user:
+                            request.user = user
+                except Exception as e:
+                    logger.warning(f"JWT validation in TenantMiddleware failed: {e}")
+            elif auth_header.startswith('Token '):
                 token_key = auth_header.split(' ', 1)[1].strip()
                 try:
                     from rest_framework.authtoken.models import Token
