@@ -117,17 +117,17 @@ class PartnerEntry(models.Model):
         blank=True,
         related_name='entries',
     )
-    business = models.ForeignKey(
-        'businesses.Business',
-        on_delete=models.CASCADE,
-        related_name='partner_entries',
+    # Stored as plain IDs — no DB-level FK because Business/Cashbook tables live
+    # in per-tenant PostgreSQL schemas, not the central schema where migrations run.
+    business_id = models.IntegerField(
+        db_index=True,
+        help_text="ID of the Business (tenant-schema table, no FK constraint)",
     )
-    cashbook = models.ForeignKey(
-        'cashbooks.Cashbook',
-        on_delete=models.SET_NULL,
+    cashbook_id = models.IntegerField(
         null=True,
         blank=True,
-        related_name='partner_entries',
+        db_index=True,
+        help_text="ID of the Cashbook (tenant-schema table, no FK constraint)",
     )
     direction = models.CharField(
         max_length=10,
@@ -203,6 +203,28 @@ class PartnerEntry(models.Model):
     @property
     def outstanding_amount(self):
         return self.total_amount - self.settled_amount
+
+    @property
+    def business(self):
+        """Lazy-load the Business object from the tenant schema."""
+        if not self.business_id:
+            return None
+        try:
+            from businesses.models import Business
+            return Business.objects.get(pk=self.business_id)
+        except Exception:
+            return None
+
+    @property
+    def cashbook(self):
+        """Lazy-load the Cashbook object from the tenant schema."""
+        if not self.cashbook_id:
+            return None
+        try:
+            from cashbooks.models import Cashbook
+            return Cashbook.objects.get(pk=self.cashbook_id)
+        except Exception:
+            return None
 
 
 class PartnerEntryLine(models.Model):

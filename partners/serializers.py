@@ -52,6 +52,9 @@ class PartnerEntrySerializer(serializers.ModelSerializer):
     business_name = serializers.SerializerMethodField()
     cashbook_name = serializers.SerializerMethodField()
     outstanding_amount = serializers.ReadOnlyField()
+    # Accept business/cashbook as plain integer IDs
+    business = serializers.IntegerField(source='business_id')
+    cashbook = serializers.IntegerField(source='cashbook_id', allow_null=True, required=False)
 
     class Meta:
         model = PartnerEntry
@@ -75,10 +78,12 @@ class PartnerEntrySerializer(serializers.ModelSerializer):
         return obj.partner.name if obj.partner else ''
 
     def get_business_name(self, obj):
-        return obj.business.name if obj.business else ''
+        b = obj.business  # calls the @property
+        return b.name if b else ''
 
     def get_cashbook_name(self, obj):
-        return obj.cashbook.name if obj.cashbook else ''
+        cb = obj.cashbook  # calls the @property
+        return cb.name if cb else ''
 
     def create(self, validated_data):
         lines_data = validated_data.pop('lines', [])

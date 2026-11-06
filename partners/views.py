@@ -68,7 +68,7 @@ class PartnerEntryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = PartnerEntry.objects.select_related(
-            'partner', 'business', 'cashbook'
+            'partner'
         ).prefetch_related('lines', 'receipts').all()
 
         # Filters from query params
@@ -257,7 +257,7 @@ def ledger_list_view(request):
     from businesses.models import Business
     from cashbooks.models import Cashbook
     entries = PartnerEntry.objects.select_related(
-        'partner', 'business', 'cashbook'
+        'partner'
     ).prefetch_related('lines', 'receipts').order_by('-date_time')
 
     # Filters
@@ -350,7 +350,7 @@ def entry_edit_view(request, pk):
     from businesses.models import Business
     from cashbooks.models import Cashbook
     entry = get_object_or_404(
-        PartnerEntry.objects.select_related('partner', 'business', 'cashbook')
+        PartnerEntry.objects.select_related('partner')
         .prefetch_related('lines', 'receipts'),
         pk=pk
     )
@@ -372,7 +372,7 @@ def entry_edit_view(request, pk):
 def invoice_print_view(request, pk):
     """Render a printable invoice for a given entry, using the active template if any."""
     entry = get_object_or_404(
-        PartnerEntry.objects.select_related('partner', 'business', 'cashbook')
+        PartnerEntry.objects.select_related('partner')
         .prefetch_related('lines', 'receipts'),
         pk=pk
     )
