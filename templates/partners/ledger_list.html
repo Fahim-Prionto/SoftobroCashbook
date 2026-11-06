@@ -14,28 +14,60 @@
 
 <!-- Stats -->
 <div class="row g-3 mb-3">
+    <!-- TOTAL -->
     <div class="col-6 col-sm-3">
-        <div class="card border-0 shadow-sm rounded-3 p-3 text-center" style="background:#1e293b;">
-            <div class="text-muted small">TOTAL</div>
-            <div class="fw-bold text-white">৳{{ total|floatformat:2 }}</div>
+        <div class="card border-0 shadow rounded-3 overflow-hidden" style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); min-height: 100px;">
+            <div class="card-body d-flex flex-column justify-content-between p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: rgba(255,255,255,.65); text-transform: uppercase;">Total Amount</span>
+                    <i class="bi bi-wallet2" style="font-size: 1.2rem; color: rgba(255,255,255,.35);"></i>
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -.5px; line-height: 1;">
+                    ৳{{ total|floatformat:2 }}
+                </div>
+            </div>
         </div>
     </div>
+    <!-- SETTLED -->
     <div class="col-6 col-sm-3">
-        <div class="card border-0 shadow-sm rounded-3 p-3 text-center" style="background:#14532d;">
-            <div class="text-muted small">SETTLED</div>
-            <div class="fw-bold text-success">৳{{ settled|floatformat:2 }}</div>
+        <div class="card border-0 shadow rounded-3 overflow-hidden" style="background: linear-gradient(135deg, #14532d 0%, #16a34a 100%); min-height: 100px;">
+            <div class="card-body d-flex flex-column justify-content-between p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: rgba(255,255,255,.65); text-transform: uppercase;">Settled</span>
+                    <i class="bi bi-check-circle-fill" style="font-size: 1.2rem; color: rgba(255,255,255,.35);"></i>
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -.5px; line-height: 1;">
+                    ৳{{ settled|floatformat:2 }}
+                </div>
+            </div>
         </div>
     </div>
+    <!-- OUTSTANDING -->
     <div class="col-6 col-sm-3">
-        <div class="card border-0 shadow-sm rounded-3 p-3 text-center" style="background:#450a0a;">
-            <div class="text-muted small">OUTSTANDING</div>
-            <div class="fw-bold text-danger">৳{{ outstanding|floatformat:2 }}</div>
+        <div class="card border-0 shadow rounded-3 overflow-hidden" style="background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%); min-height: 100px;">
+            <div class="card-body d-flex flex-column justify-content-between p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: rgba(255,255,255,.65); text-transform: uppercase;">Outstanding</span>
+                    <i class="bi bi-exclamation-circle-fill" style="font-size: 1.2rem; color: rgba(255,255,255,.35);"></i>
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -.5px; line-height: 1;">
+                    ৳{{ outstanding|floatformat:2 }}
+                </div>
+            </div>
         </div>
     </div>
+    <!-- ENTRIES -->
     <div class="col-6 col-sm-3">
-        <div class="card border-0 shadow-sm rounded-3 p-3 text-center" style="background:#1e3a5f;">
-            <div class="text-muted small">ENTRIES</div>
-            <div class="fw-bold text-info">{{ entry_count }}</div>
+        <div class="card border-0 shadow rounded-3 overflow-hidden" style="background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); min-height: 100px;">
+            <div class="card-body d-flex flex-column justify-content-between p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; color: rgba(255,255,255,.65); text-transform: uppercase;">Entries</span>
+                    <i class="bi bi-journal-richtext" style="font-size: 1.2rem; color: rgba(255,255,255,.35);"></i>
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -.5px; line-height: 1;">
+                    {{ entry_count }}
+                </div>
+            </div>
         </div>
     </div>
 </div>
