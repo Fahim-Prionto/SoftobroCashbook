@@ -37,6 +37,9 @@ urlpatterns = [
     # In-App Notifications
     path('notifications/', include('notifications.urls')),
 
+    # Partners & Ledger (Service Admin)
+    path('app/partners/', include('partners.urls')),
+
     # REST API for Mobile and Web
     path('api/v1/', include('api.urls')),
 ]

@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 from api import views
+from partners import views as partner_views
 
 app_name = 'api'
 
@@ -10,6 +11,9 @@ router.register(r'businesses', views.BusinessViewSet, basename='business')
 router.register(r'cashbooks', views.CashbookViewSet, basename='cashbook')
 router.register(r'transactions', views.TransactionViewSet, basename='transaction')
 router.register(r'notifications', views.NotificationViewSet, basename='notification')
+router.register(r'partners', partner_views.PartnerViewSet, basename='partner')
+router.register(r'partner-entries', partner_views.PartnerEntryViewSet, basename='partner-entry')
+router.register(r'invoice-templates', partner_views.InvoiceTemplateViewSet, basename='invoice-template')
 
 urlpatterns = [
     # ── Authentication ────────────────────────────────────────────────────────

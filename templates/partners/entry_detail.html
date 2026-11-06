@@ -1,0 +1,473 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{% if action == 'create' %}New Entry{% else %}Edit {{ entry.reference_number }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center mb-4 gap-3">
+    <a href="{% url 'partners:ledger_list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div class="flex-grow-1">
+        <h4 class="fw-bold mb-0">
+            {% if action == 'create' %}New Ledger Entry{% else %}Edit Entry{% endif %}
+        </h4>
+        {% if entry %}
+        <span class="font-monospace text-primary small fw-semibold">{{ entry.reference_number }}</span>
+        {% endif %}
+    </div>
+    {% if entry %}
+    <a href="{% url 'partners:invoice_print' entry.pk %}" target="_blank" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-receipt me-1"></i> Invoice
+    </a>
+    {% endif %}
+    <button id="saveBtn" class="btn btn-primary btn-sm px-4">
+        <i class="bi bi-check-lg me-1"></i> Save
+    </button>
+</div>
+
+<div class="row g-3">
+    <!-- Left: Entry Details -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-transparent py-2 fw-semibold">Entry Details</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-semibold">Date / Time</label>
+                        <input type="datetime-local" id="fDatetime" class="form-control"
+                               value="{{ entry.date_time|date:'Y-m-d' }}T{{ entry.date_time|date:'H:i'|default:'' }}">
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-semibold">Direction <span class="text-danger">*</span></label>
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" id="btnCashIn"
+                                class="btn {% if not entry or entry.direction == 'CASH_IN' %}btn-success{% else %}btn-outline-success{% endif %}"
+                                onclick="setDirection('CASH_IN')">
+                                <i class="bi bi-arrow-down-circle-fill me-1"></i> Cash In
+                            </button>
+                            <button type="button" id="btnCashOut"
+                                class="btn {% if entry and entry.direction == 'CASH_OUT' %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                                onclick="setDirection('CASH_OUT')">
+                                <i class="bi bi-arrow-up-circle-fill me-1"></i> Cash Out
+                            </button>
+                        </div>
+                        <input type="hidden" id="fDirection" value="{{ entry.direction|default:'CASH_IN' }}">
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-semibold">Business <span class="text-danger">*</span></label>
+                        <select id="fBusiness" class="form-select">
+                            <option value="">— Select Business —</option>
+                            {% for b in businesses %}
+                            <option value="{{ b.pk }}" {% if entry and entry.business_id == b.pk %}selected{% endif %}>{{ b.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-semibold">Cashbook</label>
+                        <select id="fCashbook" class="form-select">
+                            <option value="">— Optional —</option>
+                            {% for cb in cashbooks %}
+                            <option value="{{ cb.pk }}" {% if entry and entry.cashbook_id == cb.pk %}selected{% endif %}>{{ cb.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-semibold">Partner</label>
+                        <select id="fPartner" class="form-select">
+                            <option value="">— Optional —</option>
+                            {% for p in partners %}
+                            <option value="{{ p.pk }}" {% if entry and entry.partner_id == p.pk %}selected{% endif %}>{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-semibold">Entry Type</label>
+                        <input type="text" id="fEntryType" class="form-control" placeholder="e.g. Income, Expense, Sales…"
+                               value="{{ entry.entry_type|default:'' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Remarks</label>
+                        <textarea id="fRemarks" class="form-control" rows="2"
+                                  placeholder="Notes / remarks…">{{ entry.remarks|default:'' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry Lines -->
+        <div class="card border-0 shadow-sm rounded-3 mb-3">
+            <div class="card-header bg-transparent py-2 d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">Entry Lines</span>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addLine()">
+                    <i class="bi bi-plus-lg me-1"></i> Add line
+                </button>
+            </div>
+            <div class="card-body p-2" id="linesContainer">
+                {% if entry and entry.lines.all %}
+                    {% for line in entry.lines.all %}
+                    <div class="border rounded-3 p-3 mb-2 line-row" data-line-id="{{ line.pk }}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small text-muted fw-semibold">Line {{ forloop.counter }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1 delete-line-btn"
+                                    data-line-id="{{ line.pk }}" onclick="removeLine(this)">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                        <input type="text" class="form-control form-control-sm mb-2 line-desc"
+                               placeholder="Description" value="{{ line.description }}">
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <label class="form-label small mb-0">Price</label>
+                                <input type="number" step="0.01" min="0" class="form-control form-control-sm line-price"
+                                       value="{{ line.price }}" oninput="recalcLine(this)">
+                            </div>
+                            <div class="col-3">
+                                <label class="form-label small mb-0">QTY</label>
+                                <input type="number" step="0.001" min="0" class="form-control form-control-sm line-qty"
+                                       value="{{ line.quantity }}" oninput="recalcLine(this)">
+                            </div>
+                            <div class="col-3">
+                                <label class="form-label small mb-0">UOM</label>
+                                <select class="form-select form-select-sm line-uom">
+                                    {% for val, label in uom_choices %}
+                                    <option value="{{ val }}" {% if line.uom == val %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12 text-end">
+                                <small class="text-muted">Line total: <strong class="line-total-display text-dark">৳{{ line.line_total|floatformat:2 }}</strong></small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div id="noLinesMsg" class="text-center text-muted py-3 small">
+                        <i class="bi bi-list-ul fs-4 d-block mb-1"></i>No lines yet. Click "+ Add line".
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Receipts -->
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-transparent py-2 d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">Receipts</span>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addReceipt()">
+                    <i class="bi bi-plus-lg me-1"></i> Add receipt
+                </button>
+            </div>
+            <div class="card-body p-2" id="receiptsContainer">
+                {% if entry and entry.receipts.all %}
+                    {% for receipt in entry.receipts.all %}
+                    <div class="border rounded-3 p-3 mb-2 receipt-row" data-receipt-id="{{ receipt.pk }}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small text-muted">Received</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1"
+                                    data-receipt-id="{{ receipt.pk }}" onclick="removeReceipt(this)">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                        <select class="form-select form-select-sm mb-2 receipt-method">
+                            {% for val, label in payment_method_choices %}
+                            <option value="{{ val }}" {% if receipt.payment_method == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="row g-2">
+                            <div class="col-5">
+                                <input type="number" step="0.01" min="0" class="form-control form-control-sm receipt-amount"
+                                       placeholder="Amount" value="{{ receipt.amount }}" oninput="updateTotals()">
+                            </div>
+                            <div class="col-7">
+                                <input type="datetime-local" class="form-control form-control-sm receipt-date"
+                                       value="{{ receipt.received_at|date:'Y-m-d' }}T{{ receipt.received_at|date:'H:i' }}">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div id="noReceiptsMsg" class="text-center text-muted py-3 small">
+                        <i class="bi bi-receipt fs-4 d-block mb-1"></i>No receipts yet. Click "+ Add receipt".
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Summary -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-3 sticky-top" style="top: 80px;">
+            <div class="card-header bg-transparent py-2 fw-semibold">Summary</div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="fw-semibold">Total</span>
+                    <span class="fw-bold" id="summaryTotal">৳0.00</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-success fw-semibold">Received</span>
+                    <span class="fw-bold text-success" id="summaryReceived">৳0.00</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span class="text-danger fw-semibold">To Receive</span>
+                    <span class="fw-bold text-danger" id="summaryOutstanding">৳0.00</span>
+                </div>
+            </div>
+            {% if entry %}
+            <div class="card-footer bg-transparent small text-muted">
+                <div>Created: {{ entry.created_at|date:"M j, Y g:i A" }}</div>
+                <div>Updated: {{ entry.updated_at|date:"M j, Y g:i A" }}</div>
+                <div class="mt-1">
+                    Status:
+                    {% if entry.payment_status == 'PAID' %}<span class="badge bg-success">Paid</span>
+                    {% elif entry.payment_status == 'PARTIAL' %}<span class="badge bg-warning text-dark">Partial</span>
+                    {% else %}<span class="badge bg-danger">Unpaid</span>{% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Alert area -->
+<div id="alertArea" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;"></div>
+
+<script>
+const ENTRY_ID = {{ entry.pk|default:'null' }};
+const ACTION = '{{ action }}';
+const API_BASE = '/api/v1/';
+const CSRF = '{{ csrf_token }}';
+
+const UOM_CHOICES = [
+    {% for val, label in uom_choices %}{ value: '{{ val }}', label: '{{ label }}' },{% endfor %}
+];
+const METHOD_CHOICES = [
+    {% for val, label in payment_method_choices %}{ value: '{{ val }}', label: '{{ label }}' },{% endfor %}
+];
+
+let lineCounter = document.querySelectorAll('.line-row').length;
+let receiptCounter = document.querySelectorAll('.receipt-row').length;
+
+// ── Direction toggle ──────────────────────────────────────────────────────────
+function setDirection(dir) {
+    document.getElementById('fDirection').value = dir;
+    document.getElementById('btnCashIn').className = 'btn ' + (dir === 'CASH_IN' ? 'btn-success' : 'btn-outline-success');
+    document.getElementById('btnCashOut').className = 'btn ' + (dir === 'CASH_OUT' ? 'btn-danger' : 'btn-outline-danger');
+}
+
+// ── Line helpers ──────────────────────────────────────────────────────────────
+function uomOptions(selected) {
+    return UOM_CHOICES.map(c =>
+        `<option value="${c.value}" ${c.value === selected ? 'selected' : ''}>${c.label}</option>`
+    ).join('');
+}
+function methodOptions(selected) {
+    return METHOD_CHOICES.map(c =>
+        `<option value="${c.value}" ${c.value === selected ? 'selected' : ''}>${c.label}</option>`
+    ).join('');
+}
+
+function addLine() {
+    document.getElementById('noLinesMsg')?.remove();
+    lineCounter++;
+    const html = `
+    <div class="border rounded-3 p-3 mb-2 line-row" data-line-id="new_${lineCounter}">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-muted fw-semibold">Line ${lineCounter}</span>
+            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="removeLine(this)">
+                <i class="bi bi-trash-fill"></i>
+            </button>
+        </div>
+        <input type="text" class="form-control form-control-sm mb-2 line-desc" placeholder="Description">
+        <div class="row g-2">
+            <div class="col-4">
+                <label class="form-label small mb-0">Price</label>
+                <input type="number" step="0.01" min="0" class="form-control form-control-sm line-price" value="0" oninput="recalcLine(this)">
+            </div>
+            <div class="col-3">
+                <label class="form-label small mb-0">QTY</label>
+                <input type="number" step="0.001" min="0" class="form-control form-control-sm line-qty" value="1" oninput="recalcLine(this)">
+            </div>
+            <div class="col-3">
+                <label class="form-label small mb-0">UOM</label>
+                <select class="form-select form-select-sm line-uom">${uomOptions('pcs')}</select>
+            </div>
+            <div class="col-12 text-end">
+                <small class="text-muted">Line total: <strong class="line-total-display text-dark">৳0.00</strong></small>
+            </div>
+        </div>
+    </div>`;
+    document.getElementById('linesContainer').insertAdjacentHTML('beforeend', html);
+}
+
+function recalcLine(input) {
+    const row = input.closest('.line-row');
+    const price = parseFloat(row.querySelector('.line-price').value) || 0;
+    const qty   = parseFloat(row.querySelector('.line-qty').value)   || 0;
+    row.querySelector('.line-total-display').textContent = '৳' + (price * qty).toFixed(2);
+    updateTotals();
+}
+
+function removeLine(btn) {
+    const row = btn.closest('.line-row');
+    const lineId = row.dataset.lineId;
+    if (ENTRY_ID && !String(lineId).startsWith('new_')) {
+        fetch(`${API_BASE}partner-entries/${ENTRY_ID}/remove_line/${lineId}/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': CSRF }
+        });
+    }
+    row.remove();
+    updateTotals();
+}
+
+// ── Receipt helpers ───────────────────────────────────────────────────────────
+function addReceipt() {
+    document.getElementById('noReceiptsMsg')?.remove();
+    receiptCounter++;
+    const now = new Date();
+    const local = new Date(now - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    const html = `
+    <div class="border rounded-3 p-3 mb-2 receipt-row" data-receipt-id="new_${receiptCounter}">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-muted">Received</span>
+            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="removeReceipt(this)">
+                <i class="bi bi-trash-fill"></i>
+            </button>
+        </div>
+        <select class="form-select form-select-sm mb-2 receipt-method">${methodOptions('CASH')}</select>
+        <div class="row g-2">
+            <div class="col-5">
+                <input type="number" step="0.01" min="0" class="form-control form-control-sm receipt-amount"
+                       placeholder="Amount" value="0" oninput="updateTotals()">
+            </div>
+            <div class="col-7">
+                <input type="datetime-local" class="form-control form-control-sm receipt-date" value="${local}">
+            </div>
+        </div>
+    </div>`;
+    document.getElementById('receiptsContainer').insertAdjacentHTML('beforeend', html);
+}
+
+function removeReceipt(btn) {
+    const row = btn.closest('.receipt-row');
+    const rid = row.dataset.receiptId;
+    if (ENTRY_ID && !String(rid).startsWith('new_')) {
+        fetch(`${API_BASE}partner-entries/${ENTRY_ID}/remove_receipt/${rid}/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': CSRF }
+        });
+    }
+    row.remove();
+    updateTotals();
+}
+
+// ── Totals ────────────────────────────────────────────────────────────────────
+function updateTotals() {
+    let total = 0;
+    document.querySelectorAll('.line-row').forEach(row => {
+        const p = parseFloat(row.querySelector('.line-price')?.value) || 0;
+        const q = parseFloat(row.querySelector('.line-qty')?.value)   || 0;
+        total += p * q;
+    });
+    let received = 0;
+    document.querySelectorAll('.receipt-row').forEach(row => {
+        received += parseFloat(row.querySelector('.receipt-amount')?.value) || 0;
+    });
+    document.getElementById('summaryTotal').textContent = '৳' + total.toFixed(2);
+    document.getElementById('summaryReceived').textContent = '৳' + received.toFixed(2);
+    document.getElementById('summaryOutstanding').textContent = '৳' + Math.max(0, total - received).toFixed(2);
+}
+
+// ── Save ──────────────────────────────────────────────────────────────────────
+function showAlert(msg, type) {
+    const id = 'alert_' + Date.now();
+    document.getElementById('alertArea').insertAdjacentHTML('beforeend',
+        `<div id="${id}" class="toast align-items-center text-bg-${type} border-0 show mb-2" role="alert">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold">${msg}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="document.getElementById('${id}').remove()"></button>
+            </div>
+        </div>`
+    );
+    setTimeout(() => document.getElementById(id)?.remove(), 4000);
+}
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving…';
+
+    // Collect lines
+    const lines = [];
+    document.querySelectorAll('.line-row').forEach(row => {
+        lines.push({
+            description: row.querySelector('.line-desc')?.value || '',
+            price:       row.querySelector('.line-price')?.value || '0',
+            quantity:    row.querySelector('.line-qty')?.value   || '1',
+            uom:         row.querySelector('.line-uom')?.value   || 'pcs',
+        });
+    });
+    // Collect receipts
+    const receipts = [];
+    document.querySelectorAll('.receipt-row').forEach(row => {
+        receipts.push({
+            amount:         row.querySelector('.receipt-amount')?.value || '0',
+            payment_method: row.querySelector('.receipt-method')?.value || 'CASH',
+            received_at:    row.querySelector('.receipt-date')?.value   || new Date().toISOString(),
+        });
+    });
+
+    const payload = {
+        direction:  document.getElementById('fDirection').value,
+        date_time:  document.getElementById('fDatetime').value,
+        entry_type: document.getElementById('fEntryType').value,
+        remarks:    document.getElementById('fRemarks').value,
+        business:   document.getElementById('fBusiness').value || null,
+        cashbook:   document.getElementById('fCashbook').value || null,
+        partner:    document.getElementById('fPartner').value  || null,
+        lines,
+        receipts,
+    };
+
+    try {
+        const isCreate = ACTION === 'create';
+        const url = isCreate
+            ? `${API_BASE}partner-entries/`
+            : `${API_BASE}partner-entries/${ENTRY_ID}/`;
+        const resp = await fetch(url, {
+            method: isCreate ? 'POST' : 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRF,
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            showAlert('Entry saved successfully!', 'success');
+            if (isCreate && data.id) {
+                setTimeout(() => window.location.href = `/app/partners/ledger/${data.id}/edit/`, 800);
+            } else {
+                updateTotals();
+            }
+        } else {
+            const errors = JSON.stringify(data);
+            showAlert('Error: ' + errors, 'danger');
+        }
+    } catch (e) {
+        showAlert('Network error. Please try again.', 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save';
+    }
+});
+
+// Initial totals on page load
+updateTotals();
+
+// Set current datetime if creating new
+if (ACTION === 'create') {
+    const now = new Date();
+    const local = new Date(now - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    document.getElementById('fDatetime').value = local;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Partners{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">Partners</h4>
+        <small class="text-muted">Manage your Customers &amp; Vendors</small>
+    </div>
+    <a href="{% url 'partners:partner_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> New Partner
+    </a>
+</div>
+
+<!-- Filters -->
+<form method="get" class="row g-2 mb-3 align-items-end">
+    <div class="col-md-5">
+        <input type="text" name="q" value="{{ search }}" class="form-control"
+               placeholder="Search name, phone, email…">
+    </div>
+    <div class="col-md-3">
+        <select name="type" class="form-select">
+            <option value="">All Types</option>
+            <option value="CUSTOMER" {% if partner_type == 'CUSTOMER' %}selected{% endif %}>Customer</option>
+            <option value="VENDOR"   {% if partner_type == 'VENDOR'   %}selected{% endif %}>Vendor</option>
+            <option value="BOTH"     {% if partner_type == 'BOTH'     %}selected{% endif %}>Both</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-search"></i> Filter
+        </button>
+        <a href="{% url 'partners:partner_list' %}" class="btn btn-outline-secondary ms-1">
+            <i class="bi bi-x-lg"></i> Clear
+        </a>
+    </div>
+</form>
+
+<!-- Table -->
+<div class="card shadow-sm border-0 rounded-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th class="text-end">Total (৳)</th>
+                    <th class="text-end">Outstanding (৳)</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in partners %}
+                <tr>
+                    <td>
+                        <a href="{% url 'partners:partner_balance' p.pk %}" class="fw-semibold text-decoration-none">
+                            {{ p.name }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if p.partner_type == 'CUSTOMER' %}
+                            <span class="badge bg-primary-subtle text-primary">Customer</span>
+                        {% elif p.partner_type == 'VENDOR' %}
+                            <span class="badge bg-warning-subtle text-warning-emphasis">Vendor</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">Both</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ p.phone|default:"—" }}</td>
+                    <td>{{ p.email|default:"—" }}</td>
+                    <td class="text-end fw-semibold">৳{{ p.get_total_amount|floatformat:2 }}</td>
+                    <td class="text-end fw-semibold {% if p.get_outstanding > 0 %}text-danger{% else %}text-success{% endif %}">
+                        ৳{{ p.get_outstanding|floatformat:2 }}
+                    </td>
+                    <td class="text-center">
+                        <a href="{% url 'partners:partner_balance' p.pk %}" class="btn btn-sm btn-outline-info me-1" title="Balance">
+                            <i class="bi bi-graph-up"></i>
+                        </a>
+                        <a href="{% url 'partners:partner_edit' p.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                            <i class="bi bi-pencil-fill"></i>
+                        </a>
+                        <a href="{% url 'partners:partner_delete' p.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                            <i class="bi bi-trash-fill"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-people fs-1 d-block mb-2"></i>
+                        No partners found. <a href="{% url 'partners:partner_create' %}">Add your first partner</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

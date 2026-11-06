@@ -380,7 +380,19 @@
                         </a>
                     </div>
 
-                    <div class="sidebar-header mt-3">Account & Billing</div>
+                    <div class="sidebar-header mt-3">Partners &amp; Ledger</div>
+                    <div class="sidebar-nav-item">
+                        <a href="{% url 'partners:partner_list' %}" class="sidebar-nav-link {% if 'partners' in request.path and 'ledger' not in request.path %}active{% endif %}">
+                            <i class="bi bi-people-fill"></i> Partners
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-item">
+                        <a href="{% url 'partners:ledger_list' %}" class="sidebar-nav-link {% if 'ledger' in request.path %}active{% endif %}">
+                            <i class="bi bi-journal-richtext"></i> Ledger
+                        </a>
+                    </div>
+
+                    <div class="sidebar-header mt-3">Account &amp; Billing</div>
                     <div class="sidebar-nav-item">
                         <a href="{% url 'subscriptions:my_subscription' %}" class="sidebar-nav-link {% if 'my-subscription' in request.path %}active{% endif %}">
                             <i class="bi bi-award-fill"></i> My Subscription

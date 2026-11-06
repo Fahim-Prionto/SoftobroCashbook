@@ -77,6 +77,7 @@ INSTALLED_APPS += [
     'reports.apps.ReportsConfig',
     'notifications.apps.NotificationsConfig',
     'api.apps.ApiConfig',
+    'partners.apps.PartnersConfig',
 ]
 
 MIDDLEWARE = [
