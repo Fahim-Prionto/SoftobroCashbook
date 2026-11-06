@@ -111,6 +111,18 @@ def cashbook_detail_view(request, cashbook_id):
     overall_out = cb.get_total_cash_out()
     overall_balance = cb.get_current_balance()
 
+    from partners.models import PartnerEntry
+    from django.db.models import Sum as DjSum2
+    _cb_pb_agg = PartnerEntry.objects.filter(cashbook_id=cb.id).aggregate(
+        total=DjSum2('total_amount'), settled=DjSum2('settled_amount')
+    )
+    partner_total = _cb_pb_agg['total'] or Decimal('0.00')
+    partner_settled = _cb_pb_agg['settled'] or Decimal('0.00')
+    partner_outstanding = partner_total - partner_settled
+    recent_partner_entries = PartnerEntry.objects.filter(
+        cashbook_id=cb.id
+    ).select_related('partner').order_by('-date_time')[:5]
+
     return render(request, 'cashbooks/cashbook_detail.html', {
         'cashbook': cb,
         'transactions': transactions,
@@ -120,6 +132,10 @@ def cashbook_detail_view(request, cashbook_id):
         'overall_in': overall_in,
         'overall_out': overall_out,
         'overall_balance': overall_balance,
+        'partner_total': partner_total,
+        'partner_settled': partner_settled,
+        'partner_outstanding': partner_outstanding,
+        'recent_partner_entries': recent_partner_entries,
         'params': {
             'type': trans_type,
             'category': category,

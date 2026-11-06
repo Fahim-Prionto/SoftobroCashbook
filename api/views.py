@@ -225,6 +225,15 @@ def api_dashboard(request):
     subscription = getattr(user, 'subscription', None)
     unread_count = user.notifications.filter(is_read=False).count()
 
+    from partners.models import PartnerEntry as _PE
+    _p_agg = _PE.objects.aggregate(
+        total=Sum('total_amount'), settled=Sum('settled_amount')
+    )
+    partner_total = _p_agg['total'] or Decimal('0.00')
+    partner_settled = _p_agg['settled'] or Decimal('0.00')
+    partner_outstanding = partner_total - partner_settled
+    partner_entry_count = _PE.objects.count()
+
     return Response({
         'financials': {
             'current_balance': str(current_balance),
@@ -239,6 +248,12 @@ def api_dashboard(request):
         },
         'recent_transactions': TransactionSerializer(recent_transactions, many=True).data,
         'subscription': SubscriptionSerializer(subscription).data if subscription else None,
+        'partner_summary': {
+            'total_amount': str(partner_total),
+            'settled_amount': str(partner_settled),
+            'outstanding_amount': str(partner_outstanding),
+            'total_entries': partner_entry_count,
+        },
     })
 
 

@@ -46,3 +46,21 @@ class Business(models.Model):
         # Total balance is opening balances of cashbooks + all cash-in - all cash-out
         total_cb_opening = sum((cb.opening_balance for cb in cashbooks), Decimal('0.00'))
         return self.opening_balance + total_cb_opening + self.get_total_cash_in() - self.get_total_cash_out()
+
+    def get_partner_total_amount(self) -> Decimal:
+        from partners.models import PartnerEntry
+        from django.db.models import Sum
+        result = PartnerEntry.objects.filter(
+            business_id=self.pk
+        ).aggregate(total=Sum('total_amount'))['total']
+        return result or Decimal('0.00')
+
+    def get_partner_outstanding(self) -> Decimal:
+        from partners.models import PartnerEntry
+        from django.db.models import Sum
+        agg = PartnerEntry.objects.filter(business_id=self.pk).aggregate(
+            total=Sum('total_amount'), settled=Sum('settled_amount')
+        )
+        total = agg['total'] or Decimal('0.00')
+        settled = agg['settled'] or Decimal('0.00')
+        return total - settled

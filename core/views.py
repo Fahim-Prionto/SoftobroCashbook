@@ -311,6 +311,15 @@ def serviceadmin_dashboard_view(request):
     # Recent transactions
     recent_transactions = Transaction.objects.select_related('cashbook__business').order_by('-date', '-created_at')[:8]
 
+    from partners.models import PartnerEntry
+    _p_agg = PartnerEntry.objects.aggregate(
+        total=Sum('total_amount'), settled=Sum('settled_amount')
+    )
+    partner_total_amount = _p_agg['total'] or Decimal('0.00')
+    partner_total_settled = _p_agg['settled'] or Decimal('0.00')
+    partner_total_outstanding = partner_total_amount - partner_total_settled
+    recent_partner_entries = PartnerEntry.objects.select_related('partner').order_by('-date_time')[:5]
+
     # Chart data for last 6 months
     today = timezone.now().date()
     months_labels = []
@@ -352,4 +361,8 @@ def serviceadmin_dashboard_view(request):
         'months_labels': months_labels,
         'cash_in_data': cash_in_data,
         'cash_out_data': cash_out_data,
+        'partner_total_amount': partner_total_amount,
+        'partner_total_settled': partner_total_settled,
+        'partner_total_outstanding': partner_total_outstanding,
+        'recent_partner_entries': recent_partner_entries,
     })

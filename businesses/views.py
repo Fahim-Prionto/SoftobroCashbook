@@ -79,6 +79,19 @@ def business_detail_view(request, business_id):
     from transactions.models import Transaction
     recent_transactions = Transaction.objects.filter(cashbook__business=biz).order_by('-date', '-created_at')[:10]
 
+    from partners.models import PartnerEntry
+    from django.db.models import Sum as DjSum
+    from decimal import Decimal
+    _pb_agg = PartnerEntry.objects.filter(business_id=business_id).aggregate(
+        total=DjSum('total_amount'), settled=DjSum('settled_amount')
+    )
+    partner_total = _pb_agg['total'] or Decimal('0.00')
+    partner_settled = _pb_agg['settled'] or Decimal('0.00')
+    partner_outstanding = partner_total - partner_settled
+    recent_partner_entries = PartnerEntry.objects.filter(
+        business_id=business_id
+    ).select_related('partner').order_by('-date_time')[:5]
+
     return render(request, 'businesses/business_detail.html', {
         'business': biz,
         'cashbooks': cashbooks,
@@ -88,6 +101,10 @@ def business_detail_view(request, business_id):
         'total_out': biz.get_total_cash_out(),
         'balance': biz.get_current_balance(),
         'recent_transactions': recent_transactions,
+        'partner_total': partner_total,
+        'partner_settled': partner_settled,
+        'partner_outstanding': partner_outstanding,
+        'recent_partner_entries': recent_partner_entries,
     })
 
 
