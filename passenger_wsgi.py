@@ -11,6 +11,9 @@ if BASE_DIR not in sys.path:
 try:
     from dotenv import load_dotenv
     load_dotenv(os.path.join(BASE_DIR, '.env'))
+    parent_env = os.path.join(os.path.dirname(BASE_DIR), '.env')
+    if os.path.exists(parent_env):
+        load_dotenv(parent_env)
 except Exception:
     pass
 

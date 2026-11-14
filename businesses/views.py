@@ -1,9 +1,12 @@
+from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum as DjSum
 from django.shortcuts import render, redirect, get_object_or_404
 from businesses.forms import BusinessForm
 from businesses.models import Business
 from core.decorators import approved_service_admin_required
+from partners.models import PartnerEntry
 
 
 @login_required
@@ -21,11 +24,18 @@ def business_list_view(request):
 
     business_data = []
     for b in businesses:
+        p_agg = PartnerEntry.objects.filter(business_id=b.id).aggregate(
+            total=DjSum('total_amount'), settled=DjSum('settled_amount')
+        )
+        inv = p_agg['total'] or Decimal('0.00')
+        col = p_agg['settled'] or Decimal('0.00')
+        due = inv - col
         business_data.append({
             'obj': b,
-            'cashbooks_count': b.cashbooks.count(),
-            'total_in': b.get_total_cash_in(),
-            'total_out': b.get_total_cash_out(),
+            'books_count': b.cashbooks.count(),
+            'customer_invoiced': inv,
+            'customer_settled': col,
+            'customer_due': due,
             'balance': b.get_current_balance(),
         })
 
@@ -76,35 +86,49 @@ def business_detail_view(request, business_id):
         if cashbooks.count() >= max_cashbooks:
             can_add_cashbook = False
 
-    from transactions.models import Transaction
-    recent_transactions = Transaction.objects.filter(cashbook__business=biz).order_by('-date', '-created_at')[:10]
-
-    from partners.models import PartnerEntry
-    from django.db.models import Sum as DjSum
-    from decimal import Decimal
+    # Aggregate customer entries for this business
     _pb_agg = PartnerEntry.objects.filter(business_id=business_id).aggregate(
         total=DjSum('total_amount'), settled=DjSum('settled_amount')
     )
-    partner_total = _pb_agg['total'] or Decimal('0.00')
-    partner_settled = _pb_agg['settled'] or Decimal('0.00')
-    partner_outstanding = partner_total - partner_settled
-    recent_partner_entries = PartnerEntry.objects.filter(
+    customer_invoiced = _pb_agg['total'] or Decimal('0.00')
+    customer_settled = _pb_agg['settled'] or Decimal('0.00')
+    customer_due = customer_invoiced - customer_settled
+
+    # Per-book metrics for Customer Hisab
+    books_with_metrics = []
+    for cb in cashbooks:
+        cb_agg = PartnerEntry.objects.filter(cashbook_id=cb.id).aggregate(
+            total=DjSum('total_amount'), settled=DjSum('settled_amount')
+        )
+        inv = cb_agg['total'] or Decimal('0.00')
+        col = cb_agg['settled'] or Decimal('0.00')
+        due = inv - col
+        cnt = PartnerEntry.objects.filter(cashbook_id=cb.id).count()
+        books_with_metrics.append({
+            'book': cb,
+            'entries_count': cnt,
+            'invoiced': inv,
+            'collected': col,
+            'due': due,
+            'balance': cb.get_current_balance(),
+        })
+
+    # Recent customer entries in this business
+    recent_customer_entries = PartnerEntry.objects.filter(
         business_id=business_id
-    ).select_related('partner').order_by('-date_time')[:5]
+    ).select_related('partner', 'cashbook').order_by('-date_time')[:10]
 
     return render(request, 'businesses/business_detail.html', {
         'business': biz,
+        'books_with_metrics': books_with_metrics,
         'cashbooks': cashbooks,
         'can_add_cashbook': can_add_cashbook,
         'max_cashbooks': max_cashbooks,
-        'total_in': biz.get_total_cash_in(),
-        'total_out': biz.get_total_cash_out(),
+        'customer_invoiced': customer_invoiced,
+        'customer_settled': customer_settled,
+        'customer_due': customer_due,
+        'recent_customer_entries': recent_customer_entries,
         'balance': biz.get_current_balance(),
-        'recent_transactions': recent_transactions,
-        'partner_total': partner_total,
-        'partner_settled': partner_settled,
-        'partner_outstanding': partner_outstanding,
-        'recent_partner_entries': recent_partner_entries,
     })
 
 

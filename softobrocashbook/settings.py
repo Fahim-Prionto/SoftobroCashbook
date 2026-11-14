@@ -7,9 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Set UTF-8 encoding in OS environment if supported
 os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
 
-# Load .env file safely
+# Load .env file safely (check project root and parent folder for cPanel setups)
 try:
     load_dotenv(BASE_DIR / '.env')
+    if (BASE_DIR.parent / '.env').exists():
+        load_dotenv(BASE_DIR.parent / '.env')
 except Exception:
     pass
 
@@ -20,17 +22,30 @@ hosts_str = os.getenv('ALLOWED_HOSTS', '*')
 if hosts_str == '*' or not hosts_str:
     ALLOWED_HOSTS = ['*']
 else:
-    ALLOWED_HOSTS = [h.strip() for h in hosts_str.split(',') if h.strip()]
+    # Clean up entries: strip whitespace, remove protocols (http://, https://) and trailing slashes
+    clean_hosts = []
+    for h in hosts_str.split(','):
+        h = h.strip()
+        if not h:
+            continue
+        h = h.replace('http://', '').replace('https://', '').rstrip('/')
+        clean_hosts.append(h)
+    ALLOWED_HOSTS = clean_hosts
 
-# Ensure current production domains are always allowed
-for h in ['cashbook.softobro.com', '.softobro.com', 'localhost', '127.0.0.1']:
+# Ensure current production domains and subdomains are always allowed
+for h in ['cashhisab.softobro.com', 'cashbook.softobro.com', '.softobro.com', 'localhost', '127.0.0.1']:
     if h not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
         ALLOWED_HOSTS.append(h)
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://cashhisab.softobro.com',
+    'http://cashhisab.softobro.com',
     'https://cashbook.softobro.com',
     'http://cashbook.softobro.com',
     'https://*.softobro.com',
+    'http://*.softobro.com',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -253,6 +268,8 @@ SIMPLE_JWT = {
 
 # CORS — allow React Native app and the web dashboard
 CORS_ALLOWED_ORIGINS = [
+    'https://cashhisab.softobro.com',
+    'http://cashhisab.softobro.com',
     'https://cashbook.softobro.com',
     'http://localhost:8081',   # Expo / Metro bundler
     'http://localhost:3000',
