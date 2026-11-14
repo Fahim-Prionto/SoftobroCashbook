@@ -59,7 +59,8 @@ def cashbook_create_view(request, business_id):
 
     current_cashbooks = business.cashbooks.count()
     if subscription and not subscription.can_create_cashbook(current_cashbooks):
-        messages.error(request, f"You have reached your limit of {subscription.plan.max_cashbooks_per_business} books for this business.")
+        limit = subscription.plan.max_cashbooks_per_business
+        messages.error(request, f"You have reached your limit of {limit} books for this business. Please upgrade your subscription.")
         return redirect('businesses:business_detail', business_id=business.id)
 
     if request.method == 'POST':

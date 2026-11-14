@@ -42,7 +42,7 @@ class SubscriptionPlan(models.Model):
     )
     max_cashbooks_per_business = models.PositiveIntegerField(
         default=3,
-        help_text="Maximum cashbooks per business",
+        help_text="Maximum cashbooks/books per business (0 means unlimited)",
     )
     max_transactions = models.PositiveIntegerField(
         default=0,
@@ -133,11 +133,15 @@ class Subscription(models.Model):
     def can_create_business(self, current_count: int) -> bool:
         if not self.is_currently_active and not self.is_in_grace_period:
             return False
+        if self.plan.max_businesses == 0:
+            return True
         return current_count < self.plan.max_businesses
 
     def can_create_cashbook(self, current_count: int) -> bool:
         if not self.is_currently_active and not self.is_in_grace_period:
             return False
+        if self.plan.max_cashbooks_per_business == 0:
+            return True
         return current_count < self.plan.max_cashbooks_per_business
 
     def can_create_transaction(self, current_count: int) -> bool:

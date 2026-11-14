@@ -24,7 +24,7 @@
                     <div class="text-secondary small">
                         Valid until: <strong>{{ subscription.end_date|date:"d M Y, h:i A"|default:"-" }}</strong>
                         {% if subscription.plan %}
-                        &bull; Quota: <strong>{{ total_businesses }}/{{ subscription.plan.max_businesses }} Biz</strong> (Max {{ subscription.plan.max_cashbooks_per_business }} Books/Biz)
+                        &bull; Quota: <strong>{{ total_businesses }}/{% if subscription.plan.max_businesses == 0 %}∞{% else %}{{ subscription.plan.max_businesses }}{% endif %} Biz</strong> (Max {% if subscription.plan.max_cashbooks_per_business == 0 %}Unlimited{% else %}{{ subscription.plan.max_cashbooks_per_business }}{% endif %} Books/Biz)
                         {% endif %}
                     </div>
                 </div>

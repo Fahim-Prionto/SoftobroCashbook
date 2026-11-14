@@ -376,7 +376,7 @@
                             </li>
                             <li class="d-flex align-items-center gap-2">
                                 <i class="bi bi-check2-circle text-primary fw-bold fs-6"></i>
-                                <span><strong>{{ plan.max_cashbooks_per_business }}</strong> Cashbooks per Business</span>
+                                <span><strong>{{ plan.max_cashbooks_per_business|default:"∞" }}</strong>{% if plan.max_cashbooks_per_business == 0 %} Unlimited{% else %}{% endif %} Cashbooks per Business</span>
                             </li>
                             <li class="d-flex align-items-center gap-2">
                                 <i class="bi bi-check2-circle text-primary fw-bold fs-6"></i>

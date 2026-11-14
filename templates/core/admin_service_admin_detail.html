@@ -208,7 +208,7 @@
                         <div class="d-flex justify-content-between small mb-1">
                             <span class="text-secondary fw-semibold">Cashbooks Created:</span>
                             <span class="fw-bold text-dark">
-                                {{ cashbook_count }} Running (Max {{ subscription.plan.max_cashbooks_per_business }}/Biz)
+                                {{ cashbook_count }} Running (Max {% if subscription.plan.max_cashbooks_per_business == 0 %}Unlimited{% else %}{{ subscription.plan.max_cashbooks_per_business }}{% endif %}/Biz)
                             </span>
                         </div>
                     </div>

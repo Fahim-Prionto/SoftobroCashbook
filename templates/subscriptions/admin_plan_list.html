@@ -53,8 +53,8 @@
                         <td><span class="badge bg-light text-secondary border">{{ p.get_billing_cycle_display }}</span></td>
                         <td>{{ p.duration_days }} Days</td>
                         <td class="fw-bold text-success">{{ p.price_bdt|bdt }}</td>
-                        <td>{{ p.max_businesses }}</td>
-                        <td>{{ p.max_cashbooks_per_business }}</td>
+                        <td>{% if p.max_businesses == 0 %}Unlimited{% else %}{{ p.max_businesses }}{% endif %}</td>
+                        <td>{% if p.max_cashbooks_per_business == 0 %}Unlimited{% else %}{{ p.max_cashbooks_per_business }}{% endif %}</td>
                         <td>{% if p.max_transactions == 0 %}Unlimited{% else %}{{ p.max_transactions }}{% endif %}</td>
                         <td>
                             <!-- ON / OFF Interactive Toggle Switch -->

@@ -34,8 +34,8 @@
                         <p class="small text-muted mb-3">{{ plan.description }}</p>
 
                         <ul class="list-unstyled small d-flex flex-column gap-1">
-                            <li><i class="bi bi-check text-primary"></i> <strong>{{ plan.max_businesses }}</strong> Business{{ plan.max_businesses|pluralize:"es" }}</li>
-                            <li><i class="bi bi-check text-primary"></i> <strong>{{ plan.max_cashbooks_per_business }}</strong> Cashbooks per Business</li>
+                            <li><i class="bi bi-check text-primary"></i> <strong>{% if plan.max_businesses == 0 %}Unlimited{% else %}{{ plan.max_businesses }}{% endif %}</strong> Business{{ plan.max_businesses|pluralize:"es" }}</li>
+                            <li><i class="bi bi-check text-primary"></i> <strong>{% if plan.max_cashbooks_per_business == 0 %}Unlimited{% else %}{{ plan.max_cashbooks_per_business }}{% endif %}</strong> Cashbooks per Business</li>
                             <li><i class="bi bi-check text-primary"></i> {% if plan.max_transactions == 0 %}Unlimited{% else %}{{ plan.max_transactions }}{% endif %} Transactions</li>
                         </ul>
                     </div>

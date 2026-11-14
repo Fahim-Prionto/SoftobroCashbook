@@ -83,7 +83,8 @@ def business_detail_view(request, business_id):
     max_cashbooks = 3
     if subscription:
         max_cashbooks = subscription.plan.max_cashbooks_per_business
-        if cashbooks.count() >= max_cashbooks:
+        # 0 means unlimited — never block
+        if max_cashbooks != 0 and cashbooks.count() >= max_cashbooks:
             can_add_cashbook = False
 
     # Aggregate customer entries for this business

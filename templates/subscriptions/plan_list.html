@@ -37,7 +37,7 @@
                         </li>
                         <li class="d-flex align-items-center gap-2">
                             <i class="bi bi-check2 text-primary fw-bold"></i>
-                            <span>Up to <strong>{{ plan.max_cashbooks_per_business }}</strong> Cashbooks per Business</span>
+                            <span>Up to <strong>{% if plan.max_cashbooks_per_business == 0 %}Unlimited{% else %}{{ plan.max_cashbooks_per_business }}{% endif %}</strong> Cashbooks per Business</span>
                         </li>
                         <li class="d-flex align-items-center gap-2">
                             <i class="bi bi-check2 text-primary fw-bold"></i>

@@ -98,8 +98,14 @@
                 <!-- Cashbooks per Business Limit -->
                 <div class="mb-4">
                     <div class="d-flex justify-content-between small fw-bold mb-1">
-                        <span>Cashbooks per Business</span>
-                        <span>Max {{ subscription.plan.max_cashbooks_per_business }}</span>
+                        <span>Books per Business</span>
+                        <span>
+                            {% if subscription.plan.max_cashbooks_per_business == 0 %}
+                            <span class="badge bg-success-subtle text-success">Unlimited</span>
+                            {% else %}
+                            Max {{ subscription.plan.max_cashbooks_per_business }}
+                            {% endif %}
+                        </span>
                     </div>
                     <div class="small text-muted">Currently active across all businesses: {{ cashbook_count }}</div>
                 </div>
