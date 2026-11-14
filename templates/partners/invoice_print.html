@@ -1,215 +1,393 @@
+{% load static currency_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice {{ entry.reference_number }}</title>
+    <title>{{ customization.invoice_title|default:"Invoice" }} {{ entry.reference_number }}</title>
+
+    <!-- Google Fonts & Bootstrap 5 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
             font-size: 13px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
+
         .invoice-wrapper {
-            max-width: 794px;
+            max-width: 820px;
             margin: 24px auto;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 32px rgba(0,0,0,.1);
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
             overflow: hidden;
+            border: 1px solid #e2e8f0;
         }
-        /* Header */
+
+        /* Dynamic Header Themes */
         .inv-header {
-            background: linear-gradient(135deg, #2563eb 0%, #0d9488 100%);
-            color: #fff;
-            padding: 32px 40px 24px;
+            color: #ffffff;
+            padding: 34px 40px 28px;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            position: relative;
+            background-size: cover;
+            background-position: center;
         }
+        .theme-blue { background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #0d9488 100%); }
+        .theme-emerald { background: linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%); }
+        .theme-purple { background: linear-gradient(135deg, #4c1d95 0%, #6366f1 50%, #8b5cf6 100%); }
+        .theme-crimson { background: linear-gradient(135deg, #991b1b 0%, #dc2626 50%, #f43f5e 100%); }
+        .theme-dark { background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e293b 100%); }
+        .theme-canva {
+            background-color: #0f172a;
+            background-size: cover;
+            background-position: center;
+        }
+
         .inv-header .company-name {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: .5px;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.15;
         }
         .inv-header .company-sub {
-            font-size: 12px;
-            opacity: .8;
+            font-size: 13px;
+            opacity: 0.85;
             margin-top: 4px;
+            font-weight: 500;
         }
+
+        .dir-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            backdrop-filter: blur(4px);
+        }
+
         .inv-ref {
             text-align: right;
         }
-        .inv-ref .ref-num {
-            font-size: 16px;
-            font-weight: 700;
-            font-family: monospace;
-        }
-        .inv-ref .ref-label {
+        .inv-ref .ref-title {
             font-size: 11px;
-            opacity: .75;
+            opacity: 0.8;
             text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        /* Direction badge */
-        .dir-badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 11px;
+            letter-spacing: 1.5px;
             font-weight: 700;
-            letter-spacing: .5px;
+        }
+        .inv-ref .ref-num {
+            font-size: 18px;
+            font-weight: 800;
+            font-family: monospace;
+            margin-top: 2px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
             margin-top: 6px;
         }
-        .dir-in  { background: rgba(22,163,74,.2);  color: #fff; }
-        .dir-out { background: rgba(220,38,38,.2);   color: #fff; }
-        /* Meta section */
+        .status-paid    { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-partial { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .status-unpaid  { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        /* Meta Section */
         .inv-meta {
             display: flex;
             justify-content: space-between;
             padding: 24px 40px;
-            border-bottom: 1px solid #e2e8f0;
+            background: #ffffff;
+            border-bottom: 1.5px solid #f1f5f9;
             gap: 24px;
         }
         .inv-meta .meta-block { flex: 1; }
-        .inv-meta .meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 600; margin-bottom: 4px; }
-        .inv-meta .meta-value { font-size: 13px; font-weight: 600; color: #1e293b; }
-        .inv-meta .meta-sub   { font-size: 11px; color: #64748b; margin-top: 2px; }
-        /* Items table */
-        .inv-section { padding: 24px 40px; }
-        .inv-section h3 {
-            font-size: 11px;
+        .inv-meta .meta-label {
+            font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #64748b;
             font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .inv-meta .meta-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .inv-meta .meta-sub {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 3px;
+            line-height: 1.45;
+        }
+
+        /* Items Section */
+        .inv-section {
+            padding: 24px 40px;
+        }
+        .inv-section h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #475569;
+            font-weight: 800;
             margin-bottom: 12px;
         }
-        table { width: 100%; border-collapse: collapse; }
-        thead th {
-            background: #f1f5f9;
-            padding: 8px 10px;
+        .table-invoice {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table-invoice thead th {
+            background: #f8fafc;
+            padding: 10px 12px;
             text-align: left;
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: .5px;
-            color: #64748b;
-            font-weight: 600;
+            letter-spacing: 0.6px;
+            color: #475569;
+            font-weight: 700;
+            border-bottom: 1.5px solid #e2e8f0;
         }
-        thead th:last-child { text-align: right; }
-        tbody td {
-            padding: 10px 10px;
+        .table-invoice thead th:last-child { text-align: right; }
+        .table-invoice tbody td {
+            padding: 12px 12px;
             border-bottom: 1px solid #f1f5f9;
             font-size: 13px;
             vertical-align: middle;
+            color: #1e293b;
         }
-        tbody td:last-child { text-align: right; font-weight: 600; }
-        tbody tr:last-child td { border-bottom: none; }
-        /* Payments table */
-        .pay-method {
+        .table-invoice tbody td:last-child { text-align: right; font-weight: 700; }
+        .table-invoice tbody tr:last-child td { border-bottom: none; }
+
+        .pay-method-badge {
             display: inline-block;
-            padding: 1px 8px;
-            border-radius: 20px;
+            padding: 2px 10px;
+            border-radius: 50px;
             background: #e0f2fe;
-            color: #0369a1;
+            color: #0284c7;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
         }
-        /* Totals footer */
-        .inv-totals {
-            padding: 20px 40px 32px;
-            border-top: 1px solid #e2e8f0;
+
+        /* Totals */
+        .inv-totals-row {
+            padding: 20px 40px 24px;
+            border-top: 1.5px solid #f1f5f9;
+            display: flex;
+            justify-content: flex-end;
         }
         .totals-table {
-            margin-left: auto;
-            width: 300px;
+            width: 320px;
         }
         .totals-table td {
-            padding: 5px 0;
+            padding: 6px 0;
             font-size: 13px;
             border: none;
         }
-        .totals-table td:last-child { text-align: right; font-weight: 600; }
+        .totals-table td:last-child { text-align: right; font-weight: 700; font-size: 14px; }
         .totals-table .grand-total td {
-            font-size: 16px;
-            font-weight: 700;
-            border-top: 2px solid #2563eb;
+            font-size: 17px;
+            font-weight: 800;
+            border-top: 2px solid #0f172a;
             padding-top: 10px;
-            color: #2563eb;
+            color: #0f172a;
         }
-        .totals-table .received td { color: #16a34a; }
+        .totals-table .received td { color: #059669; }
         .totals-table .outstanding td { color: #dc2626; }
-        /* Status badge */
-        .status-badge {
-            display: inline-block;
-            padding: 4px 14px;
-            border-radius: 20px;
+
+        /* Footer & Signature Row */
+        .inv-footer-row {
+            padding: 24px 40px 34px;
+            border-top: 1.5px solid #e2e8f0;
+            background: #fafafa;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 30px;
+        }
+        .inv-terms-col {
+            flex: 1;
+        }
+        .inv-terms-title {
             font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
+            margin-bottom: 6px;
         }
-        .status-paid    { background:#dcfce7; color:#15803d; }
-        .status-partial { background:#fef9c3; color:#854d0e; }
-        .status-unpaid  { background:#fee2e2; color:#991b1b; }
-        /* Print buttons — hidden in print */
-        .no-print {
+        .inv-terms-text {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .inv-signature-col {
+            width: 250px;
             text-align: center;
-            padding: 20px;
-            background: #f8fafc;
         }
-        .no-print button {
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            padding: 10px 28px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            margin: 0 6px;
-        }
-        .no-print a {
+        .signature-box {
+            position: relative;
             display: inline-block;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            font-size: 14px;
-            color: #475569;
-            text-decoration: none;
+            margin-bottom: 6px;
         }
+        .official-seal {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 2px solid #b91c1c;
+            color: #b91c1c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin: 0 auto 8px;
+            transform: rotate(-10deg);
+            background: rgba(239, 68, 68, 0.05);
+            box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.15) inset;
+        }
+        .signature-img {
+            max-height: 60px;
+            max-width: 190px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+        .signature-line {
+            width: 180px;
+            height: 1.5px;
+            background: #0f172a;
+            margin: 6px auto 6px;
+        }
+        .signatory-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .signatory-title {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Top Action Bar */
+        .top-action-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        }
+
+        /* Print Media Styles */
         @media print {
-            body { background: #fff; }
-            .invoice-wrapper { box-shadow: none; margin: 0; border-radius: 0; }
-            .no-print { display: none !important; }
+            body { background: #ffffff !important; padding: 0 !important; }
+            .invoice-wrapper {
+                box-shadow: none !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                border: none !important;
+                max-width: 100% !important;
+            }
+            .no-print, .top-action-bar, .modal, .modal-backdrop {
+                display: none !important;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="no-print">
-    <button onclick="window.print()"><i>🖨</i> Print Invoice</button>
-    <a href="{% url 'partners:entry_edit' entry.pk %}">← Back to Entry</a>
+<!-- Top Sticky Action Bar (Hidden in Print) -->
+<div class="top-action-bar no-print">
+    <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'partners:ledger_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Back to Ledger
+            </a>
+            <a href="{% url 'partners:entry_edit' entry.pk %}" class="btn btn-light btn-sm border rounded-pill px-3">
+                <i class="bi bi-pencil me-1"></i> Edit Entry Items
+            </a>
+            <span class="badge bg-light text-dark border font-monospace px-2 py-1">
+                Ref: {{ entry.reference_number }}
+            </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <!-- Canva Design Quick Link -->
+            <a href="https://www.canva.com/templates/?query=invoice" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" style="border-color: #7d2ae8; color: #7d2ae8;" title="Open Canva Invoice Templates">
+                <i class="bi bi-palette-fill me-1"></i> Design in Canva
+            </a>
+
+            <!-- Customize Invoice Button (Opens Modal) -->
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#customizeModal">
+                <i class="bi bi-sliders2-vertical me-1"></i> Customize Header &amp; Signature
+            </button>
+
+            <!-- Print Button -->
+            <button onclick="window.print()" class="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm">
+                <i class="bi bi-printer-fill me-1"></i> Print Invoice
+            </button>
+        </div>
+    </div>
 </div>
 
-<div class="invoice-wrapper">
-    <!-- Header -->
-    <div class="inv-header">
+<!-- Printable Invoice Container -->
+<div class="invoice-wrapper" id="invoiceSheet">
+    <!-- Invoice Header -->
+    <div class="inv-header theme-{{ customization.header_theme|default:'blue' }}"
+         id="invHeaderEl"
+         style="{% if customization.header_banner_image %}background-image: url('{{ customization.header_banner_image }}');{% elif customization.header_theme == 'custom' %}background: {{ customization.custom_accent_color }};{% endif %}">
         <div>
-            <div class="company-name">
-                {% if entry.business %}{{ entry.business.name }}{% else %}Cash Hisab SoftoBro{% endif %}
+            {% if customization.logo_image %}
+            <div class="mb-2">
+                <img src="{{ customization.logo_image }}" alt="Logo" style="max-height: 52px; max-width: 180px; object-fit: contain; background: rgba(255,255,255,0.95); padding: 4px 8px; border-radius: 8px;">
             </div>
-            <div class="company-sub">
-                {% if entry.cashbook %}Book: {{ entry.cashbook.name }}{% endif %}
+            {% endif %}
+            <div class="company-name" id="dispCompanyName">
+                {{ customization.company_name|default:entry.business.name|default:"Cash Hisab SoftoBro" }}
             </div>
-            <div class="dir-badge {% if entry.direction == 'CASH_IN' %}dir-in{% else %}dir-out{% endif %}">
+            <div class="company-sub" id="dispTagline">
+                {{ customization.tagline|default:entry.cashbook.name|default:"" }}
+            </div>
+            <div class="dir-badge">
+                <i class="bi bi-arrow-down-left-circle-fill"></i>
                 {{ entry.get_direction_display }}
             </div>
         </div>
+
         <div class="inv-ref">
-            <div class="ref-label">Invoice / Reference</div>
+            <div class="ref-title" id="dispInvoiceTitle">{{ customization.invoice_title|default:"INVOICE / REFERENCE" }}</div>
             <div class="ref-num">{{ entry.reference_number }}</div>
-            <div style="margin-top:8px;">
+            <div>
                 {% if entry.payment_status == 'PAID' %}
                     <span class="status-badge status-paid">✓ PAID</span>
                 {% elif entry.payment_status == 'PARTIAL' %}
@@ -221,54 +399,69 @@
         </div>
     </div>
 
-    <!-- Meta -->
+    <!-- Metadata Section -->
     <div class="inv-meta">
+        <!-- Customer Details -->
         <div class="meta-block">
-            <div class="meta-label">Partner / Client</div>
-            <div class="meta-value">{{ entry.partner.name|default:"N/A" }}</div>
+            <div class="meta-label">Customer / Client</div>
+            <div class="meta-value">{{ entry.partner.name|default:"General Customer" }}</div>
             {% if entry.partner.phone %}<div class="meta-sub">📞 {{ entry.partner.phone }}</div>{% endif %}
             {% if entry.partner.email %}<div class="meta-sub">✉ {{ entry.partner.email }}</div>{% endif %}
             {% if entry.partner.address %}<div class="meta-sub">📍 {{ entry.partner.address|linebreaksbr }}</div>{% endif %}
         </div>
+
+        <!-- Date & Invoice Info -->
         <div class="meta-block">
             <div class="meta-label">Date &amp; Time</div>
             <div class="meta-value">{{ entry.date_time|date:"F j, Y" }}</div>
             <div class="meta-sub">{{ entry.date_time|date:"g:i A" }}</div>
+            <div class="meta-sub mt-2">
+                <strong>Book:</strong> {{ entry.cashbook.name|default:"—" }}
+            </div>
         </div>
+
+        <!-- Issuer Company Info -->
         <div class="meta-block">
-            <div class="meta-label">Type</div>
-            <div class="meta-value">{{ entry.entry_type|default:"—" }}</div>
-            {% if entry.remarks %}
-            <div class="meta-label mt-2">Remarks</div>
-            <div class="meta-sub">{{ entry.remarks }}</div>
+            <div class="meta-label">Issued By</div>
+            <div class="meta-value">
+                {{ customization.company_name|default:entry.business.name|default:"Cash Hisab SoftoBro" }}
+            </div>
+            {% if customization.phone or entry.business.phone %}
+            <div class="meta-sub">📞 {{ customization.phone|default:entry.business.phone }}</div>
+            {% endif %}
+            {% if customization.email or entry.business.email %}
+            <div class="meta-sub">✉ {{ customization.email|default:entry.business.email }}</div>
+            {% endif %}
+            {% if customization.address or entry.business.address %}
+            <div class="meta-sub">📍 {{ customization.address|default:entry.business.address }}</div>
             {% endif %}
         </div>
     </div>
 
-    <!-- Entry Lines -->
+    <!-- Items / Services Section -->
     {% if entry.lines.all %}
     <div class="inv-section">
-        <h3>Items / Services</h3>
-        <table>
+        <h3>Items / Services Billed</h3>
+        <table class="table-invoice">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th style="width: 35px;">#</th>
                     <th>Description</th>
-                    <th>UOM</th>
-                    <th style="text-align:right;">Price (৳)</th>
-                    <th style="text-align:right;">Qty</th>
-                    <th style="text-align:right;">Total (৳)</th>
+                    <th style="width: 90px;">UOM</th>
+                    <th style="width: 120px; text-align: right;">Unit Price</th>
+                    <th style="width: 90px; text-align: right;">Qty</th>
+                    <th style="width: 140px; text-align: right;">Total (৳)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for line in entry.lines.all %}
                 <tr>
-                    <td style="color:#94a3b8;">{{ forloop.counter }}</td>
-                    <td>{{ line.description }}</td>
-                    <td>{{ line.get_uom_display }}</td>
-                    <td style="text-align:right;">{{ line.price|floatformat:2 }}</td>
-                    <td style="text-align:right;">{{ line.quantity|floatformat:2 }}</td>
-                    <td>{{ line.line_total|floatformat:2 }}</td>
+                    <td class="text-muted">{{ forloop.counter }}</td>
+                    <td class="fw-bold">{{ line.description }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ line.get_uom_display }}</span></td>
+                    <td style="text-align: right;">{{ line.price|bdt }}</td>
+                    <td style="text-align: right;">{{ line.quantity }}</td>
+                    <td style="text-align: right;">{{ line.line_total|bdt }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -276,26 +469,26 @@
     </div>
     {% endif %}
 
-    <!-- Receipts -->
+    <!-- Payment Receipts Section -->
     {% if entry.receipts.all %}
-    <div class="inv-section" style="border-top:1px solid #f1f5f9;">
-        <h3>Payment Receipts</h3>
-        <table>
+    <div class="inv-section" style="border-top: 1.5px solid #f1f5f9;">
+        <h3>Payment Receipts &amp; Settlements</h3>
+        <table class="table-invoice">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Method</th>
-                    <th>Date</th>
-                    <th style="text-align:right;">Amount (৳)</th>
+                    <th style="width: 35px;">#</th>
+                    <th>Payment Method</th>
+                    <th>Date &amp; Time</th>
+                    <th style="text-align: right; width: 140px;">Amount Received (৳)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for receipt in entry.receipts.all %}
                 <tr>
-                    <td style="color:#94a3b8;">{{ forloop.counter }}</td>
-                    <td><span class="pay-method">{{ receipt.get_payment_method_display }}</span></td>
-                    <td>{{ receipt.received_at|date:"M j, Y g:i A" }}</td>
-                    <td>{{ receipt.amount|floatformat:2 }}</td>
+                    <td class="text-muted">{{ forloop.counter }}</td>
+                    <td><span class="pay-method-badge">{{ receipt.get_payment_method_display }}</span></td>
+                    <td class="text-muted">{{ receipt.received_at|date:"M j, Y g:i A" }}</td>
+                    <td style="text-align: right; color: #059669;" class="fw-bold">{{ receipt.amount|bdt }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -303,32 +496,487 @@
     </div>
     {% endif %}
 
-    <!-- Totals -->
-    <div class="inv-totals">
+    <!-- Totals Table -->
+    <div class="inv-totals-row">
         <table class="totals-table">
-            <tr class="grand-total">
-                <td>Total Amount</td>
-                <td>৳{{ entry.total_amount|floatformat:2 }}</td>
+            <tr>
+                <td class="text-muted">Total Invoiced:</td>
+                <td>{{ entry.total_amount|bdt }}</td>
             </tr>
             <tr class="received">
-                <td>Total Received</td>
-                <td>৳{{ entry.settled_amount|floatformat:2 }}</td>
+                <td>Received / Settled:</td>
+                <td>+{{ entry.settled_amount|bdt }}</td>
             </tr>
-            <tr class="outstanding">
-                <td>Balance Due</td>
-                <td>৳{{ entry.outstanding_amount|floatformat:2 }}</td>
+            <tr class="grand-total {% if entry.outstanding_amount > 0 %}outstanding{% endif %}">
+                <td>Balance Due:</td>
+                <td>{{ entry.outstanding_amount|bdt }}</td>
             </tr>
         </table>
     </div>
 
-    {% if template %}
-    <div style="padding: 12px 40px; background:#fef9c3; font-size:12px; color:#854d0e;">
-        <strong>Note:</strong> A custom PDF template "{{ template.name }}" is available.
-        For PDF-based printing, download and use the uploaded template.
+    <!-- Footer with Terms & Authorized Signature -->
+    <div class="inv-footer-row">
+        <!-- Terms & Notes -->
+        <div class="inv-terms-col">
+            <div class="inv-terms-title">Terms &amp; Instructions</div>
+            <div class="inv-terms-text" id="dispTerms">
+                {{ customization.terms_and_conditions|default:"1. Payment is due upon receipt or within agreed terms.\n2. Warranty valid only with this original invoice." }}
+            </div>
+            {% if customization.footer_notes %}
+            <div class="mt-2 text-dark fw-bold small" id="dispFooterNotes">
+                {{ customization.footer_notes }}
+            </div>
+            {% endif %}
+            {% if customization.canva_design_url %}
+            <div class="small mt-2 no-print text-muted">
+                <i class="bi bi-palette text-primary me-1"></i>
+                <a href="{{ customization.canva_design_url }}" target="_blank" class="text-decoration-none">View Canva Template</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Signature & Stamp Column -->
+        <div class="inv-signature-col">
+            <div class="signature-box">
+                <!-- Seal / Stamp -->
+                {% if customization.seal_data %}
+                <img src="{{ customization.seal_data }}" alt="Seal" class="mb-2" style="max-height: 64px; max-width: 64px; object-fit: contain;">
+                {% elif customization.show_stamp %}
+                <div class="official-seal">
+                    <span>OFFICIAL<br>VERIFIED<br>SEAL</span>
+                </div>
+                {% endif %}
+
+                <!-- Signature Image / Drawn Canvas -->
+                {% if customization.signature_data %}
+                <img src="{{ customization.signature_data }}" alt="Signature" class="signature-img" id="dispSignatureImg">
+                {% else %}
+                <div style="height: 45px;"></div>
+                {% endif %}
+
+                <div class="signature-line"></div>
+                <div class="signatory-name" id="dispSignatoryName">
+                    {{ customization.signatory_name|default:"Authorized Signatory" }}
+                </div>
+                <div class="signatory-title" id="dispSignatoryTitle">
+                    {{ customization.signatory_title|default:"Proprietor / Manager" }}
+                </div>
+            </div>
+        </div>
     </div>
-    {% endif %}
 </div>
+
+<!-- ========================================== -->
+<!-- INVOICE CUSTOMIZATION MODAL (CANVA & SIGN) -->
+<!-- ========================================== -->
+<div class="modal fade no-print" id="customizeModal" tabindex="-1" aria-labelledby="customizeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom px-4 py-3 bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="rounded-circle p-2 bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-palette-fill fs-5"></i>
+                    </span>
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-0" id="customizeModalLabel">Invoice Designer &amp; Settings</h5>
+                        <small class="text-muted">Set Header, Canva Banners, Digital Signature Pad &amp; Terms</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <!-- Tabs -->
+                <ul class="nav nav-pills nav-fill mb-4 gap-2" id="invTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill fw-bold" id="header-tab" data-bs-toggle="tab" data-bs-target="#tabHeader" type="button" role="tab">
+                            <i class="bi bi-card-heading me-1"></i> Header &amp; Brand
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill fw-bold" id="canva-tab" data-bs-toggle="tab" data-bs-target="#tabCanva" type="button" role="tab">
+                            <i class="bi bi-palette me-1"></i> Canva Design
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill fw-bold" id="sign-tab" data-bs-toggle="tab" data-bs-target="#tabSign" type="button" role="tab">
+                            <i class="bi bi-pen me-1"></i> Signature &amp; Stamp
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill fw-bold" id="terms-tab" data-bs-toggle="tab" data-bs-target="#tabTerms" type="button" role="tab">
+                            <i class="bi bi-file-text me-1"></i> Terms &amp; Notes
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="invTabContent">
+                    <!-- Tab 1: Header & Brand -->
+                    <div class="tab-pane fade show active" id="tabHeader" role="tabpanel">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Invoice Title</label>
+                                <input type="text" id="mInvoiceTitle" class="form-control" value="{{ customization.invoice_title|default:'INVOICE / BILL' }}" placeholder="e.g. TAX INVOICE, CASH MEMO">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Company / Business Name</label>
+                                <input type="text" id="mCompanyName" class="form-control" value="{{ customization.company_name|default:entry.business.name|default:'' }}" placeholder="Official Business Name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Tagline / Sub-heading</label>
+                                <input type="text" id="mTagline" class="form-control" value="{{ customization.tagline|default:entry.cashbook.name|default:'' }}" placeholder="e.g. Electronics &amp; Wholesale">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Header Theme / Gradient</label>
+                                <select id="mHeaderTheme" class="form-select">
+                                    <option value="blue" {% if customization.header_theme == 'blue' %}selected{% endif %}>Electric Blue Gradient</option>
+                                    <option value="emerald" {% if customization.header_theme == 'emerald' %}selected{% endif %}>Emerald Green Gradient</option>
+                                    <option value="purple" {% if customization.header_theme == 'purple' %}selected{% endif %}>Royal Purple Gradient</option>
+                                    <option value="crimson" {% if customization.header_theme == 'crimson' %}selected{% endif %}>Crimson Red Gradient</option>
+                                    <option value="dark" {% if customization.header_theme == 'dark' %}selected{% endif %}>Midnight Dark Theme</option>
+                                    <option value="canva" {% if customization.header_theme == 'canva' %}selected{% endif %}>Custom Canva Banner Image</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Contact Phone</label>
+                                <input type="text" id="mPhone" class="form-control" value="{{ customization.phone|default:entry.business.phone|default:'' }}" placeholder="+880 1700-000000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Contact Email</label>
+                                <input type="email" id="mEmail" class="form-control" value="{{ customization.email|default:entry.business.email|default:'' }}" placeholder="info@business.com">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Office / Business Address</label>
+                                <input type="text" id="mAddress" class="form-control" value="{{ customization.address|default:entry.business.address|default:'' }}" placeholder="Full address in Dhaka, Bangladesh">
+                            </div>
+
+                            <!-- Logo Upload -->
+                            <div class="col-12 mt-3 pt-3 border-top">
+                                <label class="form-label small fw-bold">Business Logo</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <input type="file" id="logoFileInput" accept="image/*" class="form-control form-control-sm" style="max-width: 320px;">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" id="clearLogoBtn">
+                                        <i class="bi bi-trash"></i> Remove Logo
+                                    </button>
+                                </div>
+                                <input type="hidden" id="mLogoData" value="{{ customization.logo_image|default:'' }}">
+                                <div id="logoPreviewBox" class="mt-2 {% if not customization.logo_image %}d-none{% endif %}">
+                                    <img id="logoPreviewImg" src="{{ customization.logo_image|default:'' }}" alt="Logo preview" style="max-height: 48px; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 4px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Canva Design -->
+                    <div class="tab-pane fade" id="tabCanva" role="tabpanel">
+                        <div class="p-3 rounded-4 mb-3" style="background: linear-gradient(135deg, rgba(125, 42, 232, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%); border: 1.5px solid rgba(125, 42, 232, 0.2);">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fs-4 text-purple"><i class="bi bi-palette-fill" style="color: #7d2ae8;"></i></span>
+                                    <span class="fw-bold fs-6 text-dark">Design Invoices &amp; Banners in Canva</span>
+                                </div>
+                                <a href="https://www.canva.com/templates/?query=invoice" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold" style="background: #7d2ae8; border-color: #7d2ae8;">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> Open Canva Templates ↗
+                                </a>
+                            </div>
+                            <p class="small text-muted mb-0">
+                                You can design a beautiful invoice header or branded letterhead in Canva, download it as a PNG/JPG, and upload it below as your custom invoice header banner.
+                            </p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Canva Design Template URL (Optional)</label>
+                            <input type="url" id="mCanvaUrl" class="form-control" value="{{ customization.canva_design_url|default:'' }}" placeholder="https://www.canva.com/design/DAF...">
+                            <div class="form-text small">Save the Canva editable link here so you can revisit and edit anytime.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Upload Canva Header Banner Image</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="file" id="bannerFileInput" accept="image/*" class="form-control form-control-sm" style="max-width: 320px;">
+                                <button type="button" class="btn btn-outline-danger btn-sm" id="clearBannerBtn">
+                                    <i class="bi bi-trash"></i> Remove Banner
+                                </button>
+                            </div>
+                            <input type="hidden" id="mBannerData" value="{{ customization.header_banner_image|default:'' }}">
+                            <div id="bannerPreviewBox" class="mt-2 {% if not customization.header_banner_image %}d-none{% endif %}">
+                                <img id="bannerPreviewImg" src="{{ customization.header_banner_image|default:'' }}" alt="Banner preview" style="max-height: 80px; width: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Signature & Stamp -->
+                    <div class="tab-pane fade" id="tabSign" role="tabpanel">
+                        <div class="row g-3">
+                            <!-- Draw Signature Canvas -->
+                            <div class="col-12">
+                                <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-pen-fill text-primary me-1"></i> Draw Digital Signature (Mouse / Touch)</span>
+                                    <button type="button" class="btn btn-light btn-sm border py-0 px-2 small text-danger" id="clearPadBtn">
+                                        <i class="bi bi-eraser"></i> Clear Pad
+                                    </button>
+                                </label>
+                                <div class="p-2 bg-light border rounded-3 text-center" style="max-width: 440px;">
+                                    <canvas id="signatureCanvas" width="420" height="130" style="background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 420px;"></canvas>
+                                    <div class="small text-muted mt-1" style="font-size: 0.72rem;">Draw your signature directly inside the box above</div>
+                                </div>
+                                <input type="hidden" id="mSignatureData" value="{{ customization.signature_data|default:'' }}">
+                            </div>
+
+                            <!-- Or Upload Signature Image -->
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Or Upload Signature Image (PNG / Transparent)</label>
+                                <input type="file" id="signFileInput" accept="image/*" class="form-control form-control-sm" style="max-width: 340px;">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Signatory Name</label>
+                                <input type="text" id="mSignatoryName" class="form-control" value="{{ customization.signatory_name|default:'Authorized Signatory' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Signatory Designation / Title</label>
+                                <input type="text" id="mSignatoryTitle" class="form-control" value="{{ customization.signatory_title|default:'Proprietor / Manager' }}">
+                            </div>
+
+                            <!-- Stamp / Seal -->
+                            <div class="col-12 mt-3 pt-3 border-top">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="mShowStamp" {% if customization.show_stamp %}checked{% endif %}>
+                                    <label class="form-check-label small fw-bold" for="mShowStamp">Include Official Stamp / Seal on Invoice</label>
+                                </div>
+                                <label class="form-label small fw-bold">Upload Custom Stamp / Seal Image (Optional)</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <input type="file" id="sealFileInput" accept="image/*" class="form-control form-control-sm" style="max-width: 320px;">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" id="clearSealBtn">
+                                        <i class="bi bi-trash"></i> Remove Stamp
+                                    </button>
+                                </div>
+                                <input type="hidden" id="mSealData" value="{{ customization.seal_data|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 4: Terms & Notes -->
+                    <div class="tab-pane fade" id="tabTerms" role="tabpanel">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Terms &amp; Conditions / Return Policy</label>
+                            <textarea id="mTerms" class="form-control" rows="4">{{ customization.terms_and_conditions|default:"1. Payment is due upon receipt or within agreed terms.\n2. Warranty valid only with this original invoice." }}</textarea>
+                            <div class="form-text small">Prints at the bottom left of the invoice.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Footer Notes &amp; Payment Instructions</label>
+                            <textarea id="mFooterNotes" class="form-control" rows="2" placeholder="e.g. bKash Merchant: 017XXXXXXXX, Bank Account details...">{{ customization.footer_notes|default:'Thank you for your business!' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="mSaveAsDefault" checked>
+                        <label class="form-check-label small fw-semibold" for="mSaveAsDefault">
+                            Save as default for all invoices in this business
+                        </label>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" id="saveCustomizationBtn">
+                            <i class="bi bi-check-lg me-1"></i> Save &amp; Apply
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(function() {
+    const CSRF_TOKEN = '{{ csrf_token }}';
+    const CUSTOMIZE_URL = '{% url "partners:invoice_customize" entry.pk %}';
+
+    // Canvas Signature Pad Logic
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let hasDrawn = false;
+
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: (clientX - rect.left) * (canvas.width / rect.width),
+            y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+    }
+
+    function startDrawing(e) {
+        isDrawing = true;
+        const pos = getCoords(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        e.preventDefault();
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getCoords(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        hasDrawn = true;
+        e.preventDefault();
+    }
+
+    function stopDrawing() {
+        if (isDrawing) {
+            isDrawing = false;
+            if (hasDrawn) {
+                document.getElementById('mSignatureData').value = canvas.toDataURL('image/png');
+            }
+        }
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', stopDrawing);
+
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    window.addEventListener('touchend', stopDrawing);
+
+    document.getElementById('clearPadBtn').addEventListener('click', function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hasDrawn = false;
+        document.getElementById('mSignatureData').value = '';
+    });
+
+    // File to Base64 Reader Helper
+    function handleFileAsDataURL(fileInput, hiddenField, previewBoxId, previewImgId) {
+        fileInput.addEventListener('change', function() {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    document.getElementById(hiddenField).value = dataUrl;
+                    if (previewBoxId && previewImgId) {
+                        const box = document.getElementById(previewBoxId);
+                        const img = document.getElementById(previewImgId);
+                        img.src = dataUrl;
+                        box.classList.remove('d-none');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    handleFileAsDataURL(document.getElementById('logoFileInput'), 'mLogoData', 'logoPreviewBox', 'logoPreviewImg');
+    handleFileAsDataURL(document.getElementById('bannerFileInput'), 'mBannerData', 'bannerPreviewBox', 'bannerPreviewImg');
+    handleFileAsDataURL(document.getElementById('sealFileInput'), 'mSealData', null, null);
+
+    document.getElementById('signFileInput').addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                document.getElementById('mSignatureData').value = dataUrl;
+                // draw preview onto canvas
+                const img = new Image();
+                img.onload = function() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 10, 10, canvas.width - 20, canvas.height - 20);
+                    hasDrawn = true;
+                };
+                img.src = dataUrl;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Clear Buttons
+    document.getElementById('clearLogoBtn').addEventListener('click', function() {
+        document.getElementById('mLogoData').value = '';
+        document.getElementById('logoFileInput').value = '';
+        document.getElementById('logoPreviewBox').classList.add('d-none');
+    });
+
+    document.getElementById('clearBannerBtn').addEventListener('click', function() {
+        document.getElementById('mBannerData').value = '';
+        document.getElementById('bannerFileInput').value = '';
+        document.getElementById('bannerPreviewBox').classList.add('d-none');
+    });
+
+    document.getElementById('clearSealBtn').addEventListener('click', function() {
+        document.getElementById('mSealData').value = '';
+        document.getElementById('sealFileInput').value = '';
+    });
+
+    // Save Customization
+    const saveBtn = document.getElementById('saveCustomizationBtn');
+    saveBtn.addEventListener('click', async function() {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving…';
+
+        const payload = {
+            invoice_title: document.getElementById('mInvoiceTitle').value,
+            company_name: document.getElementById('mCompanyName').value,
+            tagline: document.getElementById('mTagline').value,
+            phone: document.getElementById('mPhone').value,
+            email: document.getElementById('mEmail').value,
+            address: document.getElementById('mAddress').value,
+            header_theme: document.getElementById('mHeaderTheme').value,
+            canva_design_url: document.getElementById('mCanvaUrl').value,
+            logo_image: document.getElementById('mLogoData').value,
+            header_banner_image: document.getElementById('mBannerData').value,
+            signature_data: document.getElementById('mSignatureData').value,
+            signatory_name: document.getElementById('mSignatoryName').value,
+            signatory_title: document.getElementById('mSignatoryTitle').value,
+            seal_data: document.getElementById('mSealData').value,
+            show_stamp: document.getElementById('mShowStamp').checked,
+            terms_and_conditions: document.getElementById('mTerms').value,
+            footer_notes: document.getElementById('mFooterNotes').value,
+            save_as_default: document.getElementById('mSaveAsDefault').checked,
+        };
+
+        try {
+            const resp = await fetch(CUSTOMIZE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': CSRF_TOKEN,
+                },
+                body: JSON.stringify(payload),
+            });
+            const data = await resp.json();
+            if (resp.ok && data.status === 'success') {
+                // reload page to display all customized elements seamlessly
+                window.location.reload();
+            } else {
+                alert('Error saving: ' + (data.error || 'Please try again.'));
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save &amp; Apply';
+            }
+        } catch (err) {
+            alert('Network error. Please try again.');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save &amp; Apply';
+        }
+    });
+})();
+</script>
 
 </body>
 </html>
-

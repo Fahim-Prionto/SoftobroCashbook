@@ -16,5 +16,6 @@ urlpatterns = [
     path('ledger/new/', views.entry_create_view, name='entry_create'),
     path('ledger/<int:pk>/edit/', views.entry_edit_view, name='entry_edit'),
     path('ledger/<int:pk>/invoice/', views.invoice_print_view, name='invoice_print'),
+    path('ledger/<int:pk>/invoice/customize/', views.save_invoice_customization_view, name='invoice_customize'),
 ]
 

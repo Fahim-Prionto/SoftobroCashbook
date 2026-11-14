@@ -298,3 +298,59 @@ class InvoiceTemplate(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class InvoiceCustomization(models.Model):
+    """
+    Custom styling, Canva design, signature and header configuration for invoices.
+    Can be configured per-business (default) or overridden per-entry.
+    """
+    business_id = models.IntegerField(null=True, blank=True, db_index=True)
+    entry = models.OneToOneField(
+        'PartnerEntry',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='customization',
+    )
+
+    # Header & Branding
+    invoice_title = models.CharField(max_length=100, default='INVOICE / BILL')
+    company_name = models.CharField(max_length=200, blank=True)
+    tagline = models.CharField(max_length=255, blank=True)
+    phone = models.CharField(max_length=100, blank=True)
+    email = models.CharField(max_length=100, blank=True)
+    address = models.TextField(blank=True)
+    header_theme = models.CharField(max_length=50, default='blue')  # blue, emerald, purple, dark, crimson, canva
+    custom_accent_color = models.CharField(max_length=20, blank=True, default='#2563eb')
+    logo_image = models.TextField(blank=True, help_text="Base64 data or image URL")
+    header_banner_image = models.TextField(blank=True, help_text="Header banner image or Canva export")
+    canva_design_url = models.URLField(max_length=500, blank=True, help_text="Link to design in Canva")
+
+    # Signature & Stamp
+    signature_data = models.TextField(blank=True, help_text="Base64 canvas drawing or signature image")
+    signatory_name = models.CharField(max_length=100, default='Authorized Signatory', blank=True)
+    signatory_title = models.CharField(max_length=100, default='Proprietor / Manager', blank=True)
+    seal_data = models.TextField(blank=True, help_text="Base64 stamp image or URL")
+    show_stamp = models.BooleanField(default=True)
+
+    # Footer & Notes
+    terms_and_conditions = models.TextField(
+        blank=True,
+        default="1. Payment is due upon receipt or within agreed terms.\n2. Warranty valid only with this original invoice."
+    )
+    footer_notes = models.TextField(blank=True, default="Thank you for your business!")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Invoice Customization'
+        verbose_name_plural = 'Invoice Customizations'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        if self.entry:
+            return f"Customization for {self.entry.reference_number}"
+        return f"Business {self.business_id} Default Customization"
+

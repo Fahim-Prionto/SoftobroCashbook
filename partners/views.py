@@ -11,7 +11,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Partner, PartnerEntry, PartnerEntryLine, PartnerReceipt, InvoiceTemplate
+from .models import (
+    Partner, PartnerEntry, PartnerEntryLine, PartnerReceipt,
+    InvoiceTemplate, InvoiceCustomization
+)
 from .serializers import (
     PartnerSerializer, PartnerEntrySerializer, PartnerEntryLineSerializer,
     PartnerReceiptSerializer, InvoiceTemplateSerializer, PartnerBalanceSerializer,
@@ -384,14 +387,88 @@ def entry_edit_view(request, pk):
 
 @login_required
 def invoice_print_view(request, pk):
-    """Render a printable invoice for a given entry, using the active template if any."""
+    """Render a printable invoice for a given entry, using custom styling/signature/Canva if configured."""
     entry = get_object_or_404(
         PartnerEntry.objects.select_related('partner')
         .prefetch_related('lines', 'receipts'),
         pk=pk
     )
     template = InvoiceTemplate.objects.filter(is_active=True).first()
+
+    # Resolve customization: entry-specific -> business-specific -> any default -> None
+    customization = getattr(entry, 'customization', None)
+    if not customization and entry.business_id:
+        customization = InvoiceCustomization.objects.filter(
+            business_id=entry.business_id, entry__isnull=True
+        ).first()
+    if not customization:
+        customization = InvoiceCustomization.objects.filter(entry__isnull=True).first()
+
     return render(request, 'partners/invoice_print.html', {
         'entry': entry,
         'template': template,
+        'customization': customization,
     })
+
+
+@login_required
+def save_invoice_customization_view(request, pk):
+    """Save or update invoice customization (header, signature, Canva design, stamp, terms)."""
+    import json
+    entry = get_object_or_404(PartnerEntry, pk=pk)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required.'}, status=405)
+
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8'))
+        else:
+            data = request.POST
+
+        save_as_default = str(data.get('save_as_default', '')).lower() in ('true', '1', 'yes')
+
+        if save_as_default and entry.business_id:
+            cust, _ = InvoiceCustomization.objects.get_or_create(
+                business_id=entry.business_id,
+                entry__isnull=True,
+            )
+        else:
+            cust, _ = InvoiceCustomization.objects.get_or_create(
+                entry=entry,
+                defaults={'business_id': entry.business_id}
+            )
+
+        cust.invoice_title = data.get('invoice_title', cust.invoice_title) or 'INVOICE / BILL'
+        cust.company_name = data.get('company_name', cust.company_name) or ''
+        cust.tagline = data.get('tagline', cust.tagline) or ''
+        cust.phone = data.get('phone', cust.phone) or ''
+        cust.email = data.get('email', cust.email) or ''
+        cust.address = data.get('address', cust.address) or ''
+        cust.header_theme = data.get('header_theme', cust.header_theme) or 'blue'
+        cust.custom_accent_color = data.get('custom_accent_color', cust.custom_accent_color) or '#2563eb'
+        cust.canva_design_url = data.get('canva_design_url', cust.canva_design_url) or ''
+
+        # Update images/data if present in payload
+        if 'logo_image' in data:
+            cust.logo_image = data.get('logo_image') or ''
+        if 'header_banner_image' in data:
+            cust.header_banner_image = data.get('header_banner_image') or ''
+        if 'signature_data' in data:
+            cust.signature_data = data.get('signature_data') or ''
+        if 'seal_data' in data:
+            cust.seal_data = data.get('seal_data') or ''
+
+        cust.signatory_name = data.get('signatory_name', cust.signatory_name) or ''
+        cust.signatory_title = data.get('signatory_title', cust.signatory_title) or ''
+        cust.show_stamp = str(data.get('show_stamp', cust.show_stamp)).lower() in ('true', '1', 'yes')
+        cust.terms_and_conditions = data.get('terms_and_conditions', cust.terms_and_conditions) or ''
+        cust.footer_notes = data.get('footer_notes', cust.footer_notes) or ''
+        cust.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Invoice customization saved successfully!',
+            'save_as_default': save_as_default,
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
