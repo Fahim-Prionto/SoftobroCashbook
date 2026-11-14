@@ -114,9 +114,13 @@ def business_detail_view(request, business_id):
         })
 
     # Recent customer entries in this business
-    recent_customer_entries = PartnerEntry.objects.filter(
+    recent_customer_entries = list(PartnerEntry.objects.filter(
         business_id=business_id
-    ).select_related('partner', 'cashbook').order_by('-date_time')[:10]
+    ).select_related('partner').order_by('-date_time')[:10])
+
+    cb_map = {cb.id: cb for cb in cashbooks}
+    for pe in recent_customer_entries:
+        pe.attached_book = cb_map.get(pe.cashbook_id)
 
     return render(request, 'businesses/business_detail.html', {
         'business': biz,
