@@ -202,7 +202,7 @@ def cashbook_delete_view(request, cashbook_id):
 def cashbook_print_view(request, cashbook_id):
     cb = get_object_or_404(Cashbook.objects.select_related('business'), id=cashbook_id)
 
-    from partners.models import PartnerEntry
+    from partners.models import PartnerEntry, InvoiceCustomization
     from django.db.models import Sum as DjSum
 
     start_date = request.GET.get('start_date')
@@ -219,6 +219,12 @@ def cashbook_print_view(request, cashbook_id):
     total_settled = agg['setl'] or Decimal('0.00')
     total_outstanding = total_invoiced - total_settled
 
+    customization = InvoiceCustomization.objects.filter(
+        business_id=cb.business_id, entry__isnull=True
+    ).first()
+    if not customization:
+        customization = InvoiceCustomization.objects.filter(entry__isnull=True).first()
+
     return render(request, 'cashbooks/cashbook_print.html', {
         'cashbook': cb,
         'business': cb.business,
@@ -228,4 +234,5 @@ def cashbook_print_view(request, cashbook_id):
         'total_invoiced': total_invoiced,
         'total_settled': total_settled,
         'total_outstanding': total_outstanding,
+        'customization': customization,
     })

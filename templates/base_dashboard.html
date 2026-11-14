@@ -391,6 +391,11 @@
                             <i class="bi bi-journal-richtext"></i> Customer Ledger
                         </a>
                     </div>
+                    <div class="sidebar-nav-item">
+                        <a href="{% url 'partners:invoice_settings' %}" class="sidebar-nav-link {% if 'invoice-settings' in request.path %}active{% endif %}">
+                            <i class="bi bi-palette-fill"></i> Invoice &amp; Print Designer
+                        </a>
+                    </div>
 
                     <div class="sidebar-header mt-3">Account &amp; Billing</div>
                     <div class="sidebar-nav-item">

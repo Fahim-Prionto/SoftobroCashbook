@@ -1,0 +1,595 @@
+{% extends 'base_dashboard.html' %}
+{% load currency_tags %}
+{% block title %}Invoice &amp; Print Designer - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Invoice &amp; Statement Designer Studio{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Left Column: Controls & Designer Studio -->
+    <div class="col-xl-6">
+        <div class="card-scb">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fs-4 text-primary"><i class="bi bi-palette-fill"></i></span>
+                    <div>
+                        <div class="fw-bold fs-6">Customization Settings</div>
+                        <small class="text-muted">Changes apply across all customer invoices &amp; book statements</small>
+                    </div>
+                </div>
+
+                {% if businesses|length > 1 %}
+                <form method="get" class="d-flex align-items-center gap-1">
+                    <label class="small text-muted fw-bold me-1">Business:</label>
+                    <select name="business" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 170px;">
+                        {% for b in businesses %}
+                        <option value="{{ b.id }}" {% if selected_biz_id == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                <!-- Tabs -->
+                <ul class="nav nav-pills nav-fill mb-4 gap-2" id="designerTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active rounded-pill fw-bold" data-bs-toggle="tab" data-bs-target="#tabBrand" type="button">
+                            <i class="bi bi-card-heading me-1"></i> Header &amp; Brand
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill fw-bold" data-bs-toggle="tab" data-bs-target="#tabCanvaStudio" type="button">
+                            <i class="bi bi-palette me-1"></i> Canva Design
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill fw-bold" data-bs-toggle="tab" data-bs-target="#tabSignStudio" type="button">
+                            <i class="bi bi-pen me-1"></i> Signature &amp; Stamp
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill fw-bold" data-bs-toggle="tab" data-bs-target="#tabTermsStudio" type="button">
+                            <i class="bi bi-file-text me-1"></i> Terms &amp; Notes
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Tab 1: Header & Brand -->
+                    <div class="tab-pane fade show active" id="tabBrand">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Invoice Title</label>
+                                <input type="text" id="sInvoiceTitle" class="form-control" value="{{ customization.invoice_title|default:'INVOICE / BILL' }}" placeholder="e.g. INVOICE / BILL">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Company / Business Name</label>
+                                <input type="text" id="sCompanyName" class="form-control" value="{{ customization.company_name|default:request.user.business_name|default:'Cash Hisab SoftoBro' }}" placeholder="Your Business Name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Tagline / Sub-heading</label>
+                                <input type="text" id="sTagline" class="form-control" value="{{ customization.tagline|default:'' }}" placeholder="e.g. Retail &amp; Wholesale Traders">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Header Theme / Color</label>
+                                <select id="sHeaderTheme" class="form-select">
+                                    <option value="blue" {% if customization.header_theme == 'blue' %}selected{% endif %}>Electric Blue Gradient</option>
+                                    <option value="emerald" {% if customization.header_theme == 'emerald' %}selected{% endif %}>Emerald Green Gradient</option>
+                                    <option value="purple" {% if customization.header_theme == 'purple' %}selected{% endif %}>Royal Purple Gradient</option>
+                                    <option value="crimson" {% if customization.header_theme == 'crimson' %}selected{% endif %}>Crimson Red Gradient</option>
+                                    <option value="dark" {% if customization.header_theme == 'dark' %}selected{% endif %}>Midnight Dark Theme</option>
+                                    <option value="canva" {% if customization.header_theme == 'canva' %}selected{% endif %}>Custom Canva Banner Image</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Official Phone</label>
+                                <input type="text" id="sPhone" class="form-control" value="{{ customization.phone|default:request.user.phone_number|default:'' }}" placeholder="+880 1700-000000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Official Email</label>
+                                <input type="email" id="sEmail" class="form-control" value="{{ customization.email|default:request.user.email|default:'' }}" placeholder="support@business.com">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Office Address</label>
+                                <input type="text" id="sAddress" class="form-control" value="{{ customization.address|default:'' }}" placeholder="e.g. 12/A Motijheel C/A, Dhaka, Bangladesh">
+                            </div>
+
+                            <!-- Logo Upload -->
+                            <div class="col-12 mt-3 pt-3 border-top">
+                                <label class="form-label small fw-bold">Business Logo</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <input type="file" id="sLogoFileInput" accept="image/*" class="form-control form-control-sm" style="max-width: 320px;">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" id="sClearLogoBtn">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                </div>
+                                <input type="hidden" id="sLogoData" value="{{ customization.logo_image|default:'' }}">
+                                <div id="sLogoPreviewBox" class="mt-2 {% if not customization.logo_image %}d-none{% endif %}">
+                                    <img id="sLogoPreviewImg" src="{{ customization.logo_image|default:'' }}" alt="Logo" style="max-height: 48px; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 4px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Canva Studio -->
+                    <div class="tab-pane fade" id="tabCanvaStudio">
+                        <div class="p-3 rounded-4 mb-3" style="background: linear-gradient(135deg, rgba(125, 42, 232, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%); border: 1.5px solid rgba(125, 42, 232, 0.2);">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fs-4" style="color: #7d2ae8;"><i class="bi bi-palette-fill"></i></span>
+                                    <span class="fw-bold fs-6 text-dark">Design in Canva</span>
+                                </div>
+                                <a href="https://www.canva.com/templates/?query=invoice" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold" style="background: #7d2ae8; border-color: #7d2ae8;">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> Open Canva Templates ↗
+                                </a>
+                            </div>
+                            <p class="small text-muted mb-0">
+                                Open Canva, customize an invoice template or letterhead banner, download it as a PNG/JPG, and upload it below.
+                            </p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Canva Template / Design URL (Optional)</label>
+                            <input type="url" id="sCanvaUrl" class="form-control" value="{{ customization.canva_design_url|default:'' }}" placeholder="https://www.canva.com/design/DAF...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Upload Canva Header Banner Image</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="file" id="sBannerFileInput" accept="image/*" class="form-control form-control-sm" style="max-width: 320px;">
+                                <button type="button" class="btn btn-outline-danger btn-sm" id="sClearBannerBtn">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                            <input type="hidden" id="sBannerData" value="{{ customization.header_banner_image|default:'' }}">
+                            <div id="sBannerPreviewBox" class="mt-2 {% if not customization.header_banner_image %}d-none{% endif %}">
+                                <img id="sBannerPreviewImg" src="{{ customization.header_banner_image|default:'' }}" alt="Banner preview" style="max-height: 80px; width: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Signature & Stamp -->
+                    <div class="tab-pane fade" id="tabSignStudio">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-pen-fill text-primary me-1"></i> Draw Digital Signature (Canvas)</span>
+                                    <button type="button" class="btn btn-light btn-sm border py-0 px-2 small text-danger" id="sClearPadBtn">
+                                        <i class="bi bi-eraser"></i> Clear Canvas
+                                    </button>
+                                </label>
+                                <div class="p-2 bg-light border rounded-3 text-center" style="max-width: 440px;">
+                                    <canvas id="sSignatureCanvas" width="420" height="130" style="background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 420px;"></canvas>
+                                    <div class="small text-muted mt-1" style="font-size: 0.72rem;">Draw your signature inside the box</div>
+                                </div>
+                                <input type="hidden" id="sSignatureData" value="{{ customization.signature_data|default:'' }}">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Or Upload Signature Image (PNG)</label>
+                                <input type="file" id="sSignFileInput" accept="image/*" class="form-control form-control-sm" style="max-width: 340px;">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Signatory Name</label>
+                                <input type="text" id="sSignatoryName" class="form-control" value="{{ customization.signatory_name|default:'Authorized Signatory' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Signatory Designation</label>
+                                <input type="text" id="sSignatoryTitle" class="form-control" value="{{ customization.signatory_title|default:'Proprietor / Manager' }}">
+                            </div>
+
+                            <!-- Stamp -->
+                            <div class="col-12 mt-3 pt-3 border-top">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="sShowStamp" {% if customization.show_stamp %}checked{% endif %}>
+                                    <label class="form-check-label small fw-bold" for="sShowStamp">Include Official Verification Stamp</label>
+                                </div>
+                                <label class="form-label small fw-bold">Upload Custom Stamp / Seal (Optional)</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <input type="file" id="sSealFileInput" accept="image/*" class="form-control form-control-sm" style="max-width: 320px;">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" id="sClearSealBtn">
+                                        <i class="bi bi-trash"></i> Remove Stamp
+                                    </button>
+                                </div>
+                                <input type="hidden" id="sSealData" value="{{ customization.seal_data|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 4: Terms & Notes -->
+                    <div class="tab-pane fade" id="tabTermsStudio">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Terms &amp; Conditions</label>
+                            <textarea id="sTerms" class="form-control" rows="4">{{ customization.terms_and_conditions|default:"1. Payment is due upon receipt or within agreed terms.\n2. Warranty valid only with this original invoice." }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Payment Instructions &amp; Footer Notes</label>
+                            <textarea id="sFooterNotes" class="form-control" rows="2" placeholder="e.g. bKash / Nagad number, Bank Account details...">{{ customization.footer_notes|default:'Thank you for your business!' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                    <span class="small text-muted"><i class="bi bi-check2-circle text-success me-1"></i> Auto applies to all customer invoices &amp; book statements</span>
+                    <button type="button" class="btn btn-primary px-4 py-2 fw-bold shadow-sm" id="saveGlobalBtn">
+                        <i class="bi bi-check-lg me-1"></i> Save &amp; Apply to All Invoices
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Real-Time Interactive Live Preview -->
+    <div class="col-xl-6">
+        <div class="card-scb">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold"><i class="bi bi-eye-fill text-primary me-2"></i> Real-Time Invoice &amp; Statement Preview</span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">Live Sync</span>
+            </div>
+            <div class="card-body p-3 bg-light" style="overflow-x: auto;">
+                <!-- Mini A4 Preview Sheet -->
+                <div class="bg-white rounded-3 shadow-sm border p-4" style="min-width: 480px; max-width: 600px; margin: 0 auto; font-size: 11px;">
+                    <!-- Preview Header -->
+                    <div id="pHeader" class="p-3 text-white rounded-3 mb-3 d-flex justify-content-between align-items-start" style="background: linear-gradient(135deg, #1e40af, #0d9488);">
+                        <div>
+                            <div id="pLogoBox" class="mb-1 {% if not customization.logo_image %}d-none{% endif %}">
+                                <img id="pLogoImg" src="{{ customization.logo_image|default:'' }}" alt="Logo" style="max-height: 32px; background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px;">
+                            </div>
+                            <div class="fw-bold fs-6" id="pCompanyName">{{ customization.company_name|default:request.user.business_name|default:'Cash Hisab SoftoBro' }}</div>
+                            <div class="small opacity-75" id="pTagline">{{ customization.tagline|default:'Customer Ledger &amp; Book' }}</div>
+                            <span class="badge bg-white bg-opacity-25 mt-1 small" style="font-size: 9px;">CASH IN</span>
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-uppercase fw-bold opacity-75" id="pInvoiceTitle" style="font-size: 9px;">{{ customization.invoice_title|default:'INVOICE / BILL' }}</div>
+                            <div class="font-monospace fw-bold fs-6">CB/2026/00001</div>
+                            <span class="badge bg-success small" style="font-size: 9px;">PAID</span>
+                        </div>
+                    </div>
+
+                    <!-- Preview Meta -->
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-3 small" style="font-size: 10px;">
+                        <div>
+                            <span class="text-muted fw-bold text-uppercase d-block" style="font-size: 8px;">Customer</span>
+                            <span class="fw-bold text-dark">Fahim Shahariar</span>
+                            <div class="text-muted">📞 01929022838</div>
+                        </div>
+                        <div>
+                            <span class="text-muted fw-bold text-uppercase d-block" style="font-size: 8px;">Date</span>
+                            <span class="text-dark">{% now "d M Y, h:i A" %}</span>
+                            <div class="text-muted">Book: shahriar</div>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-muted fw-bold text-uppercase d-block" style="font-size: 8px;">Issued By</span>
+                            <span class="fw-bold text-dark" id="pIssuedName">{{ customization.company_name|default:'Cash Hisab SoftoBro' }}</span>
+                            <div class="text-muted" id="pIssuedPhone">{{ customization.phone|default:'' }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Table -->
+                    <table class="table table-sm table-bordered mb-3" style="font-size: 10px;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Item / Description</th>
+                                <th class="text-end">Price</th>
+                                <th class="text-end">Qty</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Demo Product / Service</td>
+                                <td class="text-end">৳500.00</td>
+                                <td class="text-end">2.00</td>
+                                <td class="text-end fw-bold">৳1,000.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Preview Totals -->
+                    <div class="d-flex justify-content-end mb-3">
+                        <div style="width: 180px; font-size: 10px;">
+                            <div class="d-flex justify-content-between py-1"><span>Total Amount:</span><span class="fw-bold">৳1,000.00</span></div>
+                            <div class="d-flex justify-content-between py-1 text-success"><span>Received:</span><span class="fw-bold">৳1,000.00</span></div>
+                            <div class="d-flex justify-content-between py-1 border-top fw-bold"><span>Balance Due:</span><span>৳0.00</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Footer: Terms & Signature -->
+                    <div class="d-flex justify-content-between align-items-end border-top pt-3">
+                        <div style="max-width: 55%; font-size: 9px;" class="text-muted">
+                            <span class="fw-bold text-uppercase d-block mb-1" style="font-size: 8px;">Terms &amp; Instructions</span>
+                            <div id="pTermsText" style="white-space: pre-line;">{{ customization.terms_and_conditions|default:"1. Payment is due upon receipt.\n2. Warranty valid with this bill." }}</div>
+                            <div id="pFooterNotesText" class="fw-bold text-dark mt-1">{{ customization.footer_notes|default:'Thank you for your business!' }}</div>
+                        </div>
+
+                        <!-- Signature Box -->
+                        <div class="text-center" style="width: 140px;">
+                            <div id="pSealBox" class="{% if not customization.show_stamp %}d-none{% endif %} mb-1">
+                                {% if customization.seal_data %}
+                                <img id="pSealImg" src="{{ customization.seal_data }}" alt="Seal" style="max-height: 38px;">
+                                {% else %}
+                                <div style="display: inline-block; border: 1.5px solid #dc2626; color: #dc2626; border-radius: 50%; font-size: 7px; font-weight: 800; padding: 4px 6px; transform: rotate(-8deg);">OFFICIAL SEAL</div>
+                                {% endif %}
+                            </div>
+
+                            <div id="pSignBox">
+                                {% if customization.signature_data %}
+                                <img id="pSignImg" src="{{ customization.signature_data }}" alt="Sign" style="max-height: 35px; max-width: 120px;">
+                                {% else %}
+                                <div style="height: 25px;"></div>
+                                {% endif %}
+                            </div>
+                            <div style="border-top: 1px solid #0f172a; margin: 3px 0;"></div>
+                            <div class="fw-bold" id="pSignName" style="font-size: 10px;">{{ customization.signatory_name|default:'Authorized Signatory' }}</div>
+                            <div class="text-muted" id="pSignTitle" style="font-size: 8px;">{{ customization.signatory_title|default:'Proprietor' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const SAVE_URL = '{% url "partners:save_global_invoice_settings" %}';
+    const CSRF_TOKEN = '{{ csrf_token }}';
+
+    // Canvas Signature Setup
+    const canvas = document.getElementById('sSignatureCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let hasDrawn = false;
+
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: (clientX - rect.left) * (canvas.width / rect.width),
+            y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+    }
+
+    function startDrawing(e) {
+        isDrawing = true;
+        const pos = getCoords(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        e.preventDefault();
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getCoords(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        hasDrawn = true;
+        e.preventDefault();
+    }
+
+    function stopDrawing() {
+        if (isDrawing) {
+            isDrawing = false;
+            if (hasDrawn) {
+                const dataUrl = canvas.toDataURL('image/png');
+                document.getElementById('sSignatureData').value = dataUrl;
+                updatePreviewSign(dataUrl);
+            }
+        }
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', stopDrawing);
+
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    window.addEventListener('touchend', stopDrawing);
+
+    document.getElementById('sClearPadBtn').addEventListener('click', function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hasDrawn = false;
+        document.getElementById('sSignatureData').value = '';
+        updatePreviewSign('');
+    });
+
+    // File Handlers
+    function bindFile(fileInput, hiddenField, previewBoxId, previewImgId, onDone) {
+        fileInput.addEventListener('change', function() {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    document.getElementById(hiddenField).value = dataUrl;
+                    if (previewBoxId && previewImgId) {
+                        document.getElementById(previewBoxId).classList.remove('d-none');
+                        document.getElementById(previewImgId).src = dataUrl;
+                    }
+                    if (onDone) onDone(dataUrl);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    bindFile(document.getElementById('sLogoFileInput'), 'sLogoData', 'sLogoPreviewBox', 'sLogoPreviewImg', function(data) {
+        const box = document.getElementById('pLogoBox');
+        const img = document.getElementById('pLogoImg');
+        img.src = data;
+        box.classList.remove('d-none');
+    });
+
+    bindFile(document.getElementById('sBannerFileInput'), 'sBannerData', 'sBannerPreviewBox', 'sBannerPreviewImg', function(data) {
+        document.getElementById('pHeader').style.backgroundImage = `url('${data}')`;
+        document.getElementById('pHeader').style.backgroundSize = 'cover';
+    });
+
+    bindFile(document.getElementById('sSealFileInput'), 'sSealData', null, null, function(data) {
+        document.getElementById('pSealBox').innerHTML = `<img src="${data}" alt="Seal" style="max-height: 38px;">`;
+        document.getElementById('pSealBox').classList.remove('d-none');
+    });
+
+    document.getElementById('sSignFileInput').addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                document.getElementById('sSignatureData').value = dataUrl;
+                updatePreviewSign(dataUrl);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Clear buttons
+    document.getElementById('sClearLogoBtn').addEventListener('click', function() {
+        document.getElementById('sLogoData').value = '';
+        document.getElementById('sLogoFileInput').value = '';
+        document.getElementById('sLogoPreviewBox').classList.add('d-none');
+        document.getElementById('pLogoBox').classList.add('d-none');
+    });
+
+    document.getElementById('sClearBannerBtn').addEventListener('click', function() {
+        document.getElementById('sBannerData').value = '';
+        document.getElementById('sBannerFileInput').value = '';
+        document.getElementById('sBannerPreviewBox').classList.add('d-none');
+        updateHeaderTheme(document.getElementById('sHeaderTheme').value);
+    });
+
+    document.getElementById('sClearSealBtn').addEventListener('click', function() {
+        document.getElementById('sSealData').value = '';
+        document.getElementById('sSealFileInput').value = '';
+        document.getElementById('pSealBox').innerHTML = `<div style="display: inline-block; border: 1.5px solid #dc2626; color: #dc2626; border-radius: 50%; font-size: 7px; font-weight: 800; padding: 4px 6px; transform: rotate(-8deg);">OFFICIAL SEAL</div>`;
+    });
+
+    // Live Text Syncing
+    function sync(inputId, previewId, fallback) {
+        const input = document.getElementById(inputId);
+        input.addEventListener('input', function() {
+            document.getElementById(previewId).textContent = this.value || fallback;
+        });
+    }
+
+    sync('sInvoiceTitle', 'pInvoiceTitle', 'INVOICE / BILL');
+    sync('sCompanyName', 'pCompanyName', 'Cash Hisab SoftoBro');
+    sync('sCompanyName', 'pIssuedName', 'Cash Hisab SoftoBro');
+    sync('sTagline', 'pTagline', '');
+    sync('sPhone', 'pIssuedPhone', '');
+    sync('sSignatoryName', 'pSignName', 'Authorized Signatory');
+    sync('sSignatoryTitle', 'pSignTitle', 'Proprietor');
+    sync('sTerms', 'pTermsText', '1. Payment is due upon receipt.');
+    sync('sFooterNotes', 'pFooterNotesText', '');
+
+    function updatePreviewSign(dataUrl) {
+        const box = document.getElementById('pSignBox');
+        if (dataUrl) {
+            box.innerHTML = `<img src="${dataUrl}" alt="Sign" style="max-height: 35px; max-width: 120px;">`;
+        } else {
+            box.innerHTML = `<div style="height: 25px;"></div>`;
+        }
+    }
+
+    function updateHeaderTheme(val) {
+        const h = document.getElementById('pHeader');
+        h.style.backgroundImage = '';
+        const bannerData = document.getElementById('sBannerData').value;
+        if (val === 'canva' && bannerData) {
+            h.style.backgroundImage = `url('${bannerData}')`;
+            h.style.backgroundSize = 'cover';
+        } else if (val === 'emerald') {
+            h.style.background = 'linear-gradient(135deg, #065f46, #10b981)';
+        } else if (val === 'purple') {
+            h.style.background = 'linear-gradient(135deg, #4c1d95, #8b5cf6)';
+        } else if (val === 'crimson') {
+            h.style.background = 'linear-gradient(135deg, #991b1b, #ef4444)';
+        } else if (val === 'dark') {
+            h.style.background = 'linear-gradient(135deg, #090d16, #1e293b)';
+        } else {
+            h.style.background = 'linear-gradient(135deg, #1e40af, #0d9488)';
+        }
+    }
+
+    document.getElementById('sHeaderTheme').addEventListener('change', function() {
+        updateHeaderTheme(this.value);
+    });
+
+    document.getElementById('sShowStamp').addEventListener('change', function() {
+        const box = document.getElementById('pSealBox');
+        if (this.checked) {
+            box.classList.remove('d-none');
+        } else {
+            box.classList.add('d-none');
+        }
+    });
+
+    // Save Global Settings
+    const saveBtn = document.getElementById('saveGlobalBtn');
+    saveBtn.addEventListener('click', async function() {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving to All Invoices…';
+
+        const payload = {
+            business_id: '{{ selected_biz_id|default:"" }}',
+            invoice_title: document.getElementById('sInvoiceTitle').value,
+            company_name: document.getElementById('sCompanyName').value,
+            tagline: document.getElementById('sTagline').value,
+            phone: document.getElementById('sPhone').value,
+            email: document.getElementById('sEmail').value,
+            address: document.getElementById('sAddress').value,
+            header_theme: document.getElementById('sHeaderTheme').value,
+            canva_design_url: document.getElementById('sCanvaUrl').value,
+            logo_image: document.getElementById('sLogoData').value,
+            header_banner_image: document.getElementById('sBannerData').value,
+            signature_data: document.getElementById('sSignatureData').value,
+            signatory_name: document.getElementById('sSignatoryName').value,
+            signatory_title: document.getElementById('sSignatoryTitle').value,
+            seal_data: document.getElementById('sSealData').value,
+            show_stamp: document.getElementById('sShowStamp').checked,
+            terms_and_conditions: document.getElementById('sTerms').value,
+            footer_notes: document.getElementById('sFooterNotes').value,
+        };
+
+        try {
+            const resp = await fetch(SAVE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': CSRF_TOKEN,
+                },
+                body: JSON.stringify(payload),
+            });
+            const data = await resp.json();
+            if (resp.ok && data.status === 'success') {
+                saveBtn.className = 'btn btn-success px-4 py-2 fw-bold shadow-sm';
+                saveBtn.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Saved to All Invoices!';
+                setTimeout(() => {
+                    saveBtn.className = 'btn btn-primary px-4 py-2 fw-bold shadow-sm';
+                    saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save &amp; Apply to All Invoices';
+                    saveBtn.disabled = false;
+                }, 2500);
+            } else {
+                alert('Error: ' + (data.error || 'Failed to save settings.'));
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save &amp; Apply to All Invoices';
+            }
+        } catch (e) {
+            alert('Network error. Please try again.');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save &amp; Apply to All Invoices';
+        }
+    });
+})();
+</script>
+{% endblock %}

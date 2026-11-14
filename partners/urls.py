@@ -15,6 +15,9 @@ urlpatterns = [
     path('ledger/', views.ledger_list_view, name='ledger_list'),
     path('ledger/new/', views.entry_create_view, name='entry_create'),
     path('ledger/<int:pk>/edit/', views.entry_edit_view, name='entry_edit'),
+    # ── Invoice & Print Customization ─────────────────────────────────────────
+    path('invoice-settings/', views.invoice_settings_view, name='invoice_settings'),
+    path('invoice-settings/save/', views.save_global_invoice_settings_view, name='save_global_invoice_settings'),
     path('ledger/<int:pk>/invoice/', views.invoice_print_view, name='invoice_print'),
     path('ledger/<int:pk>/invoice/customize/', views.save_invoice_customization_view, name='invoice_customize'),
 ]

@@ -472,3 +472,99 @@ def save_invoice_customization_view(request, pk):
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+
+@login_required
+def invoice_settings_view(request):
+    """Dedicated studio to customize default invoice and statement template from sidebar."""
+    from businesses.models import Business
+    businesses = Business.objects.all()
+    selected_biz_id = request.GET.get('business')
+
+    if selected_biz_id:
+        customization = InvoiceCustomization.objects.filter(
+            business_id=selected_biz_id, entry__isnull=True
+        ).first()
+    else:
+        customization = InvoiceCustomization.objects.filter(entry__isnull=True).first()
+        if customization and customization.business_id:
+            selected_biz_id = str(customization.business_id)
+        elif businesses.exists():
+            selected_biz_id = str(businesses.first().id)
+            customization = InvoiceCustomization.objects.filter(
+                business_id=selected_biz_id, entry__isnull=True
+            ).first()
+
+    if not customization:
+        customization = InvoiceCustomization(
+            business_id=int(selected_biz_id) if selected_biz_id and selected_biz_id.isdigit() else None,
+            company_name=getattr(request.user, 'business_name', '') or "Cash Hisab SoftoBro",
+            invoice_title="INVOICE / BILL",
+            signatory_name="Authorized Signatory",
+            signatory_title="Proprietor / Manager",
+            header_theme="blue",
+        )
+
+    return render(request, 'partners/invoice_settings.html', {
+        'businesses': businesses,
+        'selected_biz_id': selected_biz_id,
+        'customization': customization,
+    })
+
+
+@login_required
+def save_global_invoice_settings_view(request):
+    """Save business/global default customization so all invoices and statements reflect it."""
+    import json
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required.'}, status=405)
+
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8'))
+        else:
+            data = request.POST
+
+        biz_id = data.get('business_id') or None
+        if biz_id and str(biz_id).isdigit():
+            cust, _ = InvoiceCustomization.objects.get_or_create(
+                business_id=int(biz_id),
+                entry__isnull=True,
+            )
+        else:
+            cust = InvoiceCustomization.objects.filter(entry__isnull=True).first()
+            if not cust:
+                cust = InvoiceCustomization(entry=None)
+
+        cust.invoice_title = data.get('invoice_title', cust.invoice_title) or 'INVOICE / BILL'
+        cust.company_name = data.get('company_name', cust.company_name) or ''
+        cust.tagline = data.get('tagline', cust.tagline) or ''
+        cust.phone = data.get('phone', cust.phone) or ''
+        cust.email = data.get('email', cust.email) or ''
+        cust.address = data.get('address', cust.address) or ''
+        cust.header_theme = data.get('header_theme', cust.header_theme) or 'blue'
+        cust.custom_accent_color = data.get('custom_accent_color', cust.custom_accent_color) or '#2563eb'
+        cust.canva_design_url = data.get('canva_design_url', cust.canva_design_url) or ''
+
+        if 'logo_image' in data:
+            cust.logo_image = data.get('logo_image') or ''
+        if 'header_banner_image' in data:
+            cust.header_banner_image = data.get('header_banner_image') or ''
+        if 'signature_data' in data:
+            cust.signature_data = data.get('signature_data') or ''
+        if 'seal_data' in data:
+            cust.seal_data = data.get('seal_data') or ''
+
+        cust.signatory_name = data.get('signatory_name', cust.signatory_name) or ''
+        cust.signatory_title = data.get('signatory_title', cust.signatory_title) or ''
+        cust.show_stamp = str(data.get('show_stamp', cust.show_stamp)).lower() in ('true', '1', 'yes')
+        cust.terms_and_conditions = data.get('terms_and_conditions', cust.terms_and_conditions) or ''
+        cust.footer_notes = data.get('footer_notes', cust.footer_notes) or ''
+        cust.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Invoice & Statement settings saved successfully and applied to all invoices!',
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)

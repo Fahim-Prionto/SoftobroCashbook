@@ -3,47 +3,146 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ business.name }} - {{ cashbook.name }} Customer Statement</title>
+
+    <!-- Google Fonts & Bootstrap 5 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/print.css' %}">
+
     <style>
-        body { background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body {
+            background: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
         .print-sheet {
-            background: #fff;
-            max-width: 850px;
+            background: #ffffff;
+            max-width: 860px;
             margin: 20px auto;
             padding: 40px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border-radius: 8px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
         }
+
+        /* Header Dynamic Styling */
+        .print-header-banner {
+            border-radius: 10px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background-size: cover;
+            background-position: center;
+        }
+        .theme-blue { background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #0d9488 100%); }
+        .theme-emerald { background: linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%); }
+        .theme-purple { background: linear-gradient(135deg, #4c1d95 0%, #6366f1 50%, #8b5cf6 100%); }
+        .theme-crimson { background: linear-gradient(135deg, #991b1b 0%, #dc2626 50%, #f43f5e 100%); }
+        .theme-dark { background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e293b 100%); }
+        .theme-canva { background-color: #0f172a; background-size: cover; background-position: center; }
+
+        .print-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        .print-subtitle { font-size: 13px; opacity: 0.9; margin-top: 3px; }
+
+        .official-seal-sm {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid #b91c1c;
+            color: #b91c1c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 auto 6px;
+            transform: rotate(-10deg);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .signature-img-sm {
+            max-height: 52px;
+            max-width: 170px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
         @media print {
-            body { background: #fff !important; }
-            .print-sheet { box-shadow: none !important; margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+            body { background: #ffffff !important; }
+            .print-sheet { box-shadow: none !important; margin: 0 !important; padding: 0 !important; max-width: 100% !important; border: none !important; }
+            .no-print, .modal, .modal-backdrop { display: none !important; }
         }
     </style>
 </head>
 <body>
-    <div class="no-print text-center py-3 bg-dark text-white sticky-top d-flex justify-content-center align-items-center gap-3">
-        <span><i class="bi bi-printer"></i> A4 Customer Statement Preview</span>
-        <button class="btn btn-sm btn-primary px-3 fw-bold btn-print-trigger" onclick="window.print()">
-            Print Document / Save PDF
-        </button>
-        <button class="btn btn-sm btn-outline-light" onclick="window.close()">Close Window</button>
+
+    <!-- Top Sticky Bar (Hidden on print) -->
+    <div class="no-print py-2 px-3 bg-dark text-white sticky-top d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold"><i class="bi bi-printer me-1"></i> A4 Statement &amp; Customer Ledger Preview</span>
+            <span class="badge bg-secondary font-monospace">{{ cashbook.name }}</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <!-- Open Canva -->
+            <a href="https://www.canva.com/templates/?query=invoice" target="_blank" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-bold">
+                <i class="bi bi-palette-fill me-1" style="color: #7d2ae8;"></i> Design in Canva
+            </a>
+
+            <!-- Customize Button (Opens Modal) -->
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#statementCustomizeModal">
+                <i class="bi bi-sliders2-vertical me-1"></i> Edit Header &amp; Signature
+            </button>
+
+            <!-- Print Button -->
+            <button class="btn btn-sm btn-success px-3 fw-bold rounded-pill" onclick="window.print()">
+                <i class="bi bi-printer-fill me-1"></i> Print / Save PDF
+            </button>
+            <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="window.close()">Close</button>
+        </div>
     </div>
 
     <div class="print-sheet">
-        <!-- Print Header -->
-        <div class="print-header d-flex justify-content-between align-items-start border-bottom pb-3 mb-4">
+        <!-- Styled Header Banner -->
+        <div class="print-header-banner theme-{{ customization.header_theme|default:'blue' }}"
+             style="{% if customization.header_banner_image %}background-image: url('{{ customization.header_banner_image }}');{% endif %}">
             <div>
-                <h2 class="print-title fw-bold text-dark mb-1">{{ business.name }}</h2>
-                <div class="print-subtitle text-secondary">Book: {{ cashbook.name }} &bull; Customer Ledger Statement</div>
-                {% if business.address %}<div class="small text-muted">{{ business.address }}</div>{% endif %}
-                {% if business.phone %}<div class="small text-muted">Phone: {{ business.phone }}</div>{% endif %}
+                {% if customization.logo_image %}
+                <div class="mb-2">
+                    <img src="{{ customization.logo_image }}" alt="Logo" style="max-height: 48px; max-width: 160px; object-fit: contain; background: rgba(255,255,255,0.95); padding: 3px 6px; border-radius: 6px;">
+                </div>
+                {% endif %}
+                <h2 class="print-title mb-0">
+                    {{ customization.company_name|default:business.name|default:"Cash Hisab SoftoBro" }}
+                </h2>
+                <div class="print-subtitle">
+                    Book: {{ cashbook.name }} &bull; Customer Ledger Statement
+                </div>
+                {% if customization.tagline %}
+                <div class="small opacity-75 mt-1">{{ customization.tagline }}</div>
+                {% endif %}
+                <div class="small mt-2 opacity-90">
+                    {% if customization.address %}<span class="me-3"><i class="bi bi-geo-alt"></i> {{ customization.address }}</span>{% elif business.address %}<span class="me-3"><i class="bi bi-geo-alt"></i> {{ business.address }}</span>{% endif %}
+                    {% if customization.phone %}<span><i class="bi bi-telephone"></i> {{ customization.phone }}</span>{% elif business.phone %}<span><i class="bi bi-telephone"></i> {{ business.phone }}</span>{% endif %}
+                </div>
             </div>
+
             <div class="text-end">
                 <div class="badge bg-light text-dark border px-3 py-1 mb-2 font-monospace">Cash Hisab SoftoBro</div>
-                <div class="small text-muted">Generated: {% now "d M Y, h:i A" %}</div>
-                <div class="small text-dark fw-bold">
+                <div class="small opacity-75">Generated: {% now "d M Y, h:i A" %}</div>
+                <div class="small fw-bold mt-1">
                     Period: {% if start_date %}{{ start_date }}{% else %}Start{% endif %} to {% if end_date %}{{ end_date }}{% else %}Present{% endif %}
                 </div>
             </div>
@@ -57,18 +156,18 @@
                     <th style="width: 15%;">Ref#</th>
                     <th style="width: 22%;">Customer</th>
                     <th style="width: 12%;">Direction</th>
-                    <th class="text-end" style="width: 13%;">Invoiced</th>
-                    <th class="text-end" style="width: 13%;">Settled</th>
-                    <th class="text-end" style="width: 13%;">Due</th>
+                    <th class="text-end" style="width: 13%;">Invoiced (৳)</th>
+                    <th class="text-end" style="width: 13%;">Settled (৳)</th>
+                    <th class="text-end" style="width: 13%;">Due (৳)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for e in entries %}
                 <tr>
                     <td class="small">{{ e.date_time|date:"d M Y" }}</td>
-                    <td class="font-monospace small">{{ e.reference_number }}</td>
+                    <td class="font-monospace small fw-bold">{{ e.reference_number }}</td>
                     <td>
-                        <div class="fw-semibold">{{ e.partner.name|default:"—" }}</div>
+                        <div class="fw-semibold">{{ e.partner.name|default:"General Customer" }}</div>
                         {% if e.entry_type %}<div class="text-muted" style="font-size: 0.75rem;">{{ e.entry_type }}</div>{% endif %}
                     </td>
                     <td>
@@ -84,40 +183,434 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center py-3 text-muted">No customer entries in this period.</td>
+                    <td colspan="7" class="text-center py-4 text-muted">No customer entries in this period.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <!-- Summary Calculation Box -->
-        <div class="print-summary-box ms-auto" style="width: 320px; border: 2px solid #000; padding: 15px; border-radius: 4px;">
-            <div class="d-flex justify-content-between mb-1 small">
-                <span>Total Invoiced:</span>
-                <span class="fw-bold">৳{{ total_invoiced|floatformat:2 }}</span>
+        <!-- Summary Calculation Box & Notes -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div style="max-width: 450px;" class="small text-muted">
+                {% if customization.terms_and_conditions %}
+                <div class="fw-bold text-dark text-uppercase mb-1" style="font-size: 10px;">Terms &amp; Notes</div>
+                <div style="white-space: pre-line; font-size: 11px;">{{ customization.terms_and_conditions }}</div>
+                {% endif %}
+                {% if customization.footer_notes %}
+                <div class="mt-2 text-dark fw-bold" style="font-size: 11px;">{{ customization.footer_notes }}</div>
+                {% endif %}
             </div>
-            <div class="d-flex justify-content-between mb-1 small text-success">
-                <span>Received / Settled:</span>
-                <span class="fw-bold">+৳{{ total_settled|floatformat:2 }}</span>
-            </div>
-            <div class="d-flex justify-content-between border-top pt-2 fw-bold fs-6 text-danger">
-                <span>Outstanding / Due:</span>
-                <span>৳{{ total_outstanding|floatformat:2 }}</span>
+
+            <div class="print-summary-box" style="width: 320px; border: 2px solid #0f172a; padding: 15px; border-radius: 8px;">
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span>Total Invoiced:</span>
+                    <span class="fw-bold">৳{{ total_invoiced|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1 small text-success">
+                    <span>Received / Settled:</span>
+                    <span class="fw-bold">+৳{{ total_settled|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-content-between border-top pt-2 fw-bold fs-6 text-danger">
+                    <span>Outstanding / Due:</span>
+                    <span>৳{{ total_outstanding|floatformat:2 }}</span>
+                </div>
             </div>
         </div>
 
-        <!-- Signature Lines -->
-        <div class="print-signatures d-flex justify-content-between pt-5 mt-5">
-            <div class="print-signature-box text-center" style="width: 200px; border-top: 1px solid #000; padding-top: 5px;">
-                <div class="small fw-bold">Prepared By</div>
+        <!-- Signature Lines & Stamp -->
+        <div class="print-signatures d-flex justify-content-between align-items-end pt-4 mt-4">
+            <!-- Prepared By -->
+            <div class="text-center" style="width: 200px;">
+                <div style="border-top: 1px solid #000; padding-top: 6px;">
+                    <div class="small fw-bold">Prepared By</div>
+                    <div class="text-muted small" style="font-size: 10px;">Accounts Staff</div>
+                </div>
             </div>
-            <div class="print-signature-box text-center" style="width: 200px; border-top: 1px solid #000; padding-top: 5px;">
-                <div class="small fw-bold">Verified / Accountant</div>
+
+            <!-- Verified / Accountant -->
+            <div class="text-center" style="width: 200px;">
+                <div style="border-top: 1px solid #000; padding-top: 6px;">
+                    <div class="small fw-bold">Verified / Accountant</div>
+                    <div class="text-muted small" style="font-size: 10px;">Audit &amp; Verification</div>
+                </div>
             </div>
-            <div class="print-signature-box text-center" style="width: 200px; border-top: 1px solid #000; padding-top: 5px;">
-                <div class="small fw-bold">Proprietor / Authorized</div>
+
+            <!-- Authorized Signatory / Proprietor with Stamp & Digital Signature -->
+            <div class="text-center" style="width: 220px;">
+                {% if customization.seal_data %}
+                <img src="{{ customization.seal_data }}" alt="Seal" class="mb-1" style="max-height: 54px; max-width: 54px; object-fit: contain;">
+                {% elif customization.show_stamp %}
+                <div class="official-seal-sm">
+                    <span>OFFICIAL<br>VERIFIED</span>
+                </div>
+                {% endif %}
+
+                {% if customization.signature_data %}
+                <img src="{{ customization.signature_data }}" alt="Signature" class="signature-img-sm mb-1">
+                {% else %}
+                <div style="height: 40px;"></div>
+                {% endif %}
+
+                <div style="border-top: 1.5px solid #0f172a; padding-top: 5px;">
+                    <div class="small fw-bold">{{ customization.signatory_name|default:"Proprietor / Authorized" }}</div>
+                    <div class="text-muted small" style="font-size: 10px;">{{ customization.signatory_title|default:"Authorized Signature" }}</div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- ============================================= -->
+    <!-- CUSTOMIZATION MODAL (HEADER, CANVA, SIGNATURE) -->
+    <!-- ============================================= -->
+    <div class="modal fade no-print" id="statementCustomizeModal" tabindex="-1" aria-labelledby="statementModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom px-4 py-3 bg-light">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="rounded-circle p-2 bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-palette-fill fs-5"></i>
+                        </span>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="statementModalLabel">Statement &amp; Invoice Customization</h5>
+                            <small class="text-muted">Customize header branding, Canva banners, signature canvas &amp; stamp</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <!-- Tabs -->
+                    <ul class="nav nav-pills nav-fill mb-4 gap-2" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active rounded-pill fw-bold" data-bs-toggle="tab" data-bs-target="#stTabHeader" type="button">
+                                <i class="bi bi-card-heading me-1"></i> Header &amp; Brand
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link rounded-pill fw-bold" data-bs-toggle="tab" data-bs-target="#stTabCanva" type="button">
+                                <i class="bi bi-palette me-1"></i> Canva Design
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link rounded-pill fw-bold" data-bs-toggle="tab" data-bs-target="#stTabSign" type="button">
+                                <i class="bi bi-pen me-1"></i> Signature &amp; Stamp
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link rounded-pill fw-bold" data-bs-toggle="tab" data-bs-target="#stTabTerms" type="button">
+                                <i class="bi bi-file-text me-1"></i> Terms &amp; Notes
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Tab 1: Header -->
+                        <div class="tab-pane fade show active" id="stTabHeader">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Company / Business Name</label>
+                                    <input type="text" id="stCompanyName" class="form-control" value="{{ customization.company_name|default:business.name|default:'Cash Hisab SoftoBro' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Tagline / Subtitle</label>
+                                    <input type="text" id="stTagline" class="form-control" value="{{ customization.tagline|default:'' }}" placeholder="e.g. Retail &amp; Wholesale">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Header Theme</label>
+                                    <select id="stHeaderTheme" class="form-select">
+                                        <option value="blue" {% if customization.header_theme == 'blue' %}selected{% endif %}>Electric Blue Gradient</option>
+                                        <option value="emerald" {% if customization.header_theme == 'emerald' %}selected{% endif %}>Emerald Green Gradient</option>
+                                        <option value="purple" {% if customization.header_theme == 'purple' %}selected{% endif %}>Royal Purple Gradient</option>
+                                        <option value="crimson" {% if customization.header_theme == 'crimson' %}selected{% endif %}>Crimson Red Gradient</option>
+                                        <option value="dark" {% if customization.header_theme == 'dark' %}selected{% endif %}>Midnight Dark Theme</option>
+                                        <option value="canva" {% if customization.header_theme == 'canva' %}selected{% endif %}>Custom Canva Banner Image</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Contact Phone</label>
+                                    <input type="text" id="stPhone" class="form-control" value="{{ customization.phone|default:business.phone|default:'' }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold">Address</label>
+                                    <input type="text" id="stAddress" class="form-control" value="{{ customization.address|default:business.address|default:'' }}">
+                                </div>
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <label class="form-label small fw-bold">Business Logo</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input type="file" id="stLogoFile" accept="image/*" class="form-control form-control-sm" style="max-width: 320px;">
+                                        <button type="button" class="btn btn-outline-danger btn-sm" id="stClearLogoBtn">Remove Logo</button>
+                                    </div>
+                                    <input type="hidden" id="stLogoData" value="{{ customization.logo_image|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Canva -->
+                        <div class="tab-pane fade" id="stTabCanva">
+                            <div class="p-3 rounded-4 mb-3" style="background: linear-gradient(135deg, rgba(125, 42, 232, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%); border: 1.5px solid rgba(125, 42, 232, 0.2);">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                    <span class="fw-bold text-dark fs-6"><i class="bi bi-palette-fill me-1" style="color: #7d2ae8;"></i> Canva Design Integration</span>
+                                    <a href="https://www.canva.com/templates/?query=invoice" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3" style="background: #7d2ae8; border-color: #7d2ae8;">
+                                        Open Canva Templates ↗
+                                    </a>
+                                </div>
+                                <p class="small text-muted mb-0">Design headers in Canva, export as PNG, and upload below.</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Canva Template URL</label>
+                                <input type="url" id="stCanvaUrl" class="form-control" value="{{ customization.canva_design_url|default:'' }}" placeholder="https://www.canva.com/design/...">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Upload Header Banner Image</label>
+                                <div class="d-flex align-items-center gap-3">
+                                    <input type="file" id="stBannerFile" accept="image/*" class="form-control form-control-sm" style="max-width: 320px;">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" id="stClearBannerBtn">Remove Banner</button>
+                                </div>
+                                <input type="hidden" id="stBannerData" value="{{ customization.header_banner_image|default:'' }}">
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Signature & Stamp -->
+                        <div class="tab-pane fade" id="stTabSign">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                                        <span><i class="bi bi-pen-fill text-primary me-1"></i> Draw Signature (Canvas)</span>
+                                        <button type="button" class="btn btn-light btn-sm border py-0 px-2 text-danger" id="stClearPadBtn">Clear Pad</button>
+                                    </label>
+                                    <div class="p-2 bg-light border rounded-3 text-center" style="max-width: 440px;">
+                                        <canvas id="stSignatureCanvas" width="420" height="130" style="background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 8px; cursor: crosshair; touch-action: none; width: 100%; max-width: 420px;"></canvas>
+                                    </div>
+                                    <input type="hidden" id="stSignatureData" value="{{ customization.signature_data|default:'' }}">
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold">Or Upload Signature Image (PNG)</label>
+                                    <input type="file" id="stSignFile" accept="image/*" class="form-control form-control-sm" style="max-width: 340px;">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Signatory Name</label>
+                                    <input type="text" id="stSignatoryName" class="form-control" value="{{ customization.signatory_name|default:'Proprietor / Authorized' }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Signatory Designation</label>
+                                    <input type="text" id="stSignatoryTitle" class="form-control" value="{{ customization.signatory_title|default:'Authorized Signature' }}">
+                                </div>
+
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="stShowStamp" {% if customization.show_stamp %}checked{% endif %}>
+                                        <label class="form-check-label small fw-bold" for="stShowStamp">Show Official Seal / Stamp</label>
+                                    </div>
+                                    <label class="form-label small fw-bold">Upload Custom Stamp / Seal Image</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input type="file" id="stSealFile" accept="image/*" class="form-control form-control-sm" style="max-width: 320px;">
+                                        <button type="button" class="btn btn-outline-danger btn-sm" id="stClearSealBtn">Remove Stamp</button>
+                                    </div>
+                                    <input type="hidden" id="stSealData" value="{{ customization.seal_data|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 4: Terms & Notes -->
+                        <div class="tab-pane fade" id="stTabTerms">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Terms &amp; Conditions / Notes</label>
+                                <textarea id="stTerms" class="form-control" rows="4">{{ customization.terms_and_conditions|default:'1. Payment is due upon receipt or within agreed terms.\n2. Warranty valid only with this original statement.' }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Footer Notes / Instructions</label>
+                                <textarea id="stFooterNotes" class="form-control" rows="2">{{ customization.footer_notes|default:'Thank you for your business!' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                        <span class="small text-muted"><i class="bi bi-check2-circle text-success me-1"></i> Applies to all statements &amp; invoices for {{ business.name }}</span>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" id="stSaveBtn">
+                                <i class="bi bi-check-lg me-1"></i> Save &amp; Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    (function() {
+        const SAVE_URL = '{% url "partners:save_global_invoice_settings" %}';
+        const CSRF_TOKEN = '{{ csrf_token }}';
+
+        // Canvas Signature Pad
+        const canvas = document.getElementById('stSignatureCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let hasDrawn = false;
+
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const pos = getCoords(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getCoords(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            hasDrawn = true;
+            e.preventDefault();
+        }
+
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                if (hasDrawn) {
+                    document.getElementById('stSignatureData').value = canvas.toDataURL('image/png');
+                }
+            }
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        window.addEventListener('touchend', stopDrawing);
+
+        document.getElementById('stClearPadBtn').addEventListener('click', function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hasDrawn = false;
+            document.getElementById('stSignatureData').value = '';
+        });
+
+        // File Readers
+        function bindFile(inputEl, hiddenId) {
+            inputEl.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById(hiddenId).value = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        bindFile(document.getElementById('stLogoFile'), 'stLogoData');
+        bindFile(document.getElementById('stBannerFile'), 'stBannerData');
+        bindFile(document.getElementById('stSealFile'), 'stSealData');
+
+        document.getElementById('stSignFile').addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('stSignatureData').value = e.target.result;
+                    const img = new Image();
+                    img.onload = function() {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 10, 10, canvas.width - 20, canvas.height - 20);
+                        hasDrawn = true;
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('stClearLogoBtn').addEventListener('click', () => {
+            document.getElementById('stLogoData').value = '';
+            document.getElementById('stLogoFile').value = '';
+        });
+        document.getElementById('stClearBannerBtn').addEventListener('click', () => {
+            document.getElementById('stBannerData').value = '';
+            document.getElementById('stBannerFile').value = '';
+        });
+        document.getElementById('stClearSealBtn').addEventListener('click', () => {
+            document.getElementById('stSealData').value = '';
+            document.getElementById('stSealFile').value = '';
+        });
+
+        // Save
+        const saveBtn = document.getElementById('stSaveBtn');
+        saveBtn.addEventListener('click', async function() {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving…';
+
+            const payload = {
+                business_id: '{{ business.id }}',
+                company_name: document.getElementById('stCompanyName').value,
+                tagline: document.getElementById('stTagline').value,
+                phone: document.getElementById('stPhone').value,
+                address: document.getElementById('stAddress').value,
+                header_theme: document.getElementById('stHeaderTheme').value,
+                canva_design_url: document.getElementById('stCanvaUrl').value,
+                logo_image: document.getElementById('stLogoData').value,
+                header_banner_image: document.getElementById('stBannerData').value,
+                signature_data: document.getElementById('stSignatureData').value,
+                signatory_name: document.getElementById('stSignatoryName').value,
+                signatory_title: document.getElementById('stSignatoryTitle').value,
+                seal_data: document.getElementById('stSealData').value,
+                show_stamp: document.getElementById('stShowStamp').checked,
+                terms_and_conditions: document.getElementById('stTerms').value,
+                footer_notes: document.getElementById('stFooterNotes').value,
+            };
+
+            try {
+                const resp = await fetch(SAVE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': CSRF_TOKEN,
+                    },
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+                if (resp.ok && data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to save settings.'));
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save &amp; Apply';
+                }
+            } catch (e) {
+                alert('Network error. Please try again.');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save &amp; Apply';
+            }
+        });
+    })();
+    </script>
+
 </body>
 </html>
