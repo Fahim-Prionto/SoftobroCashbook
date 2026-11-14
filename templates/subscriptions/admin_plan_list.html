@@ -4,6 +4,22 @@
 {% block page_title %}Subscription Plan Catalog{% endblock %}
 
 {% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="alert alert-light border shadow-sm py-2 px-3 d-flex align-items-center justify-content-between mb-0">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-shield-check text-primary fs-4 me-2"></i>
+                <div class="small">
+                    <strong>Website Visibility Controller:</strong> Toggle any subscription <strong>ON</strong> to make it active and visible on your public website and signup page. Toggle <strong>OFF</strong> to instantly hide it from customers.
+                </div>
+            </div>
+            <div id="ajaxLiveToast" class="small fw-semibold text-success d-none">
+                <i class="bi bi-check2-circle me-1"></i> <span id="toastMsg">Updated</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card-scb">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="bi bi-card-checklist text-primary me-2"></i> Configured Plans</span>
@@ -13,7 +29,7 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-scb">
+            <table class="table table-scb align-middle">
                 <thead>
                     <tr>
                         <th>Plan Name</th>
@@ -23,13 +39,13 @@
                         <th>Businesses</th>
                         <th>Cashbooks</th>
                         <th>Transactions</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th style="min-width: 170px;">Website Status (ON / OFF)</th>
+                        <th style="min-width: 180px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for p in plans %}
-                    <tr>
+                    <tr id="planRow-{{ p.id }}">
                         <td>
                             <div class="fw-bold text-dark">{{ p.name }}</div>
                             <div class="small text-muted font-monospace">{{ p.slug }}</div>
@@ -41,21 +57,55 @@
                         <td>{{ p.max_cashbooks_per_business }}</td>
                         <td>{% if p.max_transactions == 0 %}Unlimited{% else %}{{ p.max_transactions }}{% endif %}</td>
                         <td>
-                            {% if p.is_active %}
-                            <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
-                            {% else %}
-                            <span class="badge bg-secondary">Inactive</span>
-                            {% endif %}
+                            <!-- ON / OFF Interactive Toggle Switch -->
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="form-check form-switch m-0 p-0" style="min-height: auto;">
+                                    <input class="form-check-input plan-status-switch ms-0" 
+                                           type="checkbox" 
+                                           role="switch" 
+                                           id="planSwitch-{{ p.id }}" 
+                                           data-plan-id="{{ p.id }}" 
+                                           data-plan-name="{{ p.name }}"
+                                           data-toggle-url="{% url 'subscriptions:admin_plan_toggle' p.id %}"
+                                           {% if p.is_active %}checked{% endif %}
+                                           style="width: 2.85rem; height: 1.45rem; cursor: pointer;">
+                                </div>
+                                <div>
+                                    <div id="statusBadge-{{ p.id }}">
+                                        {% if p.is_active %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-eye-fill"></i> ON &bull; Visible
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-eye-slash-fill"></i> OFF &bull; Hidden
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-muted" style="font-size: 0.72rem;" id="visibilityHint-{{ p.id }}">
+                                        {% if p.is_active %}Showing on website{% else %}Hidden from website{% endif %}
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                         <td>
-                            <div class="d-flex gap-2">
-                                <a href="{% url 'subscriptions:admin_plan_edit' p.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                            <div class="d-flex gap-2 align-items-center">
+                                <!-- Explicit ON / OFF Action Button -->
+                                <button type="button" 
+                                        class="btn btn-sm plan-toggle-btn {% if p.is_active %}btn-outline-danger{% else %}btn-success text-white{% endif %}" 
+                                        id="toggleBtn-{{ p.id }}"
+                                        data-plan-id="{{ p.id }}" 
+                                        data-plan-name="{{ p.name }}"
+                                        data-toggle-url="{% url 'subscriptions:admin_plan_toggle' p.id %}"
+                                        title="{% if p.is_active %}Click to turn OFF (Hide from website){% else %}Click to turn ON (Show on website){% endif %}">
+                                    <i class="bi {% if p.is_active %}bi-toggle2-on{% else %}bi-toggle2-off{% endif %} me-1" id="toggleIcon-{{ p.id }}"></i>
+                                    <span id="toggleText-{{ p.id }}">{% if p.is_active %}Turn OFF{% else %}Turn ON{% endif %}</span>
+                                </button>
+
+                                <a href="{% url 'subscriptions:admin_plan_edit' p.id %}" class="btn btn-sm btn-outline-primary" title="Edit Plan Details">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="{% url 'subscriptions:admin_plan_toggle' p.id %}" class="btn btn-sm {% if p.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}" title="Toggle Active">
-                                    <i class="bi {% if p.is_active %}bi-pause{% else %}bi-play{% endif %}"></i>
-                                </a>
-                                <a href="{% url 'subscriptions:admin_plan_delete' p.id %}" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Delete plan {{ p.name }}?');">
+                                <a href="{% url 'subscriptions:admin_plan_delete' p.id %}" class="btn btn-sm btn-outline-danger" title="Delete Plan" onclick="return confirm('Delete plan {{ p.name }}?');">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </div>
@@ -71,5 +121,134 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
+<!-- CSRF Token for AJAX -->
+<form id="csrfForm" style="display:none;">
+    {% csrf_token %}
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('#csrfForm [name=csrfmiddlewaretoken]')?.value || '';
+    const toast = document.getElementById('ajaxLiveToast');
+    const toastMsg = document.getElementById('toastMsg');
+    let toastTimeout = null;
+
+    function showToast(msg, isSuccess = true) {
+        if (!toast || !toastMsg) return;
+        toastMsg.textContent = msg;
+        toast.className = isSuccess 
+            ? 'small fw-semibold text-success d-inline-flex align-items-center' 
+            : 'small fw-semibold text-danger d-inline-flex align-items-center';
+        toast.classList.remove('d-none');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.add('d-none');
+        }, 4000);
+    }
+
+    function updatePlanUI(planId, isActive) {
+        const switchEl = document.getElementById(`planSwitch-${planId}`);
+        const badgeEl = document.getElementById(`statusBadge-${planId}`);
+        const hintEl = document.getElementById(`visibilityHint-${planId}`);
+        const btnEl = document.getElementById(`toggleBtn-${planId}`);
+        const iconEl = document.getElementById(`toggleIcon-${planId}`);
+        const textEl = document.getElementById(`toggleText-${planId}`);
+
+        if (switchEl) {
+            switchEl.checked = isActive;
+        }
+
+        if (badgeEl) {
+            if (isActive) {
+                badgeEl.innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1"><i class="bi bi-eye-fill"></i> ON &bull; Visible</span>`;
+            } else {
+                badgeEl.innerHTML = `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle d-inline-flex align-items-center gap-1"><i class="bi bi-eye-slash-fill"></i> OFF &bull; Hidden</span>`;
+            }
+        }
+
+        if (hintEl) {
+            hintEl.textContent = isActive ? 'Showing on website' : 'Hidden from website';
+        }
+
+        if (btnEl && iconEl && textEl) {
+            if (isActive) {
+                btnEl.className = 'btn btn-sm plan-toggle-btn btn-outline-danger';
+                btnEl.title = 'Click to turn OFF (Hide from website)';
+                iconEl.className = 'bi bi-toggle2-on me-1';
+                textEl.textContent = 'Turn OFF';
+            } else {
+                btnEl.className = 'btn btn-sm plan-toggle-btn btn-success text-white';
+                btnEl.title = 'Click to turn ON (Show on website)';
+                iconEl.className = 'bi bi-toggle2-off me-1';
+                textEl.textContent = 'Turn ON';
+            }
+        }
+    }
+
+    async function togglePlanStatus(planId, planName, toggleUrl) {
+        const switchEl = document.getElementById(`planSwitch-${planId}`);
+        const btnEl = document.getElementById(`toggleBtn-${planId}`);
+
+        if (switchEl) switchEl.disabled = true;
+        if (btnEl) btnEl.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrfToken);
+
+            const response = await fetch(toggleUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                updatePlanUI(planId, data.is_active);
+                showToast(data.message || `Plan '${planName}' updated successfully!`, true);
+            } else {
+                showToast(`Failed to update '${planName}'`, false);
+                if (switchEl) switchEl.checked = !switchEl.checked;
+            }
+        } catch (err) {
+            console.error('Error toggling plan:', err);
+            showToast(`Error updating plan: ${err.message}`, false);
+            if (switchEl) switchEl.checked = !switchEl.checked;
+        } finally {
+            if (switchEl) switchEl.disabled = false;
+            if (btnEl) btnEl.disabled = false;
+        }
+    }
+
+    // Bind event listeners to all switches
+    document.querySelectorAll('.plan-status-switch').forEach(sw => {
+        sw.addEventListener('change', function(e) {
+            const planId = this.dataset.planId;
+            const planName = this.dataset.planName;
+            const toggleUrl = this.dataset.toggleUrl;
+            togglePlanStatus(planId, planName, toggleUrl);
+        });
+    });
+
+    // Bind event listeners to all toggle buttons
+    document.querySelectorAll('.plan-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const planId = this.dataset.planId;
+            const planName = this.dataset.planName;
+            const toggleUrl = this.dataset.toggleUrl;
+            togglePlanStatus(planId, planName, toggleUrl);
+        });
+    });
+});
+</script>
+{% endblock %}

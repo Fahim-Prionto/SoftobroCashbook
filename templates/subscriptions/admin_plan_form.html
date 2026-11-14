@@ -59,17 +59,31 @@
                             <div class="form-text small">Enter bullet points, one line per feature.</div>
                         </div>
 
-                        <div class="col-md-6 form-check ms-3 mt-3">
-                            {{ form.is_active }}
-                            <label class="form-check-label fw-semibold small" for="{{ form.is_active.id_for_label }}">
-                                Plan is Active & Available for Registration
-                            </label>
+                        <div class="col-md-6 mt-3">
+                            <div class="card bg-light border p-3">
+                                <div class="form-check form-switch m-0">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label fw-bold text-dark small ms-2" for="{{ form.is_active.id_for_label }}">
+                                        Website Visibility: ON / OFF
+                                    </label>
+                                </div>
+                                <div class="text-muted small mt-1 ms-4 ps-1">
+                                    When ON, this plan is displayed on your website pricing and registration pages. When OFF, it is hidden from the public.
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-5 form-check ms-3 mt-3">
-                            {{ form.is_popular }}
-                            <label class="form-check-label fw-semibold small" for="{{ form.is_popular.id_for_label }}">
-                                Highlight as "Popular / Recommended"
-                            </label>
+                        <div class="col-md-6 mt-3">
+                            <div class="card bg-light border p-3">
+                                <div class="form-check form-switch m-0">
+                                    {{ form.is_popular }}
+                                    <label class="form-check-label fw-bold text-dark small ms-2" for="{{ form.is_popular.id_for_label }}">
+                                        Featured / Popular Badge
+                                    </label>
+                                </div>
+                                <div class="text-muted small mt-1 ms-4 ps-1">
+                                    Highlights this package as "Most Popular" or "Recommended" with visual emphasis.
+                                </div>
+                            </div>
                         </div>
                     </div>
 
