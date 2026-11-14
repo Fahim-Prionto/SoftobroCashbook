@@ -1,12 +1,12 @@
 {% extends 'base_dashboard.html' %}
 {% load currency_tags %}
-{% block title %}All Cashbooks - {{ SITE_NAME }}{% endblock %}
-{% block page_title %}Cashbook Ledgers{% endblock %}
+{% block title %}All Books - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Books{% endblock %}
 
 {% block content %}
 <div class="card-scb">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <span class="fw-bold"><i class="bi bi-journal-bookmark-fill text-primary me-2"></i> All Cashbooks</span>
+        <span class="fw-bold"><i class="bi bi-journal-bookmark-fill text-primary me-2"></i> All Books</span>
 
         <form method="get" class="d-flex gap-2">
             <select name="business" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 200px;">
@@ -26,12 +26,12 @@
             <table class="table table-scb">
                 <thead>
                     <tr>
-                        <th>Cashbook Name</th>
+                        <th>Book Name</th>
                         <th>Business Entity</th>
-                        <th>Opening Balance</th>
-                        <th>Total Cash-In</th>
-                        <th>Total Cash-Out</th>
-                        <th>Current Balance</th>
+                        <th class="text-end">Total Invoiced</th>
+                        <th class="text-end">Received / Settled</th>
+                        <th class="text-end">Outstanding Due</th>
+                        <th class="text-center">Entries</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -48,10 +48,14 @@
                                 {{ cb.obj.business.name }}
                             </a>
                         </td>
-                        <td>{{ cb.obj.opening_balance|bdt }}</td>
-                        <td class="fw-bold text-success">{{ cb.total_in|bdt }}</td>
-                        <td class="fw-bold text-danger">{{ cb.total_out|bdt }}</td>
-                        <td class="fw-bold fs-6 text-primary">{{ cb.balance|bdt }}</td>
+                        <td class="text-end fw-bold text-dark">{{ cb.total_invoiced|bdt }}</td>
+                        <td class="text-end fw-bold text-success">{{ cb.total_settled|bdt }}</td>
+                        <td class="text-end fw-bold {% if cb.total_outstanding > 0 %}text-danger{% else %}text-muted{% endif %}">
+                            {{ cb.total_outstanding|bdt }}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark border">{{ cb.entries_count }}</span>
+                        </td>
                         <td>
                             {% if cb.obj.status == 'ACTIVE' %}
                             <span class="badge bg-success-subtle text-success">Active</span>
@@ -61,7 +65,7 @@
                         </td>
                         <td>
                             <div class="d-flex gap-2">
-                                <a href="{% url 'cashbooks:cashbook_detail' cb.obj.id %}" class="btn btn-sm btn-primary" title="Open Transactions Ledger">
+                                <a href="{% url 'cashbooks:cashbook_detail' cb.obj.id %}" class="btn btn-sm btn-primary" title="Open Customer Ledger">
                                     <i class="bi bi-journal-text me-1"></i> Ledger
                                 </a>
                                 <a href="{% url 'cashbooks:cashbook_print' cb.obj.id %}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print Statement">
@@ -75,7 +79,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">No cashbooks found. Select a business and click "Add Cashbook".</td>
+                        <td colspan="8" class="text-center py-4 text-muted">No books found. Select a business and click "Add Book".</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -84,4 +88,3 @@
     </div>
 </div>
 {% endblock %}
-

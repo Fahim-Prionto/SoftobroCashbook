@@ -53,7 +53,7 @@ def register_view(request):
             except Exception as e:
                 logger.error(f"Error during registration auto-login: {e}", exc_info=True)
 
-            messages.success(request, f"Welcome to SoftobroCashBook! Please complete your bKash payment for the {plan.name}.")
+            messages.success(request, f"Welcome to Cash Hisab SoftoBro! Please complete your bKash payment for the {plan.name}.")
             return redirect('payments:submit_payment')
     else:
         initial_data = {}

@@ -192,7 +192,7 @@ BKASH_INSTRUCTIONS = os.getenv(
 )
 
 # Site parameters
-SITE_NAME = os.getenv('SITE_NAME', 'SoftobroCashBook')
+SITE_NAME = os.getenv('SITE_NAME', 'Cash Hisab SoftoBro')
 SUPPORT_EMAIL = os.getenv('SUPPORT_EMAIL', 'support@softobrocashbook.com')
 SUPPORT_PHONE = os.getenv('SUPPORT_PHONE', '+880 1700-000000')
 CURRENCY_SYMBOL = '\u09f3'  # Bengali Taka symbol ৳

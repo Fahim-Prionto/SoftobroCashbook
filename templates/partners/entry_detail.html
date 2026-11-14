@@ -57,25 +57,25 @@
                         <select id="fBusiness" class="form-select">
                             <option value="">— Select Business —</option>
                             {% for b in businesses %}
-                            <option value="{{ b.pk }}" {% if entry and entry.business_id == b.pk %}selected{% endif %}>{{ b.name }}</option>
+                            <option value="{{ b.pk }}" {% if entry and entry.business_id == b.pk %}selected{% elif initial_business == b.pk %}selected{% endif %}>{{ b.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-sm-6">
-                        <label class="form-label small fw-semibold">Cashbook</label>
+                        <label class="form-label small fw-semibold">Book</label>
                         <select id="fCashbook" class="form-select">
                             <option value="">— Optional —</option>
                             {% for cb in cashbooks %}
-                            <option value="{{ cb.pk }}" {% if entry and entry.cashbook_id == cb.pk %}selected{% endif %}>{{ cb.name }}</option>
+                            <option value="{{ cb.pk }}" {% if entry and entry.cashbook_id == cb.pk %}selected{% elif initial_cashbook == cb.pk %}selected{% endif %}>{{ cb.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-sm-6">
-                        <label class="form-label small fw-semibold">Partner</label>
+                        <label class="form-label small fw-semibold">Customer</label>
                         <select id="fPartner" class="form-select">
                             <option value="">— Optional —</option>
                             {% for p in partners %}
-                            <option value="{{ p.pk }}" {% if entry and entry.partner_id == p.pk %}selected{% endif %}>{{ p.name }}</option>
+                            <option value="{{ p.pk }}" {% if entry and entry.partner_id == p.pk %}selected{% elif initial_partner == p.pk %}selected{% endif %}>{{ p.name }}</option>
                             {% endfor %}
                         </select>
                     </div>

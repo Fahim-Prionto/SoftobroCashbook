@@ -1,12 +1,12 @@
 {% extends "base_dashboard.html" %}
-{% block title %}Remove Partner{% endblock %}
+{% block title %}Remove Customer - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center mb-4 gap-3">
     <a href="{% url 'partners:partner_list' %}" class="btn btn-sm btn-outline-secondary">
         <i class="bi bi-arrow-left"></i>
     </a>
-    <h4 class="fw-bold mb-0">Remove Partner</h4>
+    <h4 class="fw-bold mb-0">Remove Customer</h4>
 </div>
 
 <div class="card shadow-sm border-0 rounded-3 border-danger" style="max-width: 540px;">
@@ -14,7 +14,7 @@
         <i class="bi bi-exclamation-triangle-fill text-danger fs-1 mb-3 d-block"></i>
         <h5 class="fw-bold">Remove "{{ partner.name }}"?</h5>
         <p class="text-muted mb-4">
-            This partner will be deactivated. All existing ledger entries will remain intact.<br>
+            This customer will be deactivated. All existing ledger entries will remain intact.<br>
             You can re-activate them later from the Django admin.
         </p>
         <form method="post">

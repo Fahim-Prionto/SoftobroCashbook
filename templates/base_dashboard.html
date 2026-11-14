@@ -314,7 +314,7 @@
         <aside class="app-sidebar" id="appSidebar">
             <a href="{% url 'core:dashboard_redirect' %}" class="sidebar-brand">
                 <i class="bi bi-wallet2 text-info me-2 fs-4"></i>
-                <span>Softobro</span>CashBook
+                <span>Cash Hisab</span>&nbsp;SoftoBro
             </a>
 
             <div class="sidebar-menu">
@@ -358,7 +358,7 @@
                     </div>
                 {% else %}
                     <!-- Service Admin Menu -->
-                    <div class="sidebar-header">Cashbook Ledger</div>
+                    <div class="sidebar-header">Cash Hisab &amp; Books</div>
                     <div class="sidebar-nav-item">
                         <a href="{% url 'core:serviceadmin_dashboard' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'serviceadmin_dashboard' %}active{% endif %}">
                             <i class="bi bi-grid-fill"></i> Dashboard
@@ -371,24 +371,24 @@
                     </div>
                     <div class="sidebar-nav-item">
                         <a href="{% url 'cashbooks:cashbook_list' %}" class="sidebar-nav-link {% if 'cashbooks' in request.path %}active{% endif %}">
-                            <i class="bi bi-journal-bookmark-fill"></i> Cashbooks
+                            <i class="bi bi-journal-bookmark-fill"></i> Books
                         </a>
                     </div>
                     <div class="sidebar-nav-item">
                         <a href="{% url 'reports:report_dashboard' %}" class="sidebar-nav-link {% if 'reports' in request.path %}active{% endif %}">
-                            <i class="bi bi-file-earmark-bar-graph-fill"></i> Reports & Statements
+                            <i class="bi bi-file-earmark-bar-graph-fill"></i> Reports &amp; Statements
                         </a>
                     </div>
 
-                    <div class="sidebar-header mt-3">Partners &amp; Ledger</div>
+                    <div class="sidebar-header mt-3">Customers &amp; Ledger</div>
                     <div class="sidebar-nav-item">
                         <a href="{% url 'partners:partner_list' %}" class="sidebar-nav-link {% if 'partners' in request.path and 'ledger' not in request.path %}active{% endif %}">
-                            <i class="bi bi-people-fill"></i> Partners
+                            <i class="bi bi-people-fill"></i> Customers
                         </a>
                     </div>
                     <div class="sidebar-nav-item">
                         <a href="{% url 'partners:ledger_list' %}" class="sidebar-nav-link {% if 'ledger' in request.path %}active{% endif %}">
-                            <i class="bi bi-journal-richtext"></i> Ledger
+                            <i class="bi bi-journal-richtext"></i> Customer Ledger
                         </a>
                     </div>
 

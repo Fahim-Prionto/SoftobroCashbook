@@ -24,13 +24,23 @@ def cashbook_list_view(request):
 
     businesses = Business.objects.all()
 
+    from partners.models import PartnerEntry
+    from django.db.models import Sum as DjSum
+
     cashbook_data = []
     for cb in cashbooks:
+        p_agg = PartnerEntry.objects.filter(cashbook_id=cb.id).aggregate(
+            tot=DjSum('total_amount'),
+            setl=DjSum('settled_amount')
+        )
+        t_inv = p_agg['tot'] or Decimal('0.00')
+        t_setl = p_agg['setl'] or Decimal('0.00')
         cashbook_data.append({
             'obj': cb,
-            'total_in': cb.get_total_cash_in(),
-            'total_out': cb.get_total_cash_out(),
-            'balance': cb.get_current_balance(),
+            'total_invoiced': t_inv,
+            'total_settled': t_setl,
+            'total_outstanding': t_inv - t_setl,
+            'entries_count': PartnerEntry.objects.filter(cashbook_id=cb.id).count(),
         })
 
     return render(request, 'cashbooks/cashbook_list.html', {
@@ -49,7 +59,7 @@ def cashbook_create_view(request, business_id):
 
     current_cashbooks = business.cashbooks.count()
     if subscription and not subscription.can_create_cashbook(current_cashbooks):
-        messages.error(request, f"You have reached your limit of {subscription.plan.max_cashbooks_per_business} cashbooks for this business.")
+        messages.error(request, f"You have reached your limit of {subscription.plan.max_cashbooks_per_business} books for this business.")
         return redirect('businesses:business_detail', business_id=business.id)
 
     if request.method == 'POST':
@@ -58,7 +68,7 @@ def cashbook_create_view(request, business_id):
             cb = form.save(commit=False)
             cb.business = business
             cb.save()
-            messages.success(request, f"Cashbook '{cb.name}' created successfully.")
+            messages.success(request, f"Book '{cb.name}' created successfully.")
             return redirect('cashbooks:cashbook_detail', cashbook_id=cb.id)
     else:
         form = CashbookForm()
@@ -66,7 +76,7 @@ def cashbook_create_view(request, business_id):
     return render(request, 'cashbooks/cashbook_form.html', {
         'form': form,
         'business': business,
-        'title': f"Add Cashbook to {business.name}",
+        'title': f"Add Book to {business.name}",
     })
 
 
@@ -75,74 +85,80 @@ def cashbook_create_view(request, business_id):
 def cashbook_detail_view(request, cashbook_id):
     cb = get_object_or_404(Cashbook.objects.select_related('business'), id=cashbook_id)
 
+    from partners.models import Partner, PartnerEntry
+    from django.db.models import Sum as DjSum, Q
+
+    entries = PartnerEntry.objects.filter(cashbook_id=cb.id).select_related('partner').prefetch_related('lines', 'receipts').order_by('-date_time')
+
     # Filtering parameters
-    trans_type = request.GET.get('type')
-    category = request.GET.get('category')
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    direction = request.GET.get('direction', '')
+    payment_status = request.GET.get('payment_status', '')
+    partner_id = request.GET.get('partner', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
     search_q = request.GET.get('q', '').strip()
 
-    transactions = cb.transactions.all()
-
-    if trans_type:
-        transactions = transactions.filter(transaction_type=trans_type)
-    if category:
-        transactions = transactions.filter(category=category)
+    if direction:
+        entries = entries.filter(direction=direction)
+    if payment_status:
+        entries = entries.filter(payment_status=payment_status)
+    if partner_id:
+        entries = entries.filter(partner_id=partner_id)
     if start_date:
-        transactions = transactions.filter(date__gte=start_date)
+        entries = entries.filter(date_time__date__gte=start_date)
     if end_date:
-        transactions = transactions.filter(date__lte=end_date)
+        entries = entries.filter(date_time__date__lte=end_date)
     if search_q:
-        transactions = transactions.filter(
-            Q(description__icontains=search_q) |
+        entries = entries.filter(
             Q(reference_number__icontains=search_q) |
-            Q(category__icontains=search_q)
+            Q(remarks__icontains=search_q) |
+            Q(partner__name__icontains=search_q) |
+            Q(entry_type__icontains=search_q)
         )
 
-    # Categories for filter dropdown
-    available_categories = cb.transactions.values_list('category', flat=True).distinct()
-
-    # Dynamic totals based on current filters
-    filter_in = transactions.filter(transaction_type=TransactionType.CASH_IN).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-    filter_out = transactions.filter(transaction_type=TransactionType.CASH_OUT).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-
-    # Overall cashbook totals
-    overall_in = cb.get_total_cash_in()
-    overall_out = cb.get_total_cash_out()
-    overall_balance = cb.get_current_balance()
-
-    from partners.models import PartnerEntry
-    from django.db.models import Sum as DjSum2
-    _cb_pb_agg = PartnerEntry.objects.filter(cashbook_id=cb.id).aggregate(
-        total=DjSum2('total_amount'), settled=DjSum2('settled_amount')
+    # Aggregates for this book (overall)
+    all_entries = PartnerEntry.objects.filter(cashbook_id=cb.id)
+    overall_agg = all_entries.aggregate(
+        tot=DjSum('total_amount'),
+        setl=DjSum('settled_amount')
     )
-    partner_total = _cb_pb_agg['total'] or Decimal('0.00')
-    partner_settled = _cb_pb_agg['settled'] or Decimal('0.00')
-    partner_outstanding = partner_total - partner_settled
-    recent_partner_entries = PartnerEntry.objects.filter(
-        cashbook_id=cb.id
-    ).select_related('partner').order_by('-date_time')[:5]
+    total_invoiced = overall_agg['tot'] or Decimal('0.00')
+    total_settled = overall_agg['setl'] or Decimal('0.00')
+    total_outstanding = total_invoiced - total_settled
+
+    # Filtered aggregates
+    filtered_agg = entries.aggregate(
+        tot=DjSum('total_amount'),
+        setl=DjSum('settled_amount')
+    )
+    filter_invoiced = filtered_agg['tot'] or Decimal('0.00')
+    filter_settled = filtered_agg['setl'] or Decimal('0.00')
+    filter_outstanding = filter_invoiced - filter_settled
+
+    partners = Partner.objects.filter(is_active=True).order_by('name')
 
     return render(request, 'cashbooks/cashbook_detail.html', {
         'cashbook': cb,
-        'transactions': transactions,
-        'available_categories': available_categories,
-        'filter_in': filter_in,
-        'filter_out': filter_out,
-        'overall_in': overall_in,
-        'overall_out': overall_out,
-        'overall_balance': overall_balance,
-        'partner_total': partner_total,
-        'partner_settled': partner_settled,
-        'partner_outstanding': partner_outstanding,
-        'recent_partner_entries': recent_partner_entries,
+        'entries': entries,
+        'partners': partners,
+        'total_invoiced': total_invoiced,
+        'total_settled': total_settled,
+        'total_outstanding': total_outstanding,
+        'filter_invoiced': filter_invoiced,
+        'filter_settled': filter_settled,
+        'filter_outstanding': filter_outstanding,
+        'entries_count': entries.count(),
+        'all_entries_count': all_entries.count(),
         'params': {
-            'type': trans_type,
-            'category': category,
+            'direction': direction,
+            'payment_status': payment_status,
+            'partner': partner_id,
             'start_date': start_date,
             'end_date': end_date,
             'q': search_q,
-        }
+        },
+        'filter_directions': [('', 'All Directions'), ('CASH_IN', 'Cash In'), ('CASH_OUT', 'Cash Out')],
+        'filter_payment_statuses': [('', 'All Statuses'), ('PAID', 'Paid'), ('PARTIAL', 'Partial'), ('UNPAID', 'Unpaid')],
     })
 
 
@@ -154,7 +170,7 @@ def cashbook_edit_view(request, cashbook_id):
         form = CashbookForm(request.POST, instance=cb)
         if form.is_valid():
             form.save()
-            messages.success(request, f"Cashbook '{cb.name}' updated successfully.")
+            messages.success(request, f"Book '{cb.name}' updated successfully.")
             return redirect('cashbooks:cashbook_detail', cashbook_id=cb.id)
     else:
         form = CashbookForm(instance=cb)
@@ -163,7 +179,7 @@ def cashbook_edit_view(request, cashbook_id):
         'form': form,
         'business': cb.business,
         'cashbook': cb,
-        'title': f"Edit Cashbook: {cb.name}",
+        'title': f"Edit Book: {cb.name}",
     })
 
 
@@ -175,7 +191,7 @@ def cashbook_delete_view(request, cashbook_id):
     if request.method == 'POST':
         name = cb.name
         cb.delete()
-        messages.success(request, f"Cashbook '{name}' and its transactions have been deleted.")
+        messages.success(request, f"Book '{name}' has been deleted.")
         return redirect('businesses:business_detail', business_id=biz_id)
 
     return render(request, 'cashbooks/cashbook_confirm_delete.html', {'cashbook': cb})
@@ -186,28 +202,30 @@ def cashbook_delete_view(request, cashbook_id):
 def cashbook_print_view(request, cashbook_id):
     cb = get_object_or_404(Cashbook.objects.select_related('business'), id=cashbook_id)
 
+    from partners.models import PartnerEntry
+    from django.db.models import Sum as DjSum
+
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
 
-    transactions = cb.transactions.all().order_by('date', 'created_at')
+    entries = PartnerEntry.objects.filter(cashbook_id=cb.id).select_related('partner').prefetch_related('lines').order_by('date_time')
     if start_date:
-        transactions = transactions.filter(date__gte=start_date)
+        entries = entries.filter(date_time__date__gte=start_date)
     if end_date:
-        transactions = transactions.filter(date__lte=end_date)
+        entries = entries.filter(date_time__date__lte=end_date)
 
-    total_in = transactions.filter(transaction_type=TransactionType.CASH_IN).aggregate(t=Sum('amount'))['t'] or Decimal('0.00')
-    total_out = transactions.filter(transaction_type=TransactionType.CASH_OUT).aggregate(t=Sum('amount'))['t'] or Decimal('0.00')
-    net_period = total_in - total_out
-    closing_balance = cb.opening_balance + total_in - total_out
+    agg = entries.aggregate(tot=DjSum('total_amount'), setl=DjSum('settled_amount'))
+    total_invoiced = agg['tot'] or Decimal('0.00')
+    total_settled = agg['setl'] or Decimal('0.00')
+    total_outstanding = total_invoiced - total_settled
 
     return render(request, 'cashbooks/cashbook_print.html', {
         'cashbook': cb,
         'business': cb.business,
-        'transactions': transactions,
+        'entries': entries,
         'start_date': start_date,
         'end_date': end_date,
-        'total_in': total_in,
-        'total_out': total_out,
-        'net_period': net_period,
-        'closing_balance': closing_balance,
+        'total_invoiced': total_invoiced,
+        'total_settled': total_settled,
+        'total_outstanding': total_outstanding,
     })

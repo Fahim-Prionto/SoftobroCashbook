@@ -288,81 +288,88 @@ def admin_service_admin_delete_view(request, user_id):
 def serviceadmin_dashboard_view(request):
     from businesses.models import Business
     from cashbooks.models import Cashbook
-    from transactions.models import Transaction, TransactionType
+    from partners.models import Partner, PartnerEntry, PartnerReceipt
 
     businesses = Business.objects.all()
     cashbooks = Cashbook.objects.select_related('business').all()
 
     total_businesses = businesses.count()
-    total_cashbooks = cashbooks.count()
+    total_books = cashbooks.count()
+    total_customers = Partner.objects.filter(is_active=True).count()
 
-    # Financial sums
-    total_cash_in = Transaction.objects.filter(
-        transaction_type=TransactionType.CASH_IN
-    ).aggregate(t=Sum('amount'))['t'] or Decimal('0.00')
-
-    total_cash_out = Transaction.objects.filter(
-        transaction_type=TransactionType.CASH_OUT
-    ).aggregate(t=Sum('amount'))['t'] or Decimal('0.00')
-
-    total_opening = sum((b.opening_balance for b in businesses), Decimal('0.00')) + sum((cb.opening_balance for cb in cashbooks), Decimal('0.00'))
-    current_net_balance = total_opening + total_cash_in - total_cash_out
-
-    # Recent transactions
-    recent_transactions = Transaction.objects.select_related('cashbook__business').order_by('-date', '-created_at')[:8]
-
-    from partners.models import PartnerEntry
+    # Customer aggregates
     _p_agg = PartnerEntry.objects.aggregate(
         total=Sum('total_amount'), settled=Sum('settled_amount')
     )
-    partner_total_amount = _p_agg['total'] or Decimal('0.00')
-    partner_total_settled = _p_agg['settled'] or Decimal('0.00')
-    partner_total_outstanding = partner_total_amount - partner_total_settled
-    recent_partner_entries = PartnerEntry.objects.select_related('partner').order_by('-date_time')[:5]
+    customer_total_invoiced = _p_agg['total'] or Decimal('0.00')
+    customer_total_received = _p_agg['settled'] or Decimal('0.00')
+    customer_total_outstanding = customer_total_invoiced - customer_total_received
 
-    # Chart data for last 6 months
+    paid_entries_count = PartnerEntry.objects.filter(payment_status='PAID').count()
+    partial_entries_count = PartnerEntry.objects.filter(payment_status='PARTIAL').count()
+    unpaid_entries_count = PartnerEntry.objects.filter(payment_status='UNPAID').count()
+    total_entries_count = PartnerEntry.objects.count()
+
+    # Recent customer entries across all books
+    recent_customer_entries = PartnerEntry.objects.select_related('partner').prefetch_related('lines').order_by('-date_time')[:10]
+
+    # Top due customers
+    top_due_customers = []
+    active_partners = Partner.objects.filter(is_active=True)
+    for p in active_partners:
+        due = p.get_outstanding()
+        if due > 0:
+            top_due_customers.append({
+                'partner': p,
+                'total': p.get_total_amount(),
+                'received': p.get_total_received(),
+                'outstanding': due,
+            })
+    top_due_customers.sort(key=lambda x: x['outstanding'], reverse=True)
+    top_due_customers = top_due_customers[:6]
+
+    # Chart data for last 6 months (Customer Billing vs Received)
     today = timezone.now().date()
     months_labels = []
-    cash_in_data = []
-    cash_out_data = []
+    invoiced_data = []
+    received_data = []
 
     for i in range(5, -1, -1):
-        # approximate month calculation
         m_date = today - timedelta(days=i * 30)
         m_start = m_date.replace(day=1)
         next_month = (m_start + timedelta(days=32)).replace(day=1)
 
-        m_in = Transaction.objects.filter(
-            date__gte=m_start,
-            date__lt=next_month,
-            transaction_type=TransactionType.CASH_IN
-        ).aggregate(t=Sum('amount'))['t'] or Decimal('0.00')
+        m_inv = PartnerEntry.objects.filter(
+            date_time__date__gte=m_start,
+            date_time__date__lt=next_month
+        ).aggregate(t=Sum('total_amount'))['t'] or Decimal('0.00')
 
-        m_out = Transaction.objects.filter(
-            date__gte=m_start,
-            date__lt=next_month,
-            transaction_type=TransactionType.CASH_OUT
+        m_rec = PartnerReceipt.objects.filter(
+            received_at__date__gte=m_start,
+            received_at__date__lt=next_month
         ).aggregate(t=Sum('amount'))['t'] or Decimal('0.00')
 
         months_labels.append(m_start.strftime('%b %Y'))
-        cash_in_data.append(float(m_in))
-        cash_out_data.append(float(m_out))
+        invoiced_data.append(float(m_inv))
+        received_data.append(float(m_rec))
 
     subscription = getattr(request.user, 'subscription', None)
 
     return render(request, 'core/serviceadmin_dashboard.html', {
         'total_businesses': total_businesses,
-        'total_cashbooks': total_cashbooks,
-        'total_cash_in': total_cash_in,
-        'total_cash_out': total_cash_out,
-        'current_net_balance': current_net_balance,
-        'recent_transactions': recent_transactions,
+        'total_books': total_books,
+        'total_customers': total_customers,
+        'customer_total_invoiced': customer_total_invoiced,
+        'customer_total_received': customer_total_received,
+        'customer_total_outstanding': customer_total_outstanding,
+        'paid_entries_count': paid_entries_count,
+        'partial_entries_count': partial_entries_count,
+        'unpaid_entries_count': unpaid_entries_count,
+        'total_entries_count': total_entries_count,
+        'recent_customer_entries': recent_customer_entries,
+        'top_due_customers': top_due_customers,
         'subscription': subscription,
         'months_labels': months_labels,
-        'cash_in_data': cash_in_data,
-        'cash_out_data': cash_out_data,
-        'partner_total_amount': partner_total_amount,
-        'partner_total_settled': partner_total_settled,
-        'partner_total_outstanding': partner_total_outstanding,
-        'recent_partner_entries': recent_partner_entries,
+        'invoiced_data': invoiced_data,
+        'received_data': received_data,
     })

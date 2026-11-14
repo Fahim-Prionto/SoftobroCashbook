@@ -1,50 +1,50 @@
 {% extends 'base_dashboard.html' %}
 {% load currency_tags %}
-{% block title %}{{ cashbook.name }} - Ledger - {{ SITE_NAME }}{% endblock %}
-{% block page_title %}{{ cashbook.name }} ({{ cashbook.business.name }}){% endblock %}
+{% block title %}{{ cashbook.name }} - Book Ledger - {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Book: {{ cashbook.name }} ({{ cashbook.business.name }}){% endblock %}
 
 {% block content %}
-<!-- Top Balance Cards -->
+<!-- Top Customer Hisab Balance Cards for this Book -->
 <div class="row g-3 mb-4">
-    <!-- Current Balance Card -->
-    <div class="col-sm-6 col-xl-3">
-        <div class="stat-card-gradient emerald">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-                <div class="stat-label text-white-50">Current Cash Balance</div>
-                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
-                    <i class="bi bi-wallet2 fs-5 text-white"></i>
-                </div>
-            </div>
-            <div class="stat-value text-white mb-1">{{ overall_balance|bdt }}</div>
-            <div class="small text-white-50">Opening: {{ cashbook.opening_balance|bdt }}</div>
-        </div>
-    </div>
-
-    <!-- Total In -->
+    <!-- Total Invoiced Card -->
     <div class="col-sm-6 col-xl-3">
         <div class="stat-card-gradient blue">
             <div class="d-flex align-items-center justify-content-between mb-2">
-                <div class="stat-label text-white-50">Total Cash-In</div>
+                <div class="stat-label text-white-50">Total Invoiced</div>
                 <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
-                    <i class="bi bi-arrow-down-left-circle-fill fs-5 text-white"></i>
+                    <i class="bi bi-receipt fs-5 text-white"></i>
                 </div>
             </div>
-            <div class="stat-value text-white mb-1">{{ overall_in|bdt }}</div>
-            <div class="small text-white-50">Filtered: {{ filter_in|bdt }}</div>
+            <div class="stat-value text-white mb-1">{{ total_invoiced|bdt }}</div>
+            <div class="small text-white-50">{% if params.start_date or params.end_date or params.direction or params.payment_status or params.partner %}Filtered: {{ filter_invoiced|bdt }}{% else %}All customer entries in this book{% endif %}</div>
         </div>
     </div>
 
-    <!-- Total Out -->
+    <!-- Received / Settled -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card-gradient emerald">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="stat-label text-white-50">Received / Settled</div>
+                <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
+                    <i class="bi bi-check-circle-fill fs-5 text-white"></i>
+                </div>
+            </div>
+            <div class="stat-value text-white mb-1">{{ total_settled|bdt }}</div>
+            <div class="small text-white-50">{% if params.start_date or params.end_date or params.direction or params.payment_status or params.partner %}Filtered: {{ filter_settled|bdt }}{% else %}Total cash received / settled{% endif %}</div>
+        </div>
+    </div>
+
+    <!-- Outstanding / Due -->
     <div class="col-sm-6 col-xl-3">
         <div class="stat-card-gradient crimson">
             <div class="d-flex align-items-center justify-content-between mb-2">
-                <div class="stat-label text-white-50">Total Cash-Out</div>
+                <div class="stat-label text-white-50">Outstanding / Due</div>
                 <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.25);">
-                    <i class="bi bi-arrow-up-right-circle-fill fs-5 text-white"></i>
+                    <i class="bi bi-exclamation-circle-fill fs-5 text-white"></i>
                 </div>
             </div>
-            <div class="stat-value text-white mb-1">{{ overall_out|bdt }}</div>
-            <div class="small text-white-50">Filtered: {{ filter_out|bdt }}</div>
+            <div class="stat-value text-white mb-1">{{ total_outstanding|bdt }}</div>
+            <div class="small text-white-50">{% if params.start_date or params.end_date or params.direction or params.payment_status or params.partner %}Filtered: {{ filter_outstanding|bdt }}{% else %}Total unpaid customer balance{% endif %}</div>
         </div>
     </div>
 
@@ -52,18 +52,18 @@
     <div class="col-sm-6 col-xl-3">
         <div class="stat-card d-flex flex-column justify-content-center gap-2">
             <div class="d-flex gap-2">
-                <a href="{% url 'transactions:transaction_create' cashbook.id %}?type=CASH_IN" class="btn btn-success flex-fill fw-bold shadow-sm py-2">
-                    <i class="bi bi-plus-circle me-1"></i> Cash In
+                <a href="{% url 'partners:entry_create' %}?cashbook={{ cashbook.id }}&business={{ cashbook.business.id }}" class="btn btn-primary flex-fill fw-bold shadow-sm py-2">
+                    <i class="bi bi-plus-circle me-1"></i> New Entry
                 </a>
-                <a href="{% url 'transactions:transaction_create' cashbook.id %}?type=CASH_OUT" class="btn btn-danger flex-fill fw-bold shadow-sm py-2">
-                    <i class="bi bi-dash-circle me-1"></i> Cash Out
+                <a href="{% url 'partners:partner_create' %}" class="btn btn-outline-primary flex-fill fw-bold shadow-sm py-2">
+                    <i class="bi bi-person-plus me-1"></i> New Customer
                 </a>
             </div>
             <div class="d-flex gap-2">
-                <a href="{% url 'cashbooks:cashbook_print' cashbook.id %}{% if params.start_date or params.end_date %}?start_date={{ params.start_date }}&end_date={{ params.end_date }}{% endif %}" target="_blank" class="btn btn-outline-primary btn-sm flex-fill fw-semibold">
-                    <i class="bi bi-printer me-1"></i> Print A4 Statement
+                <a href="{% url 'cashbooks:cashbook_print' cashbook.id %}{% if params.start_date or params.end_date %}?start_date={{ params.start_date }}&end_date={{ params.end_date }}{% endif %}" target="_blank" class="btn btn-outline-secondary btn-sm flex-fill fw-semibold">
+                    <i class="bi bi-printer me-1"></i> Print Statement
                 </a>
-                <a href="{% url 'cashbooks:cashbook_edit' cashbook.id %}" class="btn btn-light btn-sm border" title="Settings">
+                <a href="{% url 'cashbooks:cashbook_edit' cashbook.id %}" class="btn btn-light btn-sm border" title="Edit Book Settings">
                     <i class="bi bi-gear"></i>
                 </a>
             </div>
@@ -71,24 +71,32 @@
     </div>
 </div>
 
-<!-- Ledger Card -->
+<!-- Integrated Customer Ledger for this Book -->
 <div class="card-scb">
     <!-- Filter Toolbar -->
     <div class="card-header bg-light border-bottom p-3">
         <form method="get" class="row g-2 align-items-center">
             <div class="col-md-2 col-6">
-                <select name="type" class="form-select form-select-sm">
-                    <option value="">All Types</option>
-                    <option value="CASH_IN" {% if params.type == 'CASH_IN' %}selected{% endif %}>Cash In (+)</option>
-                    <option value="CASH_OUT" {% if params.type == 'CASH_OUT' %}selected{% endif %}>Cash Out (-)</option>
+                <select name="direction" class="form-select form-select-sm">
+                    {% for val, label in filter_directions %}
+                    <option value="{{ val }}" {% if params.direction == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
             <div class="col-md-2 col-6">
-                <select name="category" class="form-select form-select-sm">
-                    <option value="">All Categories</option>
-                    {% for cat in available_categories %}
-                    <option value="{{ cat }}" {% if params.category == cat %}selected{% endif %}>{{ cat }}</option>
+                <select name="payment_status" class="form-select form-select-sm">
+                    {% for val, label in filter_payment_statuses %}
+                    <option value="{{ val }}" {% if params.payment_status == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2 col-6">
+                <select name="partner" class="form-select form-select-sm">
+                    <option value="">All Customers</option>
+                    {% for p in partners %}
+                    <option value="{{ p.id }}" {% if params.partner == p.id|stringformat:"s" %}selected{% endif %}>{{ p.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -101,157 +109,109 @@
                 <input type="date" name="end_date" value="{{ params.end_date }}" class="form-control form-control-sm" title="To Date">
             </div>
 
-            <div class="col-md-3 col-9">
-                <input type="text" name="q" value="{{ params.q }}" class="form-control form-control-sm" placeholder="Search description, voucher...">
-            </div>
-
-            <div class="col-md-1 col-3 d-flex gap-1">
-                <button type="submit" class="btn btn-sm btn-primary flex-fill" title="Filter"><i class="bi bi-funnel"></i></button>
-                {% if params.type or params.category or params.start_date or params.end_date or params.q %}
+            <div class="col-md-2 col-6 d-flex gap-1">
+                <input type="text" name="q" value="{{ params.q }}" class="form-control form-control-sm" placeholder="Search ref, customer…">
+                <button type="submit" class="btn btn-sm btn-primary" title="Filter"><i class="bi bi-funnel"></i></button>
+                {% if params.direction or params.payment_status or params.partner or params.start_date or params.end_date or params.q %}
                 <a href="{% url 'cashbooks:cashbook_detail' cashbook.id %}" class="btn btn-sm btn-outline-secondary" title="Reset"><i class="bi bi-x-lg"></i></a>
                 {% endif %}
             </div>
         </form>
     </div>
 
-    <!-- Ledger Table -->
+    <!-- Customer Ledger Table -->
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-scb mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 110px;">Date</th>
-                        <th style="width: 120px;">Type</th>
-                        <th style="width: 160px;">Category</th>
-                        <th>Description & Details</th>
-                        <th style="width: 80px;">Receipt</th>
-                        <th class="text-end" style="width: 160px;">Amount (BDT)</th>
+                        <th style="width: 140px;">Ref#</th>
+                        <th style="width: 130px;">Date</th>
+                        <th>Customer</th>
+                        <th style="width: 110px;">Direction</th>
+                        <th>Type / Remarks</th>
+                        <th class="text-end" style="width: 130px;">Total (৳)</th>
+                        <th class="text-end" style="width: 130px;">Settled (৳)</th>
+                        <th class="text-end" style="width: 130px;">Outstanding</th>
+                        <th class="text-center" style="width: 100px;">Status</th>
                         <th class="text-end" style="width: 90px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for t in transactions %}
+                    {% for entry in entries %}
                     <tr>
-                        <td class="small">{{ t.date|date:"d M Y" }}</td>
+                        <td class="font-monospace fw-semibold text-primary small">
+                            <a href="{% url 'partners:entry_edit' entry.id %}" class="text-decoration-none">
+                                {{ entry.reference_number }}
+                            </a>
+                        </td>
+                        <td class="small text-muted">{{ entry.date_time|date:"d M Y, h:i A" }}</td>
                         <td>
-                            {% if t.transaction_type == 'CASH_IN' %}
+                            {% if entry.partner %}
+                            <a href="{% url 'partners:partner_balance' entry.partner.id %}" class="fw-bold text-dark text-decoration-none">
+                                {{ entry.partner.name }}
+                            </a>
+                            {% if entry.partner.phone %}
+                            <div class="small text-muted">{{ entry.partner.phone }}</div>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entry.direction == 'CASH_IN' %}
                             <span class="badge cash-in-badge px-2 py-1"><i class="bi bi-arrow-down-left me-1"></i> Cash In</span>
                             {% else %}
                             <span class="badge cash-out-badge px-2 py-1"><i class="bi bi-arrow-up-right me-1"></i> Cash Out</span>
                             {% endif %}
                         </td>
-                        <td><span class="badge bg-light text-dark border">{{ t.category }}</span></td>
                         <td>
-                            <div class="text-dark">{{ t.description|default:"-" }}</div>
-                            {% if t.reference_number %}
-                            <div class="small text-muted font-monospace"><i class="bi bi-tag me-1"></i>Ref: {{ t.reference_number }}</div>
+                            <div class="text-dark">{{ entry.entry_type|default:"Customer Entry" }}</div>
+                            {% if entry.remarks %}
+                            <div class="small text-muted text-truncate" style="max-width: 250px;">{{ entry.remarks }}</div>
                             {% endif %}
+                        </td>
+                        <td class="text-end fw-bold fs-6">৳{{ entry.total_amount|floatformat:2 }}</td>
+                        <td class="text-end text-success fw-bold">৳{{ entry.settled_amount|floatformat:2 }}</td>
+                        <td class="text-end fw-bold {% if entry.outstanding_amount > 0 %}text-danger{% else %}text-muted{% endif %}">
+                            ৳{{ entry.outstanding_amount|floatformat:2 }}
                         </td>
                         <td class="text-center">
-                            {% if t.attachment %}
-                            <a href="{{ t.attachment.url }}" target="_blank" class="btn btn-sm btn-light border py-0 px-2" title="View Attachment">
-                                <i class="bi bi-paperclip text-primary"></i>
-                            </a>
+                            {% if entry.payment_status == 'PAID' %}
+                            <span class="badge bg-success">Paid</span>
+                            {% elif entry.payment_status == 'PARTIAL' %}
+                            <span class="badge bg-warning text-dark">Partial</span>
                             {% else %}
-                            <span class="text-muted">-</span>
+                            <span class="badge bg-danger">Unpaid</span>
                             {% endif %}
-                        </td>
-                        <td class="text-end fw-bold fs-6 {% if t.transaction_type == 'CASH_IN' %}text-success{% else %}text-danger{% endif %}">
-                            {% if t.transaction_type == 'CASH_IN' %}+{% else %}-{% endif %}{{ t.amount|bdt }}
                         </td>
                         <td class="text-end">
                             <div class="d-inline-flex gap-1">
-                                <a href="{% url 'transactions:transaction_edit' t.id %}" class="btn btn-sm btn-light border py-0 px-2" title="Edit">
+                                <a href="{% url 'partners:entry_edit' entry.id %}" class="btn btn-sm btn-light border py-0 px-2" title="Edit Entry">
                                     <i class="bi bi-pencil small text-muted"></i>
                                 </a>
-                                <a href="{% url 'transactions:transaction_delete' t.id %}" class="btn btn-sm btn-light border py-0 px-2 text-danger" title="Delete">
-                                    <i class="bi bi-trash small"></i>
+                                <a href="{% url 'partners:invoice_print' entry.id %}" target="_blank" class="btn btn-sm btn-light border py-0 px-2" title="Print Invoice">
+                                    <i class="bi bi-receipt small text-primary"></i>
                                 </a>
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
+                        <td colspan="10" class="text-center py-5 text-muted">
                             <i class="bi bi-journal-x display-6 d-block mb-2 text-secondary opacity-50"></i>
-                            No transactions found matching your filter criteria.
+                            No customer entries found in this book.
+                            <div class="mt-2">
+                                <a href="{% url 'partners:entry_create' %}?cashbook={{ cashbook.id }}&business={{ cashbook.business.id }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i> Add First Entry
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
-
-<!-- Partner Entries for this Cashbook -->
-<div class="card-scb mt-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-people-fill text-warning me-2"></i> Partner Entries – {{ cashbook.name }}</span>
-        <a href="{% url 'partners:ledger_list' %}?cashbook={{ cashbook.id }}" class="small text-decoration-none fw-semibold">View All →</a>
-    </div>
-    <div class="card-body">
-        <div class="row g-3 mb-3">
-            <div class="col-sm-4">
-                <div class="p-3 rounded-3 bg-light border">
-                    <div class="text-muted small">Total Invoiced</div>
-                    <div class="fw-bold fs-5 text-dark">{{ partner_total|bdt }}</div>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="p-3 rounded-3 bg-light border-start border-4 border-success">
-                    <div class="text-muted small">Received / Settled</div>
-                    <div class="fw-bold fs-5 text-success">{{ partner_settled|bdt }}</div>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="p-3 rounded-3 bg-light border-start border-4 border-danger">
-                    <div class="text-muted small">Outstanding / Due</div>
-                    <div class="fw-bold fs-5 text-danger">{{ partner_outstanding|bdt }}</div>
-                </div>
-            </div>
-        </div>
-        {% if recent_partner_entries %}
-        <div class="table-responsive">
-            <table class="table table-scb mb-0">
-                <thead>
-                    <tr>
-                        <th>Ref#</th>
-                        <th>Partner</th>
-                        <th>Direction</th>
-                        <th class="text-end">Total</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for pe in recent_partner_entries %}
-                    <tr>
-                        <td class="font-monospace small">{{ pe.reference_number }}</td>
-                        <td>{{ pe.partner.name|default:"-" }}</td>
-                        <td>
-                            {% if pe.direction == 'CASH_IN' %}
-                            <span class="badge cash-in-badge px-2 py-1"><i class="bi bi-arrow-down-left me-1"></i>Cash In</span>
-                            {% else %}
-                            <span class="badge cash-out-badge px-2 py-1"><i class="bi bi-arrow-up-right me-1"></i>Cash Out</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end fw-bold">{{ pe.total_amount|bdt }}</td>
-                        <td>
-                            {% if pe.payment_status == 'PAID' %}<span class="badge bg-success">Paid</span>
-                            {% elif pe.payment_status == 'PARTIAL' %}<span class="badge bg-warning text-dark">Partial</span>
-                            {% else %}<span class="badge bg-danger">Unpaid</span>{% endif %}
-                        </td>
-                        <td><a href="{% url 'partners:entry_edit' pe.id %}" class="btn btn-sm btn-light border py-0 px-2"><i class="bi bi-eye small text-muted"></i></a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="text-center text-muted py-3">No partner entries linked to this cashbook yet.</div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
-

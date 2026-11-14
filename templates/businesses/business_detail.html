@@ -62,16 +62,16 @@
             </div>
         </div>
 
-        <!-- Cashbooks under this Business -->
+        <!-- Books under this Business -->
         <div class="card-scb">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-journal-bookmark text-primary me-2"></i> Cashbooks in this Business</span>
+                <span><i class="bi bi-journal-bookmark text-primary me-2"></i> Books in this Business</span>
                 {% if can_add_cashbook %}
                 <a href="{% url 'cashbooks:cashbook_create' business.id %}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-plus-lg me-1"></i> Add Cashbook
+                    <i class="bi bi-plus-lg me-1"></i> Add Book
                 </a>
                 {% else %}
-                <span class="badge bg-secondary">Cashbook Limit ({{ max_cashbooks }}) Reached</span>
+                <span class="badge bg-secondary">Book Limit ({{ max_cashbooks }}) Reached</span>
                 {% endif %}
             </div>
             <div class="card-body p-0">
@@ -79,7 +79,7 @@
                     <table class="table table-scb mb-0">
                         <thead>
                             <tr>
-                                <th>Cashbook Name</th>
+                                <th>Book Name</th>
                                 <th>Opening Balance</th>
                                 <th>Total Cash-In</th>
                                 <th>Total Cash-Out</th>

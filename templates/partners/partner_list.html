@@ -1,14 +1,14 @@
 {% extends "base_dashboard.html" %}
-{% block title %}Partners{% endblock %}
+{% block title %}Customers - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h4 class="fw-bold mb-0">Partners</h4>
-        <small class="text-muted">Manage your Customers &amp; Vendors</small>
+        <h4 class="fw-bold mb-0">Customers</h4>
+        <small class="text-muted">Manage your customer directory and ledger balances</small>
     </div>
     <a href="{% url 'partners:partner_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> New Partner
+        <i class="bi bi-plus-lg me-1"></i> New Customer
     </a>
 </div>
 
@@ -90,7 +90,7 @@
                 <tr>
                     <td colspan="7" class="text-center py-5 text-muted">
                         <i class="bi bi-people fs-1 d-block mb-2"></i>
-                        No partners found. <a href="{% url 'partners:partner_create' %}">Add your first partner</a>.
+                        No customers found. <a href="{% url 'partners:partner_create' %}">Add your first customer</a>.
                     </td>
                 </tr>
                 {% endfor %}

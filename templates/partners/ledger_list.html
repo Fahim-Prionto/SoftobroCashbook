@@ -1,11 +1,11 @@
 {% extends "base_dashboard.html" %}
-{% block title %}Ledger{% endblock %}
+{% block title %}Customer Ledger - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
-        <h4 class="fw-bold mb-0">Ledger</h4>
-        <small class="text-muted">Partner cash-in &amp; cash-out entries</small>
+        <h4 class="fw-bold mb-0">Customer Ledger</h4>
+        <small class="text-muted">Customer cash-in &amp; cash-out entries across all books</small>
     </div>
     <a href="{% url 'partners:entry_create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i> New Entry
@@ -84,9 +84,9 @@
             {% endfor %}
             <input type="hidden" name="direction" id="directionInput" value="{{ f_direction }}">
         </div>
-        <!-- Partner Type pills -->
+        <!-- Customer Type pills -->
         <div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
-            <small class="text-muted fw-semibold me-1">PARTNER TYPE</small>
+            <small class="text-muted fw-semibold me-1">CUSTOMER TYPE</small>
             {% for val, label in filter_partner_types %}
             <button type="button" class="btn btn-sm {% if f_partner_type == val %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill ptype-pill" data-value="{{ val }}">{{ label }}</button>
             {% endfor %}
@@ -120,7 +120,7 @@
             </div>
             <div class="col-md-3">
                 <select name="partner" class="form-select form-select-sm" onchange="this.form.submit()">
-                    <option value="">All Partners</option>
+                    <option value="">All Customers</option>
                     {% for p in partners %}
                     <option value="{{ p.pk }}" {% if f_partner == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.name }}</option>
                     {% endfor %}
@@ -128,7 +128,7 @@
             </div>
             <div class="col-md-3">
                 <div class="input-group input-group-sm">
-                    <input type="text" name="q" value="{{ f_search }}" class="form-control" placeholder="Search ref / partner…">
+                    <input type="text" name="q" value="{{ f_search }}" class="form-control" placeholder="Search ref / customer…">
                     <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
                 </div>
             </div>
@@ -161,7 +161,7 @@
                     <th>Business</th>
                     <th>Book</th>
                     <th>Type</th>
-                    <th>Partner</th>
+                    <th>Customer</th>
                     <th class="text-end">Total (৳)</th>
                     <th class="text-end">Settled (৳)</th>
                     <th class="text-center">Status</th>

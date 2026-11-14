@@ -203,7 +203,7 @@ def partner_create_view(request):
         form = PartnerForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Partner created successfully.')
+            messages.success(request, 'Customer created successfully.')
             return redirect('partners:partner_list')
     else:
         form = PartnerForm()
@@ -218,7 +218,7 @@ def partner_edit_view(request, pk):
         form = PartnerForm(request.POST, instance=partner)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Partner updated.')
+            messages.success(request, 'Customer updated.')
             return redirect('partners:partner_list')
     else:
         form = PartnerForm(instance=partner)
@@ -231,7 +231,7 @@ def partner_delete_view(request, pk):
     if request.method == 'POST':
         partner.is_active = False
         partner.save()
-        messages.success(request, f'Partner "{partner.name}" has been removed.')
+        messages.success(request, f'Customer "{partner.name}" has been removed.')
         return redirect('partners:partner_list')
     return render(request, 'partners/partner_confirm_delete.html', {'partner': partner})
 
@@ -335,10 +335,24 @@ def entry_create_view(request):
     businesses = Business.objects.all()
     cashbooks = Cashbook.objects.all()
     partners = Partner.objects.filter(is_active=True)
+    initial_cashbook = request.GET.get('cashbook')
+    initial_business = request.GET.get('business')
+    initial_partner = request.GET.get('partner')
+
+    if initial_cashbook and not initial_business:
+        try:
+            cb_obj = Cashbook.objects.get(pk=initial_cashbook)
+            initial_business = cb_obj.business_id
+        except Exception:
+            pass
+
     return render(request, 'partners/entry_detail.html', {
         'businesses': businesses,
         'cashbooks': cashbooks,
         'partners': partners,
+        'initial_cashbook': int(initial_cashbook) if initial_cashbook and str(initial_cashbook).isdigit() else None,
+        'initial_business': int(initial_business) if initial_business and str(initial_business).isdigit() else None,
+        'initial_partner': int(initial_partner) if initial_partner and str(initial_partner).isdigit() else None,
         'uom_choices': PartnerEntryLine._meta.get_field('uom').choices,
         'payment_method_choices': PartnerReceipt._meta.get_field('payment_method').choices,
         'action': 'create',

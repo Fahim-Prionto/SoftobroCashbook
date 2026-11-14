@@ -17,7 +17,7 @@ def site_settings(request):
         pass
 
     return {
-        'SITE_NAME': getattr(settings, 'SITE_NAME', 'SoftobroCashBook'),
+        'SITE_NAME': getattr(settings, 'SITE_NAME', 'Cash Hisab SoftoBro'),
         'CURRENCY_SYMBOL': getattr(settings, 'CURRENCY_SYMBOL', '৳'),
         'BKASH_COMPANY_NUMBER': bkash_num,
         'BKASH_ACCOUNT_TYPE': bkash_type,
